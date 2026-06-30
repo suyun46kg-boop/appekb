@@ -57,7 +57,7 @@ class GlavniapiCall {
       params: {
         'limit': 5,
         'offset': offsetl,
-        'select': "id,price,title,img,description",
+        'select': "id,price,title,img,description,created_at",
         'order': "created_at.desc",
       },
       returnBody: true,

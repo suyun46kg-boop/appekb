@@ -277,6 +277,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
             children: [
               Container(
                 width: double.infinity,
+                clipBehavior: Clip.antiAlias,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF1877F2), Color(0xFF003DA5)],
@@ -284,14 +285,14 @@ class _ProfileWidgetState extends State<ProfileWidget>
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(28.0),
-                    bottomRight: Radius.circular(28.0),
+                    bottomLeft: Radius.circular(24.0),
+                    bottomRight: Radius.circular(24.0),
                   ),
                 ),
                 child: SafeArea(
                   bottom: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 72.0),
+                    padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 44.0),
                     child: Column(
                       children: [
                         Text(
@@ -304,13 +305,14 @@ class _ProfileWidgetState extends State<ProfileWidget>
                               fontStyle: theme.headlineSmall.fontStyle,
                             ),
                             color: Colors.white,
+                            fontSize: 20.0,
                             letterSpacing: 0.0,
                             fontWeight: FontWeight.w700,
                             fontStyle: theme.headlineSmall.fontStyle,
                           ),
                         ).animateOnPageLoad(
                             animationsMap['textOnPageLoadAnimation']!),
-                        const SizedBox(height: 8.0),
+                        const SizedBox(height: 4.0),
                         Text(
                           valueOrDefault<String>(currentUserEmail, '...'),
                           style: theme.bodyMedium.override(
@@ -333,10 +335,10 @@ class _ProfileWidgetState extends State<ProfileWidget>
                 ),
               ),
               Transform.translate(
-                offset: const Offset(0.0, -52.0),
+                offset: const Offset(0.0, -36.0),
                 child: Container(
-                  width: 104.0,
-                  height: 104.0,
+                  width: 88.0,
+                  height: 88.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: theme.secondaryBackground,
@@ -369,7 +371,7 @@ class _ProfileWidgetState extends State<ProfileWidget>
               ),
               Expanded(
                 child: Transform.translate(
-                  offset: const Offset(0.0, -36.0),
+                  offset: const Offset(0.0, -24.0),
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 100.0),
                     child: Column(

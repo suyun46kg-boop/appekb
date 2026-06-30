@@ -77,5 +77,7 @@ class DbddModel extends FlutterFlowModel<DbddWidget> {
                 )
               : null,
         );
+      }).catchError((Object error) {
+        gridViewPagingController2?.error = error;
       });
 }
