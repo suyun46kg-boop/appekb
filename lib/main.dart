@@ -13,7 +13,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:floating_bottom_navigation_bar/floating_bottom_navigation_bar.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 
@@ -145,11 +144,152 @@ class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'dbdd';
   late Widget? _currentPage;
 
+  static const _navBlue = Color(0xFF1A56DB);
+  static const _navMuted = Color(0xFF94A3B8);
+  static const _navBorder = Color(0xFFE2E8F0);
+
   @override
   void initState() {
     super.initState();
     _currentPageName = widget.initialPage ?? _currentPageName;
     _currentPage = widget.page;
+  }
+
+  void _switchTab(int index, List<String> tabKeys) {
+    safeSetState(() {
+      _currentPage = null;
+      _currentPageName = tabKeys[index];
+    });
+  }
+
+  Widget _navItem({
+    required bool active,
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final color = active ? _navBlue : _navMuted;
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 23, color: color),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navPostButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Transform.translate(
+              offset: const Offset(0, -18),
+              child: Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _navBlue.withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add, color: Colors.white, size: 26),
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: _navBlue,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNav(BuildContext context, int currentIndex) {
+    final tabKeys = ['dbdd', 'searchpage22', 'politpage', 'Profile'];
+    final bottomPad = MediaQuery.paddingOf(context).bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: _navBorder)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 20,
+            offset: Offset(0, -4),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.fromLTRB(0, 10, 0, 14 + bottomPad),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _navItem(
+            active: currentIndex == 0,
+            icon: Icons.home_outlined,
+            label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+            onTap: () => _switchTab(0, tabKeys),
+          ),
+          _navItem(
+            active: currentIndex == 1,
+            icon: Icons.search_rounded,
+            label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+            onTap: () => _switchTab(1, tabKeys),
+          ),
+          _navPostButton(
+            label: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+            onTap: () => _switchTab(2, tabKeys),
+          ),
+          _navItem(
+            active: currentIndex == 3,
+            icon: Icons.person_outline,
+            label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+            onTap: () => _switchTab(3, tabKeys),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -172,129 +312,7 @@ class _NavBarPageState extends State<NavBarPage> {
               .removeViewPadding(removeBottom: true),
           child: _currentPage ?? tabs[_currentPageName]!),
       extendBody: true,
-      bottomNavigationBar: FloatingNavbar(
-        currentIndex: currentIndex,
-        onTap: (i) => safeSetState(() {
-          _currentPage = null;
-          _currentPageName = tabs.keys.toList()[i];
-        }),
-        backgroundColor: Color(0xFF1877F2),
-        selectedItemColor: Color(0xFF5BFF7B),
-        unselectedItemColor: FlutterFlowTheme.of(context).secondary,
-        selectedBackgroundColor: Color(0x00000000),
-        borderRadius: 8.0,
-        itemBorderRadius: 8.0,
-        margin: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-        padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-        width: double.infinity,
-        elevation: 0.0,
-        items: [
-          FloatingNavbarItem(
-            customWidget: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.home_outlined,
-                  color: currentIndex == 0
-                      ? Color(0xFF5BFF7B)
-                      : FlutterFlowTheme.of(context).secondary,
-                  size: 24.0,
-                ),
-                Text(
-                  FFLocalizations.of(context).getText(
-                    '528yx56i' /* Гланая */,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: currentIndex == 0
-                        ? Color(0xFF5BFF7B)
-                        : FlutterFlowTheme.of(context).secondary,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          FloatingNavbarItem(
-            customWidget: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.search,
-                  color: currentIndex == 1
-                      ? Color(0xFF5BFF7B)
-                      : FlutterFlowTheme.of(context).secondary,
-                  size: 25.0,
-                ),
-                Text(
-                  FFLocalizations.of(context).getText(
-                    '6pwnu7xf' /* Найти */,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: currentIndex == 1
-                        ? Color(0xFF5BFF7B)
-                        : FlutterFlowTheme.of(context).secondary,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          FloatingNavbarItem(
-            customWidget: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.one_x_mobiledata,
-                  color: currentIndex == 2
-                      ? Color(0xFF5BFF7B)
-                      : FlutterFlowTheme.of(context).secondary,
-                  size: 24.0,
-                ),
-                Text(
-                  FFLocalizations.of(context).getText(
-                    'c5j5d6pi' /* обявление */,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: currentIndex == 2
-                        ? Color(0xFF5BFF7B)
-                        : FlutterFlowTheme.of(context).secondary,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          FloatingNavbarItem(
-            customWidget: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.person,
-                  color: currentIndex == 3
-                      ? Color(0xFF5BFF7B)
-                      : FlutterFlowTheme.of(context).secondary,
-                  size: 25.0,
-                ),
-                Text(
-                  FFLocalizations.of(context).getText(
-                    'wg3pzmio' /* профиль */,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: currentIndex == 3
-                        ? Color(0xFF5BFF7B)
-                        : FlutterFlowTheme.of(context).secondary,
-                    fontSize: 11.0,
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
+      bottomNavigationBar: _buildBottomNav(context, currentIndex),
     );
   }
 }
