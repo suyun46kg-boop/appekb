@@ -185,7 +185,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       borderRadius: BorderRadius.circular(999),
       child: Container(
         height: double.infinity,
-        padding: const EdgeInsets.fromLTRB(16, 0, 6, 0),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(999),
@@ -203,12 +203,14 @@ class _DbddWidgetState extends State<DbddWidget> {
           ],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_rounded, color: _blue, size: 20),
+            const Icon(Icons.search_rounded, color: _text3, size: 18),
             const SizedBox(width: 8),
-            Expanded(
+            Flexible(
               child: Text(
                 FFLocalizations.of(context).getText('fmw9cm8g' /* Найти */),
+                textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: _text3,
@@ -216,15 +218,9 @@ class _DbddWidgetState extends State<DbddWidget> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                color: _blueSoft,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.tune_rounded, color: _blue, size: 16),
-            ),
+            // Invisible spacer mirroring the icon + gap width, so the text
+            // above stays perfectly centered while the icon "follows" it.
+            const SizedBox(width: 26),
           ],
         ),
       ),
@@ -490,11 +486,11 @@ class _DbddWidgetState extends State<DbddWidget> {
               ),
             ),
             Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
                     valueOrDefault<String>(
                       getJsonField(item, r'''$.title''')?.toString(),
@@ -533,7 +529,8 @@ class _DbddWidgetState extends State<DbddWidget> {
                           ),
                         ),
                         Text(
-                          FFLocalizations.of(context).getText('gf7pmm28' /* р */),
+                          FFLocalizations.of(context)
+                              .getText('gf7pmm28' /* р */),
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -581,9 +578,9 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ],
                     ),
                   ],
-                  ],
-                ),
+                ],
               ),
+            ),
           ],
         ),
       ),
@@ -604,111 +601,128 @@ class _DbddWidgetState extends State<DbddWidget> {
           top: false,
           left: false,
           right: false,
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _header(context)),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_pageHPad, 20, _pageHPad, 0),
-                  child: _bannerCarousel(context),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_pageHPad, 20, _pageHPad, 0),
-                  child: _sectionTitle(context, 'zvs9dp80' /* Категории */),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_pageHPad, 16, _pageHPad, 0),
-                  child: GridView.builder(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 5,
-                      childAspectRatio: 0.68,
-                    ),
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) =>
-                        _categoryTile(context, _categories[index]),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_pageHPad, 6, _pageHPad, 0),
-                  child: _sectionTitle(
-                    context,
-                    'xy92q7cu' /* Свежие объявления */,
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(5, 12, 5, 0),
-                sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
-                pagingController: _model.setGridViewController2(
-                  (nextPageMarker) => GlavniapiCall.call(
-                    offsetl: valueOrDefault<int>(
-                      nextPageMarker.numItems,
-                      0,
-                    ),
-                  ),
-                ),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.72,
-                ),
-                builderDelegate: PagedChildBuilderDelegate<dynamic>(
-                  firstPageProgressIndicatorBuilder: (_) => const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+          child: Column(
+            children: [
+              _header(context),
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            _pageHPad, 20, _pageHPad, 0),
+                        child: _bannerCarousel(context),
                       ),
                     ),
-                  ),
-                  firstPageErrorIndicatorBuilder: (_) => Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      'Не удалось загрузить объявления',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: _text2, fontSize: 14),
-                    ),
-                  ),
-                  newPageProgressIndicatorBuilder: (_) => const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
-                      child: SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            _pageHPad, 20, _pageHPad, 0),
+                        child:
+                            _sectionTitle(context, 'zvs9dp80' /* Категории */),
                       ),
                     ),
-                  ),
-                  noItemsFoundIndicatorBuilder: (_) => Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      'Объявлений пока нет',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: _text2, fontSize: 14),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            _pageHPad, 16, _pageHPad, 0),
+                        child: GridView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 5,
+                            childAspectRatio: 0.68,
+                          ),
+                          itemCount: _categories.length,
+                          itemBuilder: (context, index) =>
+                              _categoryTile(context, _categories[index]),
+                        ),
+                      ),
                     ),
-                  ),
-                  itemBuilder: (context, item, index) =>
-                      _listingCard(context, item),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            _pageHPad, 6, _pageHPad, 0),
+                        child: _sectionTitle(
+                          context,
+                          'xy92q7cu' /* Свежие объявления */,
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(5, 12, 5, 0),
+                      sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
+                        pagingController: _model.setGridViewController2(
+                          (nextPageMarker) => GlavniapiCall.call(
+                            offsetl: valueOrDefault<int>(
+                              nextPageMarker.numItems,
+                              0,
+                            ),
+                          ),
+                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.72,
+                        ),
+                        builderDelegate: PagedChildBuilderDelegate<dynamic>(
+                          firstPageProgressIndicatorBuilder: (_) =>
+                              const Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Center(
+                              child: SizedBox(
+                                width: 36,
+                                height: 36,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                          firstPageErrorIndicatorBuilder: (_) => Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(
+                              'Не удалось загрузить объявления',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                  color: _text2, fontSize: 14),
+                            ),
+                          ),
+                          newPageProgressIndicatorBuilder: (_) => const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                          noItemsFoundIndicatorBuilder: (_) => Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(
+                              'Объявлений пока нет',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                  color: _text2, fontSize: 14),
+                            ),
+                          ),
+                          itemBuilder: (context, item, index) =>
+                              _listingCard(context, item),
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 100),
+                    ),
+                  ],
                 ),
-              ),
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
               ),
             ],
           ),

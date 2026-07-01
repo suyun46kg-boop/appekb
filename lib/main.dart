@@ -145,8 +145,11 @@ class _NavBarPageState extends State<NavBarPage> {
   late Widget? _currentPage;
 
   static const _navBlue = Color(0xFF1A56DB);
-  static const _navMuted = Color(0xFF94A3B8);
-  static const _navBorder = Color(0xFFE2E8F0);
+  static const _navHeaderStart = Color(0xFF1E5FE8);
+  static const _navHeaderEnd = Color(0xFF1341B0);
+  static const _navInactive = Colors.white;
+  static const _addAccentStart = Color(0xFFFF9500);
+  static const _addAccentEnd = Color(0xFFFF5F00);
 
   @override
   void initState() {
@@ -168,25 +171,51 @@ class _NavBarPageState extends State<NavBarPage> {
     required String label,
     required VoidCallback onTap,
   }) {
-    final color = active ? _navBlue : _navMuted;
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+    final fg = active ? _navBlue : _navInactive;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(100),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
+        ),
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            color: fg,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 23, color: color),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                  color: color,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  icon,
+                  key: ValueKey(active),
+                  size: 22,
+                  color: fg,
                 ),
+              ),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label, maxLines: 1, softWrap: false),
               ),
             ],
           ),
@@ -195,52 +224,62 @@ class _NavBarPageState extends State<NavBarPage> {
     );
   }
 
-  Widget _navPostButton({
+  Widget _addNavItem({
+    required bool active,
     required String label,
     required VoidCallback onTap,
   }) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Transform.translate(
-              offset: const Offset(0, -18),
-              child: Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _navBlue.withValues(alpha: 0.35),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.add, color: Colors.white, size: 26),
+    const size = 26.0;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(100),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            width: size,
+            height: size,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_addAccentStart, _addAccentEnd],
               ),
+              border: Border.fromBorderSide(
+                BorderSide(color: Colors.white, width: 3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x66FF5F00),
+                  blurRadius: 14,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
-            const SizedBox(height: 3),
-            Text(
+            child: const Icon(
+              Icons.add_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
               label,
-              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,
               style: GoogleFonts.inter(
                 fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: _navBlue,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+                color: Colors.white,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -250,42 +289,49 @@ class _NavBarPageState extends State<NavBarPage> {
     final bottomPad = MediaQuery.paddingOf(context).bottom;
 
     return Container(
+      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPad),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _navBorder)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 20,
-            offset: Offset(0, -4),
-          ),
-        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_navHeaderStart, _navHeaderEnd],
+        ),
       ),
-      padding: EdgeInsets.fromLTRB(0, 10, 0, 14 + bottomPad),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _navItem(
-            active: currentIndex == 0,
-            icon: Icons.home_outlined,
-            label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
-            onTap: () => _switchTab(0, tabKeys),
+          Flexible(
+            child: _navItem(
+              active: currentIndex == 0,
+              icon: Icons.home_outlined,
+              label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+              onTap: () => _switchTab(0, tabKeys),
+            ),
           ),
-          _navItem(
-            active: currentIndex == 1,
-            icon: Icons.search_rounded,
-            label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
-            onTap: () => _switchTab(1, tabKeys),
+          Flexible(
+            child: _navItem(
+              active: currentIndex == 1,
+              icon: Icons.search_rounded,
+              label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+              onTap: () => _switchTab(1, tabKeys),
+            ),
           ),
-          _navPostButton(
-            label: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
-            onTap: () => _switchTab(2, tabKeys),
+          Flexible(
+            child: _addNavItem(
+              active: currentIndex == 2,
+              label:
+                  FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+              onTap: () => _switchTab(2, tabKeys),
+            ),
           ),
-          _navItem(
-            active: currentIndex == 3,
-            icon: Icons.person_outline,
-            label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
-            onTap: () => _switchTab(3, tabKeys),
+          Flexible(
+            child: _navItem(
+              active: currentIndex == 3,
+              icon: Icons.person_outline,
+              label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+              onTap: () => _switchTab(3, tabKeys),
+            ),
           ),
         ],
       ),
