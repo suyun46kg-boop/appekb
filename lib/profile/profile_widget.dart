@@ -1,12 +1,8 @@
 import '/auth/supabase_auth/auth_util.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'profile_model.dart';
 export 'profile_model.dart';
@@ -21,167 +17,27 @@ class ProfileWidget extends StatefulWidget {
   State<ProfileWidget> createState() => _ProfileWidgetState();
 }
 
-class _ProfileWidgetState extends State<ProfileWidget>
-    with TickerProviderStateMixin {
+class _ProfileWidgetState extends State<ProfileWidget> {
   late ProfileModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final animationsMap = <String, AnimationInfo>{};
+  static const _bg = Color(0xFFF1F4FB);
+  static const _blue = Color(0xFF1A56DB);
+  static const _text = Color(0xFF0F172A);
+  static const _text3 = Color(0xFF94A3B8);
+  static const _border = Color(0xFFE2E8F0);
+  static const _pageHPad = 20.0;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileModel());
-
-    animationsMap.addAll({
-      'containerOnPageLoadAnimation1': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 1.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          ScaleEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.6, 0.6),
-            end: Offset(1.0, 1.0),
-          ),
-        ],
-      ),
-      'textOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 1.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.0, 20.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'dividerOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 1.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.0, 20.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'containerOnPageLoadAnimation2': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 100.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 100.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 100.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.0, 60.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'containerOnPageLoadAnimation3': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 200.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 200.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 200.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.0, 60.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'containerOnPageLoadAnimation4': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 300.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 300.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 300.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.0, 60.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-      'buttonOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          VisibilityEffect(duration: 400.ms),
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 400.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 400.0.ms,
-            duration: 600.0.ms,
-            begin: Offset(0.0, 60.0),
-            end: Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-    });
   }
 
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -193,8 +49,98 @@ class _ProfileWidgetState extends State<ProfileWidget>
     return name.substring(0, 1).toUpperCase();
   }
 
+  Widget _header(BuildContext context) {
+    final topPad = MediaQuery.paddingOf(context).top;
+    final email = valueOrDefault<String>(currentUserEmail, '...');
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(_pageHPad, topPad + 14, _pageHPad, 52),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            email,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.82),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _avatar(String photoUrl) {
+    final hasPhoto = photoUrl.isNotEmpty;
+
+    return Container(
+      width: 88,
+      height: 88,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 20,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: hasPhoto
+            ? CachedNetworkImage(
+                imageUrl: photoUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                errorWidget: (_, __, ___) => _avatarFallback(),
+              )
+            : _avatarFallback(),
+      ),
+    );
+  }
+
+  Widget _avatarFallback() {
+    return Container(
+      color: const Color(0xFFEEF3FF),
+      alignment: Alignment.center,
+      child: Text(
+        _userInitials(),
+        style: GoogleFonts.inter(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: _blue,
+        ),
+      ),
+    );
+  }
+
   Widget _menuTile({
-    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required Color iconBg,
@@ -202,66 +148,94 @@ class _ProfileWidgetState extends State<ProfileWidget>
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
-    final theme = FlutterFlowTheme.of(context);
     return Column(
       children: [
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16.0),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Container(
-                  width: 44.0,
-                  height: 44.0,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: iconBg,
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: iconColor, size: 22.0),
+                  child: Icon(icon, color: iconColor, size: 22),
                 ),
-                const SizedBox(width: 14.0),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     title,
-                    style: theme.bodyLarge.override(
-                      font: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontStyle: theme.bodyLarge.fontStyle,
-                      ),
-                      letterSpacing: 0.0,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      fontStyle: theme.bodyLarge.fontStyle,
+                      color: _text,
                     ),
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.chevron_right_rounded,
-                  color: theme.secondaryText,
-                  size: 22.0,
+                  color: _text3,
+                  size: 22,
                 ),
               ],
             ),
           ),
         ),
         if (showDivider)
-          Divider(
-            height: 1.0,
-            thickness: 1.0,
-            indent: 74.0,
-            endIndent: 16.0,
-            color: theme.alternate.withValues(alpha: 0.15),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            indent: 74,
+            endIndent: 16,
+            color: _border,
           ),
       ],
     );
   }
 
+  Widget _logoutButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton.icon(
+        onPressed: () async {
+          GoRouter.of(context).prepareAuthEvent();
+          await authManager.signOut();
+          if (!context.mounted) return;
+          GoRouter.of(context).clearRedirectLocation();
+
+          FFAppState().hh1 = false;
+          safeSetState(() {});
+
+          context.goNamedAuth(DbddWidget.routeName, context.mounted);
+        },
+        icon: const Icon(Icons.logout_rounded, size: 20),
+        label: Text(
+          FFLocalizations.of(context).getText('jfhc2a2b' /* Выйти */),
+          style: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFFDC2626),
+          side: const BorderSide(color: Color(0xFFFECACA)),
+          backgroundColor: const Color(0xFFFFF1F2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = FlutterFlowTheme.of(context);
     final photoUrl = currentUserPhoto;
-    final hasPhoto = photoUrl.isNotEmpty;
 
     return GestureDetector(
       onTap: () {
@@ -270,252 +244,96 @@ class _ProfileWidgetState extends State<ProfileWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: theme.primaryBackground,
-        body: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF1877F2), Color(0xFF003DA5)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+        backgroundColor: _bg,
+        body: Column(
+          children: [
+            _header(context),
+            Transform.translate(
+              offset: const Offset(0, -36),
+              child: _avatar(photoUrl),
+            ),
+            Expanded(
+              child: Transform.translate(
+                offset: const Offset(0, -20),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    _pageHPad,
+                    0,
+                    _pageHPad,
+                    100,
                   ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(24.0),
-                    bottomRight: Radius.circular(24.0),
-                  ),
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 44.0),
-                    child: Column(
-                      children: [
-                        Text(
-                          FFLocalizations.of(context).getText(
-                            'wg3pzmio' /* профиль */,
-                          ),
-                          style: theme.headlineSmall.override(
-                            font: GoogleFonts.inter(
-                              fontWeight: FontWeight.w700,
-                              fontStyle: theme.headlineSmall.fontStyle,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: _border),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x12000000),
+                              blurRadius: 3,
+                              offset: Offset(0, 1),
                             ),
-                            color: Colors.white,
-                            fontSize: 20.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w700,
-                            fontStyle: theme.headlineSmall.fontStyle,
-                          ),
-                        ).animateOnPageLoad(
-                            animationsMap['textOnPageLoadAnimation']!),
-                        const SizedBox(height: 4.0),
-                        Text(
-                          valueOrDefault<String>(currentUserEmail, '...'),
-                          style: theme.bodyMedium.override(
-                            font: GoogleFonts.inter(
-                              fontWeight: FontWeight.w400,
-                              fontStyle: theme.bodyMedium.fontStyle,
-                            ),
-                            color: Colors.white.withValues(alpha: 0.85),
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w400,
-                            fontStyle: theme.bodyMedium.fontStyle,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Transform.translate(
-                offset: const Offset(0.0, -36.0),
-                child: Container(
-                  width: 88.0,
-                  height: 88.0,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: theme.secondaryBackground,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 20.0,
-                        color: Colors.black.withValues(alpha: 0.12),
-                        offset: const Offset(0.0, 8.0),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            _menuTile(
+                              icon: Icons.list_alt_rounded,
+                              iconColor: _blue,
+                              iconBg: const Color(0xFFEEF3FF),
+                              title: FFLocalizations.of(context).getText(
+                                'kiy9k1h8' /* маи обиявлении */,
+                              ),
+                              onTap: () {
+                                context.pushNamed(
+                                  MylistingWidget.routeName,
+                                  queryParameters: {
+                                    'mylisid': serializeParam(
+                                      currentUserUid,
+                                      ParamType.String,
+                                    ),
+                                  }.withoutNulls,
+                                );
+                              },
+                            ),
+                            _menuTile(
+                              icon: Icons.support_agent_rounded,
+                              iconColor: const Color(0xFF0E7490),
+                              iconBg: const Color(0xFFEAFDFF),
+                              title: FFLocalizations.of(context).getText(
+                                'wrj9lx0v' /* поддержка */,
+                              ),
+                              onTap: () {},
+                            ),
+                            _menuTile(
+                              icon: Icons.privacy_tip_outlined,
+                              iconColor: const Color(0xFF6D28D9),
+                              iconBg: const Color(0xFFF2ECFF),
+                              title: FFLocalizations.of(context).getText(
+                                '6ay3t2sd' /* политика конфиденциальности */,
+                              ),
+                              showDivider: false,
+                              onTap: () async {
+                                await launchURL(
+                                  'https://telegra.ph/Ekaterinburg-Kyrgyzdar-06-20',
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      _logoutButton(context),
                     ],
-                    border: Border.all(
-                      color: const Color(0xFF5BFF7B),
-                      width: 3.0,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: ClipOval(
-                      child: hasPhoto
-                          ? Image.network(
-                              photoUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _avatarFallback(theme),
-                            )
-                          : _avatarFallback(theme),
-                    ),
-                  ),
-                ).animateOnPageLoad(
-                    animationsMap['containerOnPageLoadAnimation1']!),
-              ),
-              Expanded(
-                child: Transform.translate(
-                  offset: const Offset(0.0, -24.0),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 100.0),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: theme.secondaryBackground,
-                            borderRadius: BorderRadius.circular(20.0),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 16.0,
-                                color: Colors.black.withValues(alpha: 0.06),
-                                offset: const Offset(0.0, 4.0),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              _menuTile(
-                                context: context,
-                                icon: Icons.list_alt_rounded,
-                                iconColor: theme.primary,
-                                iconBg: theme.accent2,
-                                title: FFLocalizations.of(context).getText(
-                                  'kiy9k1h8' /* маи обиявлении */,
-                                ),
-                                onTap: () async {
-                                  context.pushNamed(
-                                    MylistingWidget.routeName,
-                                    queryParameters: {
-                                      'mylisid': serializeParam(
-                                        currentUserUid,
-                                        ParamType.String,
-                                      ),
-                                    }.withoutNulls,
-                                  );
-                                },
-                              ).animateOnPageLoad(
-                                  animationsMap['containerOnPageLoadAnimation2']!),
-                              _menuTile(
-                                context: context,
-                                icon: Icons.support_agent_rounded,
-                                iconColor: theme.info,
-                                iconBg: theme.accent3,
-                                title: FFLocalizations.of(context).getText(
-                                  'wrj9lx0v' /* поддержка */,
-                                ),
-                                onTap: () {},
-                              ).animateOnPageLoad(
-                                  animationsMap['containerOnPageLoadAnimation3']!),
-                              _menuTile(
-                                context: context,
-                                icon: Icons.privacy_tip_outlined,
-                                iconColor: theme.alternate,
-                                iconBg: theme.accent2,
-                                title: FFLocalizations.of(context).getText(
-                                  '6ay3t2sd' /* политика конфиденциальности */,
-                                ),
-                                showDivider: false,
-                                onTap: () async {
-                                  await launchURL(
-                                      'https://telegra.ph/Ekaterinburg-Kyrgyzdar-06-20');
-                                },
-                              ).animateOnPageLoad(
-                                  animationsMap['containerOnPageLoadAnimation4']!),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20.0),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FFButtonWidget(
-                            onPressed: () async {
-                              GoRouter.of(context).prepareAuthEvent();
-                              await authManager.signOut();
-                              GoRouter.of(context).clearRedirectLocation();
-
-                              FFAppState().hh1 = false;
-                              safeSetState(() {});
-
-                              context.goNamedAuth(
-                                  DbddWidget.routeName, context.mounted);
-                            },
-                            text: FFLocalizations.of(context).getText(
-                              'jfhc2a2b' /* Выйти */,
-                            ),
-                            icon: const Icon(
-                              Icons.logout_rounded,
-                              size: 20.0,
-                            ),
-                            options: FFButtonOptions(
-                              height: 54.0,
-                              padding: EdgeInsetsDirectional.zero,
-                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 8.0, 0.0),
-                              color: theme.error.withValues(alpha: 0.08),
-                              textStyle: theme.titleSmall.override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: theme.titleSmall.fontStyle,
-                                ),
-                                color: theme.error,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: theme.titleSmall.fontStyle,
-                              ),
-                              elevation: 0.0,
-                              borderSide: BorderSide(
-                                color: theme.error.withValues(alpha: 0.25),
-                                width: 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(16.0),
-                            ),
-                          ).animateOnPageLoad(
-                              animationsMap['buttonOnPageLoadAnimation']!),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _avatarFallback(FlutterFlowTheme theme) {
-    return Container(
-      color: theme.accent2,
-      alignment: Alignment.center,
-      child: Text(
-        _userInitials(),
-        style: theme.headlineMedium.override(
-          font: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontStyle: theme.headlineMedium.fontStyle,
-          ),
-          color: theme.primary,
-          letterSpacing: 0.0,
-          fontWeight: FontWeight.w700,
-          fontStyle: theme.headlineMedium.fontStyle,
+            ),
+          ],
         ),
       ),
     );

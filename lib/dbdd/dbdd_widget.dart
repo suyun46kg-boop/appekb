@@ -5,6 +5,7 @@ import '/index.dart';
 import 'dart:async';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -16,6 +17,39 @@ class _DbddCategory {
   final String emoji;
   final String labelKey;
   final int catId;
+}
+
+class _PulsingPlaceholder extends StatefulWidget {
+  const _PulsingPlaceholder();
+
+  static const _color = Color(0xFFE2E8F0);
+
+  @override
+  State<_PulsingPlaceholder> createState() => _PulsingPlaceholderState();
+}
+
+class _PulsingPlaceholderState extends State<_PulsingPlaceholder>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+  late final Animation<double> _opacity = Tween<double>(begin: 1, end: 0.45)
+      .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: Container(color: _PulsingPlaceholder._color),
+    );
+  }
 }
 
 class DbddWidget extends StatefulWidget {
@@ -41,8 +75,6 @@ class _DbddWidgetState extends State<DbddWidget> {
   static const _text2 = Color(0xFF475569);
   static const _text3 = Color(0xFF94A3B8);
   static const _border = Color(0xFFE2E8F0);
-  static const _blueSoft = Color(0xFFEEF3FF);
-  static const _gold = Color(0xFFE8B84B);
   static const _categoryText = Color(0xFF0C2447);
   static const _pageHPad = 20.0;
   static const _listingPlaceholder = 'assets/images/zag.jpg';
@@ -55,7 +87,7 @@ class _DbddWidgetState extends State<DbddWidget> {
     _DbddCategory('🎫', 'vp95t6yz', 13),
     _DbddCategory('🛠️', 'ccc9cors', 4),
     _DbddCategory('📦', 'pnpqtuk7', 9),
-    _DbddCategory('⚡', 'noun7do1', 5),
+    _DbddCategory('💸', 'noun7do1', 5),
   ];
 
   @override
@@ -105,12 +137,16 @@ class _DbddWidgetState extends State<DbddWidget> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 20),
+      padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 12),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
       child: SizedBox(
@@ -303,21 +339,39 @@ class _DbddWidgetState extends State<DbddWidget> {
     );
   }
 
+  Widget _bannerShimmer() {
+    return const _PulsingPlaceholder();
+  }
+
+  Widget _bannerSkeleton() {
+    return Container(
+      height: 168,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 24,
+            offset: Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: _bannerShimmer(),
+    );
+  }
+
   Widget _bannerCarousel(BuildContext context) {
     return FutureBuilder<List<CaruselRow>>(
       future: CaruselTable().queryRows(queryFn: (q) => q),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const SizedBox(
-            height: 168,
-            child: Center(
-              child: SizedBox(
-                width: 36,
-                height: 36,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
+          return _bannerSkeleton();
         }
         final slides = snapshot.data!;
         if (slides.isEmpty) {
@@ -366,13 +420,15 @@ class _DbddWidgetState extends State<DbddWidget> {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.network(
-                          valueOrDefault<String>(
+                        CachedNetworkImage(
+                          imageUrl: valueOrDefault<String>(
                             slide.images,
                             'https://images.unsplash.com/photo-1555215695-3004980ad54e',
                           ),
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                          fadeInDuration: const Duration(milliseconds: 250),
+                          placeholder: (_, __) => _bannerShimmer(),
+                          errorWidget: (_, __, ___) => Container(
                             color: const Color(0xFF0F172A),
                           ),
                         ),
@@ -396,14 +452,14 @@ class _DbddWidgetState extends State<DbddWidget> {
                     );
                     safeSetState(() {});
                   },
-                  effect: smooth_page_indicator.ExpandingDotsEffect(
+                  effect: const smooth_page_indicator.ExpandingDotsEffect(
                     expansionFactor: 3.3,
                     spacing: 5,
                     radius: 3,
                     dotWidth: 6,
                     dotHeight: 6,
-                    dotColor: Colors.white.withValues(alpha: 0.35),
-                    activeDotColor: _gold,
+                    dotColor: Colors.white,
+                    activeDotColor: _blue,
                   ),
                 ),
               ),
@@ -433,12 +489,14 @@ class _DbddWidgetState extends State<DbddWidget> {
       return _listingPlaceholderImage();
     }
 
-    return Image.network(
-      imageUrl,
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      errorBuilder: (_, __, ___) => _listingPlaceholderImage(),
+      fadeInDuration: const Duration(milliseconds: 200),
+      placeholder: (_, __) => _bannerShimmer(),
+      errorWidget: (_, __, ___) => _listingPlaceholderImage(),
     );
   }
 

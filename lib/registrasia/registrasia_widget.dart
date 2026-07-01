@@ -1,9 +1,6 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:easy_debounce/easy_debounce.dart';
@@ -13,46 +10,8 @@ import 'package:provider/provider.dart';
 import 'registrasia_model.dart';
 export 'registrasia_model.dart';
 
-/// Create a clean and minimalistic mobile UI for a Registration screen.
-///
-/// Layout:
-///
-/// * Centered vertical layout
-/// * Use safe area and proper padding
-///
-/// Header:
-///
-/// * Title: "Create Account"
-/// * Subtitle: "Sign up to continue"
-///
-/// Input fields:
-///
-/// 1. Phone Number (with country code picker)
-/// 2. Password
-/// 3. Confirm Password
-///
-/// Buttons:
-/// * Primary button: "Sign Up" (full width, rounded corners)
-/// * Secndary text button below: "Already have an account? Log In"
-/// Design style:
-/// * Minimal and modern
-/// * White background
-/// * Soft shadows on inputs and button
-/// * Rounded input fields (border radius 12–16)
-/// * Clean typography
-/// * Good spacing between elements
-/// Validation:
-/// * Show error text under fields (e.g. "Passwords do not match")
-/// * Highlight input border on error
-/// Extras:
-/// * Password fields should have show/hide toggle icon
-/// * Button should have loading state
-/// FlutterFlow structure:
-/// * Use Column as main layout
-/// * Containers for spacing
-/// * TextField widgets for inputs
-/// * Button widget for action
-/// Make it mobile-first and production-ready.
+enum _FieldState { neutral, valid, invalid }
+
 class RegistrasiaWidget extends StatefulWidget {
   const RegistrasiaWidget({super.key});
 
@@ -67,6 +26,18 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   late RegistrasiaModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  static const _bg = Color(0xFFF1F4FB);
+  static const _blue = Color(0xFF1A56DB);
+  static const _blueDark = Color(0xFF1341B0);
+  static const _text = Color(0xFF0F172A);
+  static const _text2 = Color(0xFF475569);
+  static const _text3 = Color(0xFF94A3B8);
+  static const _border = Color(0xFFE2E8F0);
+  static const _green = Color(0xFF16A34A);
+  static const _red = Color(0xFFEF4444);
+  static const _pageHPad = 24.0;
+  static const _fieldHeight = 54.0;
 
   @override
   void initState() {
@@ -89,8 +60,431 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
+  }
+
+  // ---- derived validation state -------------------------------------
+
+  String get _name => _model.namefildTextController?.text ?? '';
+  String get _phone => _model.phoneTextController?.text ?? '';
+  String get _password => _model.passwordTextController?.text ?? '';
+  String get _confirm => _model.confirmPasswordTextController?.text ?? '';
+
+  bool get _nameValid => _name.trim().isNotEmpty;
+  bool get _phoneValid => functions.chekphonenumber(_phone) ?? false;
+  bool get _passwordValid => functions.passlenth(_password) ?? false;
+  bool get _confirmValid => _confirm.isNotEmpty && _confirm == _password;
+
+  bool get _formValid =>
+      _nameValid && _phoneValid && _passwordValid && _confirmValid;
+
+  _FieldState get _nameState =>
+      _name.isEmpty ? _FieldState.neutral : _FieldState.valid;
+  _FieldState get _phoneState => _phone.isEmpty
+      ? _FieldState.neutral
+      : (_phoneValid ? _FieldState.valid : _FieldState.invalid);
+  _FieldState get _passwordState => _password.isEmpty
+      ? _FieldState.neutral
+      : (_passwordValid ? _FieldState.valid : _FieldState.invalid);
+  _FieldState get _confirmState => _confirm.isEmpty
+      ? _FieldState.neutral
+      : (_confirmValid ? _FieldState.valid : _FieldState.invalid);
+
+  Color _borderColor(_FieldState s) {
+    switch (s) {
+      case _FieldState.valid:
+        return _green;
+      case _FieldState.invalid:
+        return _red;
+      case _FieldState.neutral:
+        return _border;
+    }
+  }
+
+  Color _iconColor(_FieldState s) {
+    switch (s) {
+      case _FieldState.valid:
+        return _green;
+      case _FieldState.invalid:
+        return _red;
+      case _FieldState.neutral:
+        return _text3;
+    }
+  }
+
+  // ---- header ---------------------------------------------------------
+
+  Widget _header(BuildContext context) {
+    final topPad = MediaQuery.paddingOf(context).top;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(_pageHPad - 4, topPad + 14, _pageHPad - 4, 12),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x1F1341B0),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        height: 46,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: InkWell(
+                onTap: () => context.pop(),
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+            Text(
+              FFLocalizations.of(context).getText('j76pkpsz' /* Регистрация */),
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---- shared field chrome ---------------------------------------------
+
+  Widget _fieldLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: _text2,
+        ),
+      ),
+    );
+  }
+
+  Widget _hintRow(String text, _FieldState state) {
+    final color = _iconColor(state);
+    final icon = state == _FieldState.valid
+        ? Icons.check_circle_rounded
+        : state == _FieldState.invalid
+            ? Icons.error_rounded
+            : null;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, left: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 4),
+          ],
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(fontSize: 12, color: color, height: 1.3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  BoxDecoration _fieldDecoration(_FieldState state) {
+    final borderColor = _borderColor(state);
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: borderColor,
+        width: state == _FieldState.neutral ? 1 : 1.5,
+      ),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x0D000000),
+          blurRadius: 6,
+          offset: Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+  Widget _stateSuffixIcon(_FieldState state) {
+    if (state == _FieldState.neutral) return const SizedBox.shrink();
+    return Icon(
+      state == _FieldState.valid
+          ? Icons.check_circle_rounded
+          : Icons.error_rounded,
+      color: _iconColor(state),
+      size: 19,
+    );
+  }
+
+  Widget _textField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String hint,
+    required IconData icon,
+    required _FieldState state,
+    String? Function(String?)? validator,
+    VoidCallback? onChanged,
+    bool obscureText = false,
+    bool? visibility,
+    VoidCallback? onToggleVisibility,
+    TextInputType? keyboardType,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      height: _fieldHeight,
+      decoration: _fieldDecoration(state),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 14, right: 10),
+            child: Icon(icon, color: _iconColor(state), size: 20),
+          ),
+          Expanded(
+            child: TextFormField(
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: onChanged != null ? (_) => onChanged() : null,
+              obscureText: obscureText,
+              keyboardType: keyboardType,
+              style: GoogleFonts.inter(fontSize: 15, color: _text),
+              decoration: InputDecoration(
+                isCollapsed: true,
+                hintText: hint,
+                hintStyle: GoogleFonts.inter(fontSize: 15, color: _text3),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+              ),
+              validator: validator,
+            ),
+          ),
+          if (onToggleVisibility != null) ...[
+            InkWell(
+              onTap: onToggleVisibility,
+              borderRadius: BorderRadius.circular(999),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  visibility == true
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: _text3,
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+          ],
+          _stateSuffixIcon(state),
+          const SizedBox(width: 14),
+        ],
+      ),
+    );
+  }
+
+  Widget _phoneField() {
+    final state = _phoneState;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      height: _fieldHeight,
+      decoration: _fieldDecoration(state),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 12),
+            child: Text(
+              FFLocalizations.of(context).getText('bxxhwa85' /* +7 */),
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: _text,
+              ),
+            ),
+          ),
+          Container(width: 1, height: 22, color: _border),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: TextFormField(
+                controller: _model.phoneTextController,
+                focusNode: _model.phoneFocusNode,
+                onChanged: (_) => EasyDebounce.debounce(
+                  '_model.phoneTextController',
+                  const Duration(milliseconds: 150),
+                  () => safeSetState(() {}),
+                ),
+                keyboardType: TextInputType.phone,
+                style: GoogleFonts.inter(fontSize: 15, color: _text),
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  hintText: FFLocalizations.of(context)
+                      .getText('ehrfrdcl' /* телефон номер */),
+                  hintStyle: GoogleFonts.inter(fontSize: 15, color: _text3),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                ),
+                validator: _model.phoneTextControllerValidator
+                    .asValidator(context),
+              ),
+            ),
+          ),
+          _stateSuffixIcon(state),
+          const SizedBox(width: 14),
+        ],
+      ),
+    );
+  }
+
+  Widget _field({
+    required String label,
+    required Widget field,
+    String? hint,
+    _FieldState hintState = _FieldState.neutral,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _fieldLabel(label),
+          field,
+          if (hint != null) _hintRow(hint, hintState),
+        ],
+      ),
+    );
+  }
+
+  // ---- feedback --------------------------------------------------------
+
+  void _showSnack(String text, {bool isError = true}) {
+    final accent = isError ? _red : _green;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError
+                  ? Icons.error_outline_rounded
+                  : Icons.check_circle_outline_rounded,
+              color: accent,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: GoogleFonts.inter(
+                  color: _text,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(milliseconds: 3200),
+        backgroundColor: Colors.white,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: accent.withValues(alpha: 0.25)),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onSignUp() async {
+    if (!_phoneValid) {
+      _showSnack('Номер телефона введён неверно');
+      return;
+    }
+    if (!_passwordValid) {
+      _showSnack('Пароль должен содержать минимум 8 символов (латиница)');
+      return;
+    }
+    if (!_confirmValid) {
+      _showSnack('Пароли не совпадают');
+      return;
+    }
+
+    FFAppState().emailstate = '${_model.phoneTextController.text}@app.com';
+    FFAppState().hh1 = true;
+    FFAppState().update(() {});
+    GoRouter.of(context).prepareAuthEvent();
+
+    final user = await authManager.createAccountWithEmail(
+      context,
+      valueOrDefault<String>(
+        FFAppState().emailstate,
+        'ssss@app.com',
+      ),
+      _model.passwordTextController.text,
+    );
+    if (user == null) {
+      return;
+    }
+
+    await UserTable().insert({
+      'nomer': FFAppState().emailstate,
+      'id': currentUserUid,
+      'pass': _model.passwordTextController.text,
+      'name': _model.namefildTextController.text,
+    });
+
+    if (!mounted) return;
+    context.pushNamedAuth(
+      CreateListingPageCopyWidget.routeName,
+      mounted,
+    );
   }
 
   @override
@@ -104,1099 +498,215 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(28.0, 0.0, 28.0, 0.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 80.0,
-                          decoration: BoxDecoration(
-                            color: Color(0x00FFFFFF),
+        backgroundColor: _bg,
+        body: Column(
+          children: [
+            _header(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  _pageHPad,
+                  22,
+                  _pageHPad,
+                  32,
+                ),
+                child: Form(
+                  key: _model.formKey,
+                  autovalidateMode: AutovalidateMode.disabled,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _field(
+                        label: FFLocalizations.of(context)
+                            .getText('6x9p57c5' /* Имия */),
+                        field: _textField(
+                          controller: _model.namefildTextController!,
+                          focusNode: _model.namefildFocusNode!,
+                          hint: FFLocalizations.of(context)
+                              .getText('6x9p57c5' /* Имия */),
+                          icon: Icons.person_outline_rounded,
+                          state: _nameState,
+                          onChanged: () => EasyDebounce.debounce(
+                            '_model.namefildTextController',
+                            const Duration(milliseconds: 300),
+                            () => safeSetState(() {}),
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 56.0,
-                                  height: 56.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFF0F4FF),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 16.0,
-                                        color: Color(0x1A4F6EF5),
-                                        offset: Offset(
-                                          0.0,
-                                          4.0,
-                                        ),
-                                      )
+                          validator: _model.namefildTextControllerValidator
+                              .asValidator(context),
+                        ),
+                      ),
+                      _field(
+                        label: FFLocalizations.of(context)
+                            .getText('ehrfrdcl' /* телефон номер */),
+                        field: _phoneField(),
+                        hint: _phoneState == _FieldState.valid
+                            ? 'Номер введён верно'
+                            : _phoneState == _FieldState.invalid
+                                ? 'Номер введён неверно'
+                                : FFLocalizations.of(context).getText(
+                                    '40hofkj8' /* Номер должен начинаться с 9 (б... */,
+                                  ),
+                        hintState: _phoneState,
+                      ),
+                      _field(
+                        label: FFLocalizations.of(context)
+                            .getText('iddpkkyn' /*    пароль */),
+                        field: _textField(
+                          controller: _model.passwordTextController!,
+                          focusNode: _model.textFieldFocusNode1!,
+                          hint: FFLocalizations.of(context)
+                              .getText('iddpkkyn' /*    пароль */),
+                          icon: Icons.lock_outline_rounded,
+                          state: _passwordState,
+                          obscureText: !_model.passwordVisibility1,
+                          visibility: _model.passwordVisibility1,
+                          onToggleVisibility: () => safeSetState(
+                            () => _model.passwordVisibility1 =
+                                !_model.passwordVisibility1,
+                          ),
+                          onChanged: () => EasyDebounce.debounce(
+                            '_model.passwordTextController',
+                            const Duration(milliseconds: 300),
+                            () => safeSetState(() {}),
+                          ),
+                          validator: _model.passwordTextControllerValidator
+                              .asValidator(context),
+                        ),
+                        hint: _passwordState == _FieldState.valid
+                            ? 'Надёжный пароль'
+                            : _passwordState == _FieldState.invalid
+                                ? 'Слишком короткий пароль'
+                                : FFLocalizations.of(context).getText(
+                                    'mjp8jm3a' /* пароль должень состаить миними... */,
+                                  ),
+                        hintState: _passwordState,
+                      ),
+                      _field(
+                        label: FFLocalizations.of(context).getText(
+                          'h5721474' /*   повторите пороль */,
+                        ),
+                        field: _textField(
+                          controller: _model.confirmPasswordTextController!,
+                          focusNode: _model.textFieldFocusNode2!,
+                          hint: FFLocalizations.of(context).getText(
+                            'h5721474' /*   повторите пороль */,
+                          ),
+                          icon: Icons.lock_outline_rounded,
+                          state: _confirmState,
+                          obscureText: !_model.passwordVisibility2,
+                          visibility: _model.passwordVisibility2,
+                          onToggleVisibility: () => safeSetState(
+                            () => _model.passwordVisibility2 =
+                                !_model.passwordVisibility2,
+                          ),
+                          onChanged: () => EasyDebounce.debounce(
+                            '_model.confirmPasswordTextController',
+                            const Duration(milliseconds: 300),
+                            () => safeSetState(() {}),
+                          ),
+                          validator: _model
+                              .confirmPasswordTextControllerValidator
+                              .asValidator(context),
+                        ),
+                        hint: _confirmState == _FieldState.valid
+                            ? 'Пароли совпадают'
+                            : _confirmState == _FieldState.invalid
+                                ? 'Пароли не совпадают'
+                                : 'Введите пароль ещё раз для подтверждения',
+                        hintState: _confirmState,
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: _formValid
+                                  ? const [
+                                      Color(0xFF1E5FE8),
+                                      Color(0xFF1341B0),
+                                    ]
+                                  : [
+                                      _blue.withValues(alpha: 0.35),
+                                      _blueDark.withValues(alpha: 0.35),
                                     ],
-                                    borderRadius: BorderRadius.circular(16.0),
-                                  ),
-                                  child: Align(
-                                    alignment: AlignmentDirectional(0.0, 0.0),
-                                    child: Icon(
-                                      Icons.person_add_alt_1_rounded,
-                                      color: Color(0xFF4F6EF5),
-                                      size: 28.0,
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ),
+                            boxShadow: _formValid
+                                ? const [
+                                    BoxShadow(
+                                      color: Color(0x331A56DB),
+                                      blurRadius: 16,
+                                      offset: Offset(0, 8),
+                                    ),
+                                  ]
+                                : null,
                           ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          height: 16.0,
-                          decoration: BoxDecoration(
-                            color: Color(0x00FFFFFF),
-                          ),
-                        ),
-                        Text(
-                          FFLocalizations.of(context).getText(
-                            'j76pkpsz' /* Регистрация */,
-                          ),
-                          textAlign: TextAlign.center,
-                          style: FlutterFlowTheme.of(context)
-                              .headlineMedium
-                              .override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontStyle,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(14),
+                              onTap: _onSignUp,
+                              child: Center(
+                                child: Text(
+                                  FFLocalizations.of(context).getText(
+                                    'qy7d86gi' /* создать аккаунт */,
+                                  ),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                                color: Color(0xFF1A1A2E),
-                                fontSize: 28.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.bold,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontStyle,
                               ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          height: 16.0,
-                          decoration: BoxDecoration(
-                            color: Color(0x00FFFFFF),
-                          ),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional(0.0, -1.0),
-                          child: Form(
-                            key: _model.formKey,
-                            autovalidateMode: AutovalidateMode.disabled,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 12.0,
-                                        color: Color(0x0D000000),
-                                        offset: Offset(
-                                          0.0,
-                                          3.0,
-                                        ),
-                                      )
-                                    ],
-                                    borderRadius: BorderRadius.circular(14.0),
-                                    border: Border.all(
-                                      color: Color(0xFFE8EAF0),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  10.0, 0.0, 10.0, 0.0),
-                                          child: Icon(
-                                            Icons.face,
-                                            color: Color(0xFFB0B5C8),
-                                            size: 20.0,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: TextFormField(
-                                            controller:
-                                                _model.namefildTextController,
-                                            focusNode: _model.namefildFocusNode,
-                                            onChanged: (_) =>
-                                                EasyDebounce.debounce(
-                                              '_model.namefildTextController',
-                                              Duration(milliseconds: 2000),
-                                              () => safeSetState(() {}),
-                                            ),
-                                            autofocus: false,
-                                            obscureText: false,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              hintText:
-                                                  FFLocalizations.of(context)
-                                                      .getText(
-                                                '6x9p57c5' /* Имия */,
-                                              ),
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFFB0B5C8),
-                                                        fontSize: 15.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: InputBorder.none,
-                                              focusedBorder: InputBorder.none,
-                                              errorBorder: InputBorder.none,
-                                              focusedErrorBorder:
-                                                  InputBorder.none,
-                                              filled: true,
-                                              fillColor: Color(0x00FFFFFF),
-                                              contentPadding:
-                                                  EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 18.0, 0.0, 18.0),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Color(0xFF1A1A2E),
-                                                  fontSize: 15.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            validator: _model
-                                                .namefildTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 20.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 55.0,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 12.0,
-                                        color: Color(0x0D000000),
-                                        offset: Offset(
-                                          0.0,
-                                          3.0,
-                                        ),
-                                      )
-                                    ],
-                                    borderRadius: BorderRadius.circular(14.0),
-                                    border: Border.all(
-                                      color: Color(0xFFE8EAF0),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        14.0, 0.0, 14.0, 0.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Container(
-                                          width: 72.0,
-                                          height: 56.0,
-                                          decoration: BoxDecoration(
-                                            color: Color(0x00FFFFFF),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(12.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  FFLocalizations.of(context)
-                                                      .getText(
-                                                    'bxxhwa85' /* +7 */,
-                                                  ),
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFF12151C),
-                                                        fontSize: 20.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          2.0, 0.0, 2.0, 0.0),
-                                                  child: Icon(
-                                                    Icons
-                                                        .keyboard_arrow_down_rounded,
-                                                    color: Color(0xFF8A8FA8),
-                                                    size: 16.0,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 1.0,
-                                          height: 32.0,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFE8EAF0),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    12.0, 0.0, 12.0, 0.0),
-                                            child: TextFormField(
-                                              controller:
-                                                  _model.phoneTextController,
-                                              focusNode: _model.phoneFocusNode,
-                                              onChanged: (_) =>
-                                                  EasyDebounce.debounce(
-                                                '_model.phoneTextController',
-                                                Duration(milliseconds: 100),
-                                                () => safeSetState(() {}),
-                                              ),
-                                              autofocus: false,
-                                              obscureText: false,
-                                              decoration: InputDecoration(
-                                                isDense: true,
-                                                hintText:
-                                                    FFLocalizations.of(context)
-                                                        .getText(
-                                                  'ehrfrdcl' /* телефон номер */,
-                                                ),
-                                                hintStyle: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      font: GoogleFonts.inter(
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                                      color: Color(0xFFB0B5C8),
-                                                      fontSize: 15.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                      fontStyle:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .fontStyle,
-                                                    ),
-                                                enabledBorder: InputBorder.none,
-                                                focusedBorder: InputBorder.none,
-                                                errorBorder: InputBorder.none,
-                                                focusedErrorBorder:
-                                                    InputBorder.none,
-                                                filled: true,
-                                                fillColor: Color(0x00FFFFFF),
-                                              ),
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFF1A1A2E),
-                                                        fontSize: 15.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                              keyboardType: TextInputType.phone,
-                                              validator: _model
-                                                  .phoneTextControllerValidator
-                                                  .asValidator(context),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 6.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      4.0, 0.0, 4.0, 0.0),
-                                  child: Text(
-                                    FFLocalizations.of(context).getText(
-                                      '40hofkj8' /* Номер должен начинаться с 9 (б... */,
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.normal,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodySmall
-                                                    .fontStyle,
-                                          ),
-                                          color: Color(0xFF35B039),
-                                          fontSize: 12.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.normal,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 20.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 12.0,
-                                        color: Color(0x0D000000),
-                                        offset: Offset(
-                                          0.0,
-                                          3.0,
-                                        ),
-                                      )
-                                    ],
-                                    borderRadius: BorderRadius.circular(14.0),
-                                    border: Border.all(
-                                      color: Color(0xFFE8EAF0),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  10.0, 0.0, 10.0, 0.0),
-                                          child: Icon(
-                                            Icons.lock_outline,
-                                            color: Color(0xFFB0B5C8),
-                                            size: 20.0,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: TextFormField(
-                                            controller:
-                                                _model.passwordTextController,
-                                            focusNode:
-                                                _model.textFieldFocusNode1,
-                                            onChanged: (_) =>
-                                                EasyDebounce.debounce(
-                                              '_model.passwordTextController',
-                                              Duration(milliseconds: 2000),
-                                              () => safeSetState(() {}),
-                                            ),
-                                            autofocus: false,
-                                            obscureText:
-                                                !_model.passwordVisibility1,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              hintText:
-                                                  FFLocalizations.of(context)
-                                                      .getText(
-                                                'iddpkkyn' /*    пароль */,
-                                              ),
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFFB0B5C8),
-                                                        fontSize: 15.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: InputBorder.none,
-                                              focusedBorder: InputBorder.none,
-                                              errorBorder: InputBorder.none,
-                                              focusedErrorBorder:
-                                                  InputBorder.none,
-                                              filled: true,
-                                              fillColor: Color(0x00FFFFFF),
-                                              contentPadding:
-                                                  EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 18.0, 0.0, 18.0),
-                                              suffixIcon: InkWell(
-                                                onTap: () async {
-                                                  safeSetState(() => _model
-                                                          .passwordVisibility1 =
-                                                      !_model
-                                                          .passwordVisibility1);
-                                                },
-                                                focusNode: FocusNode(
-                                                    skipTraversal: true),
-                                                child: Icon(
-                                                  _model.passwordVisibility1
-                                                      ? Icons
-                                                          .visibility_outlined
-                                                      : Icons
-                                                          .visibility_off_outlined,
-                                                  color: Color(0xFFB0B5C8),
-                                                  size: 20.0,
-                                                ),
-                                              ),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Color(0xFF1A1A2E),
-                                                  fontSize: 15.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            validator: _model
-                                                .passwordTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 6.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      4.0, 0.0, 4.0, 0.0),
-                                  child: Text(
-                                    FFLocalizations.of(context).getText(
-                                      'mjp8jm3a' /* пароль должень состаить миними... */,
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.normal,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodySmall
-                                                    .fontStyle,
-                                          ),
-                                          color: Color(0xFF35C04D),
-                                          fontSize: 12.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.normal,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 20.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        blurRadius: 12.0,
-                                        color: Color(0x0D000000),
-                                        offset: Offset(
-                                          0.0,
-                                          3.0,
-                                        ),
-                                      )
-                                    ],
-                                    borderRadius: BorderRadius.circular(14.0),
-                                    border: Border.all(
-                                      color: Color(0xFFE8EAF0),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  10.0, 0.0, 10.0, 0.0),
-                                          child: Icon(
-                                            Icons.lock_outline,
-                                            color: Color(0xFFB0B5C8),
-                                            size: 20.0,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: TextFormField(
-                                            controller: _model
-                                                .confirmPasswordTextController,
-                                            focusNode:
-                                                _model.textFieldFocusNode2,
-                                            onChanged: (_) =>
-                                                EasyDebounce.debounce(
-                                              '_model.confirmPasswordTextController',
-                                              Duration(milliseconds: 2000),
-                                              () => safeSetState(() {}),
-                                            ),
-                                            autofocus: false,
-                                            obscureText:
-                                                !_model.passwordVisibility2,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              hintText:
-                                                  FFLocalizations.of(context)
-                                                      .getText(
-                                                'h5721474' /*   повторите пороль */,
-                                              ),
-                                              hintStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        font: GoogleFonts.inter(
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .bodyMedium
-                                                                  .fontStyle,
-                                                        ),
-                                                        color:
-                                                            Color(0xFFB0B5C8),
-                                                        fontSize: 15.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                        fontStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .fontStyle,
-                                                      ),
-                                              enabledBorder: InputBorder.none,
-                                              focusedBorder: InputBorder.none,
-                                              errorBorder: InputBorder.none,
-                                              focusedErrorBorder:
-                                                  InputBorder.none,
-                                              filled: true,
-                                              fillColor: Color(0x00FFFFFF),
-                                              contentPadding:
-                                                  EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 18.0, 0.0, 18.0),
-                                              suffixIcon: InkWell(
-                                                onTap: () async {
-                                                  safeSetState(() => _model
-                                                          .passwordVisibility2 =
-                                                      !_model
-                                                          .passwordVisibility2);
-                                                },
-                                                focusNode: FocusNode(
-                                                    skipTraversal: true),
-                                                child: Icon(
-                                                  _model.passwordVisibility2
-                                                      ? Icons
-                                                          .visibility_outlined
-                                                      : Icons
-                                                          .visibility_off_outlined,
-                                                  color: Color(0xFFB0B5C8),
-                                                  size: 20.0,
-                                                ),
-                                              ),
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight:
-                                                        FontWeight.normal,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .bodyMedium
-                                                            .fontStyle,
-                                                  ),
-                                                  color: Color(0xFF1A1A2E),
-                                                  fontSize: 15.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.normal,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                            validator: _model
-                                                .confirmPasswordTextControllerValidator
-                                                .asValidator(context),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 6.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      4.0, 0.0, 4.0, 0.0),
-                                  child: Text(
-                                    FFLocalizations.of(context).getText(
-                                      '6ycrlpth' /* повтарите пароля */,
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .override(
-                                          font: GoogleFonts.inter(
-                                            fontWeight: FontWeight.normal,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodySmall
-                                                    .fontStyle,
-                                          ),
-                                          color: Color(0xFFEF4444),
-                                          fontSize: 12.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.normal,
-                                          fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodySmall
-                                                  .fontStyle,
-                                        ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 32.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      4.0, 0.0, 4.0, 0.0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      if (!functions.chekphonenumber(
-                                          _model.phoneTextController.text)!) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'номер телефона не верен',
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 4000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                        return;
-                                      }
-                                      if (!functions.passlenth(_model
-                                          .passwordTextController.text)!) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'пароль должень быть минимум 8 символи англисих буков',
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 4000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                        return;
-                                      }
-                                      if (_model.passwordTextController.text !=
-                                          _model.confirmPasswordTextController
-                                              .text) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'пороли не соводает',
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 4000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                      }
-                                      FFAppState().emailstate =
-                                          '${_model.phoneTextController.text}@app.com';
-                                      FFAppState().hh1 = true;
-                                      FFAppState().update(() {});
-                                      GoRouter.of(context).prepareAuthEvent();
-                                      if (_model.passwordTextController.text !=
-                                          _model.confirmPasswordTextController
-                                              .text) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Passwords don\'t match!',
-                                            ),
-                                          ),
-                                        );
-                                        return;
-                                      }
-
-                                      final user = await authManager
-                                          .createAccountWithEmail(
-                                        context,
-                                        valueOrDefault<String>(
-                                          FFAppState().emailstate,
-                                          'ssss@app.com',
-                                        ),
-                                        _model.passwordTextController.text,
-                                      );
-                                      if (user == null) {
-                                        return;
-                                      }
-
-                                      await UserTable().insert({
-                                        'nomer': FFAppState().emailstate,
-                                        'id': currentUserUid,
-                                        'pass':
-                                            _model.passwordTextController.text,
-                                        'name':
-                                            _model.namefildTextController.text,
-                                      });
-
-                                      context.pushNamedAuth(
-                                          CreateListingPageCopyWidget.routeName,
-                                          context.mounted);
-                                    },
-                                    text: FFLocalizations.of(context).getText(
-                                      'qy7d86gi' /* создать аккаунт */,
-                                    ),
-                                    options: FFButtonOptions(
-                                      width: double.infinity,
-                                      height: 54.0,
-                                      padding: EdgeInsets.all(8.0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
-                                      color: functions.chekphonenumber(
-                                              _model.phoneTextController.text)!
-                                          ? FlutterFlowTheme.of(context).primary
-                                          : Color(0xFF978EF0),
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight: FontWeight.w600,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: Colors.white,
-                                            fontSize: 16.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w600,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                      elevation: 0.0,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 0.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(14.0),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 20.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      FFLocalizations.of(context).getText(
-                                        'xormy5ux' /* у меня есть  */,
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            font: GoogleFonts.inter(
-                                              fontWeight: FontWeight.normal,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                            color: Color(0xFF8A8FA8),
-                                            fontSize: 14.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.normal,
-                                            fontStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .fontStyle,
-                                          ),
-                                    ),
-                                    FFButtonWidget(
-                                      onPressed: () {
-                                        print('Button pressed ...');
-                                      },
-                                      text: FFLocalizations.of(context).getText(
-                                        's9u462x1' /* Акаунт */,
-                                      ),
-                                      options: FFButtonOptions(
-                                        height: 36.0,
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            6.0, 0.0, 0.0, 0.0),
-                                        iconPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
-                                                0.0, 0.0, 0.0, 0.0),
-                                        color: Color(0x00FFFFFF),
-                                        textStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              font: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w600,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                              color: Color(0xFF4F6EF5),
-                                              fontSize: 14.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w600,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .fontStyle,
-                                            ),
-                                        elevation: 0.0,
-                                        borderSide: BorderSide(
-                                          color: Colors.transparent,
-                                          width: 0.0,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 24.0,
-                                  decoration: BoxDecoration(
-                                    color: Color(0x00FFFFFF),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            FFLocalizations.of(context)
+                                .getText('xormy5ux' /* у меня есть  */),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: _text2,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              context.pushNamed(AvtoryzasiaWidget.routeName);
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                              ),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              FFLocalizations.of(context)
+                                  .getText('s9u462x1' /* Акаунт */),
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _blue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
