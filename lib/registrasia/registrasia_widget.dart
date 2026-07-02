@@ -442,6 +442,55 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
     );
   }
 
+  Widget _termsConsentNotice(BuildContext context) {
+    final baseStyle = GoogleFonts.inter(
+      fontSize: 12,
+      color: _text3,
+      height: 1.45,
+    );
+    final linkStyle = GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: _blue,
+      decoration: TextDecoration.underline,
+      decorationColor: _blue,
+      height: 1.45,
+    );
+
+    Widget termsLink(String textKey) {
+      return GestureDetector(
+        onTap: () => context.pushNamed(PolitpageWidget.routeName),
+        child: Text(
+          FFLocalizations.of(context).getText(textKey),
+          style: linkStyle,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              FFLocalizations.of(context).getText('rgstrm1ab'),
+              style: baseStyle,
+              textAlign: TextAlign.center,
+            ),
+            termsLink('rgstrm2cd'),
+            Text(
+              FFLocalizations.of(context).getText('rgstrm3ef'),
+              style: baseStyle,
+            ),
+            termsLink('rgstrm4gh'),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _onSignUp() async {
     if (!_phoneValid) {
       _showSnack('Номер телефона введён неверно');
@@ -666,6 +715,7 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                           ),
                         ),
                       ),
+                      _termsConsentNotice(context),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

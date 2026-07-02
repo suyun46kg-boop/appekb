@@ -165,6 +165,14 @@ class _NavBarPageState extends State<NavBarPage> {
     });
   }
 
+  void _openCreateListingFlow(BuildContext context) {
+    if (currentUserUid.isNotEmpty) {
+      context.pushNamed(CreateListingPageCopyWidget.routeName);
+    } else {
+      context.pushNamed(RegistrasiaWidget.routeName);
+    }
+  }
+
   Widget _navItem({
     required bool active,
     required IconData icon,
@@ -319,10 +327,10 @@ class _NavBarPageState extends State<NavBarPage> {
           ),
           Flexible(
             child: _addNavItem(
-              active: currentIndex == 2,
+              active: false,
               label:
                   FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
-              onTap: () => _switchTab(2, tabKeys),
+              onTap: () => _openCreateListingFlow(context),
             ),
           ),
           Flexible(

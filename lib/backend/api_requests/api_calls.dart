@@ -46,13 +46,13 @@ class GlavniapiCall {
   }) async {
     return ApiManager.instance.makeApiCall(
       callName: 'glavniapi',
-      apiUrl: 'https://fvgobdianshfsygssylk.supabase.co/rest/v1/listings',
+      apiUrl: 'https://kavafhnszdzjtgxkqpqw.supabase.co/rest/v1/listings',
       callType: ApiCallType.GET,
       headers: {
         'apikey':
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2Z29iZGlhbnNoZnN5Z3NzeWxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MDU3MjYsImV4cCI6MjA4OTM4MTcyNn0.7WukyH_sySUgFZINc2Ze_LU4wGhvprZJxaOFvQjJk2Y',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthdmFmaG5zemR6anRneGtxcHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNjQ1MDEsImV4cCI6MjA5Nzk0MDUwMX0.GpXNDp0BpEddIokVtwSyqOBjMfpt89zKeldMP9qg73A',
         'Authorization':
-            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2Z29iZGlhbnNoZnN5Z3NzeWxrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MDU3MjYsImV4cCI6MjA4OTM4MTcyNn0.7WukyH_sySUgFZINc2Ze_LU4wGhvprZJxaOFvQjJk2Y',
+            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthdmFmaG5zemR6anRneGtxcHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNjQ1MDEsImV4cCI6MjA5Nzk0MDUwMX0.GpXNDp0BpEddIokVtwSyqOBjMfpt89zKeldMP9qg73A',
       },
       params: {
         'limit': 5,

@@ -36,10 +36,15 @@ export 'create_listing_page_copy_model.dart';
 /// fields, and a light gray background for the page to make the white input
 /// cards pop.
 class CreateListingPageCopyWidget extends StatefulWidget {
-  const CreateListingPageCopyWidget({super.key});
+  const CreateListingPageCopyWidget({
+    super.key,
+    this.editListingId,
+  });
 
   static String routeName = 'CreateListingPageCopy';
   static String routePath = '/createListingPageCopy';
+
+  final String? editListingId;
 
   @override
   State<CreateListingPageCopyWidget> createState() =>
@@ -51,6 +56,9 @@ class _CreateListingPageCopyWidgetState
   late CreateListingPageCopyModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  bool get _isEditing => widget.editListingId != null;
+  bool _isLoadingListing = false;
 
   @override
   void initState() {
@@ -71,6 +79,35 @@ class _CreateListingPageCopyWidgetState
 
     _model.cityfildTextController ??= TextEditingController();
     _model.cityfildFocusNode ??= FocusNode();
+
+    if (_isEditing) {
+      _loadListingForEdit(widget.editListingId!);
+    } else {
+      FFAppState().valuecategoryshit = '';
+      FFAppState().idcategorysheet = 0;
+    }
+  }
+
+  Future<void> _loadListingForEdit(String id) async {
+    setState(() => _isLoadingListing = true);
+    final rows = await ListingsTable().querySingleRow(
+      queryFn: (q) => q.eqOrNull('id', id),
+    );
+    final listing = rows.isNotEmpty ? rows.first : null;
+    if (listing != null) {
+      _model.namefildTextController!.text = listing.title ?? '';
+      _model.opisanifildTextController!.text = listing.description ?? '';
+      _model.pricefildTextController!.text =
+          listing.price != null ? listing.price!.toStringAsFixed(0) : '';
+      _model.numberfildTextController!.text = listing.phonnumber ?? '';
+      _model.cityfildTextController!.text = listing.city ?? '';
+      _model.uploadedFileUrl_uploadData89k = listing.img ?? '';
+      FFAppState().valuecategoryshit = listing.categoryName ?? '';
+      FFAppState().idcategorysheet = listing.categoryId ?? 0;
+    }
+    if (mounted) {
+      safeSetState(() => _isLoadingListing = false);
+    }
   }
 
   @override
@@ -95,6 +132,17 @@ class _CreateListingPageCopyWidgetState
         body: Column(
           children: [
             _header(context),
+            if (_isLoadingListing)
+              Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      FlutterFlowTheme.of(context).primary,
+                    ),
+                  ),
+                ),
+              )
+            else
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -1326,6 +1374,10 @@ class _CreateListingPageCopyWidgetState
                                           hoverColor: Colors.transparent,
                                           highlightColor: Colors.transparent,
                                           onTap: () async {
+                                            if (_model
+                                                .isDataUploading_uploadData89k) {
+                                              return;
+                                            }
                                             final selectedMedia =
                                                 await selectMediaWithSourceBottomSheet(
                                               context: context,
@@ -1376,8 +1428,9 @@ class _CreateListingPageCopyWidgetState
                                                   selectedFiles: selectedMedia,
                                                 );
                                               } finally {
-                                                _model.isDataUploading_uploadData89k =
-                                                    false;
+                                                safeSetState(() => _model
+                                                        .isDataUploading_uploadData89k =
+                                                    false);
                                               }
                                               if (selectedUploadedFiles
                                                           .length ==
@@ -1427,13 +1480,32 @@ class _CreateListingPageCopyWidgetState
                                             child: Align(
                                               alignment: AlignmentDirectional(
                                                   0.0, 0.0),
-                                              child: Icon(
-                                                Icons.cloud_upload_rounded,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                size: 26.0,
-                                              ),
+                                              child: _model
+                                                      .isDataUploading_uploadData89k
+                                                  ? SizedBox(
+                                                      width: 24.0,
+                                                      height: 24.0,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        strokeWidth: 2.5,
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                Color>(
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : Icon(
+                                                      Icons
+                                                          .cloud_upload_rounded,
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primary,
+                                                      size: 26.0,
+                                                    ),
                                             ),
                                           ),
                                         ),
@@ -1442,9 +1514,12 @@ class _CreateListingPageCopyWidgetState
                                               EdgeInsetsDirectional.fromSTEB(
                                                   0.0, 8.0, 0.0, 2.0),
                                           child: Text(
-                                            FFLocalizations.of(context).getText(
-                                              'tyg5vjcc' /* загрузить фото */,
-                                            ),
+                                            _model.isDataUploading_uploadData89k
+                                                ? 'загрузка...'
+                                                : FFLocalizations.of(context)
+                                                    .getText(
+                                                    'tyg5vjcc' /* загрузить фото */,
+                                                  ),
                                             style: FlutterFlowTheme.of(context)
                                                 .labelLarge
                                                 .override(
@@ -1473,39 +1548,41 @@ class _CreateListingPageCopyWidgetState
                                     ),
                                   ),
                                 ),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: IntrinsicHeight(
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Container(
-                                          width: 80.0,
-                                          height: 80.0,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFE8EAF0),
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child: Image.network(
-                                              _model
-                                                  .uploadedFileUrl_uploadData89k,
-                                              width: 200.0,
-                                              height: 200.0,
-                                              fit: BoxFit.cover,
+                                if (_model.uploadedFileUrl_uploadData89k
+                                    .isNotEmpty)
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: IntrinsicHeight(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Container(
+                                            width: 80.0,
+                                            height: 80.0,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFE8EAF0),
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                              child: Image.network(
+                                                _model
+                                                    .uploadedFileUrl_uploadData89k,
+                                                width: 200.0,
+                                                height: 200.0,
+                                                fit: BoxFit.cover,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ]
-                                          .divide(SizedBox(width: 10.0))
-                                          .addToStart(SizedBox(width: 0.0))
-                                          .addToEnd(SizedBox(width: 0.0)),
+                                        ]
+                                            .divide(SizedBox(width: 10.0))
+                                            .addToStart(SizedBox(width: 0.0))
+                                            .addToEnd(SizedBox(width: 0.0)),
+                                      ),
                                     ),
                                   ),
-                                ),
                               ].divide(SizedBox(height: 12.0)),
                             ),
                           ]
@@ -1532,7 +1609,64 @@ class _CreateListingPageCopyWidgetState
                           ),
                           child: FFButtonWidget(
                             onPressed: () async {
-                              await ListingsTable().insert({
+                              final title =
+                                  _model.namefildTextController.text.trim();
+                              final description = _model
+                                  .opisanifildTextController.text
+                                  .trim();
+                              final priceText =
+                                  _model.pricefildTextController.text.trim();
+                              final phone =
+                                  _model.numberfildTextController.text.trim();
+                              final city =
+                                  _model.cityfildTextController.text.trim();
+
+                              String? errorMessage;
+                              if (_model.isDataUploading_uploadData89k) {
+                                errorMessage = 'Дождитесь загрузки фото';
+                              } else if (title.isEmpty) {
+                                errorMessage = 'Укажите название товара';
+                              } else if (description.isEmpty) {
+                                errorMessage = 'Укажите описание товара';
+                              } else if (priceText.isNotEmpty &&
+                                  (double.tryParse(priceText) ?? 0) <= 0) {
+                                errorMessage = 'Укажите корректную цену';
+                              } else if (FFAppState().idcategorysheet == 0 ||
+                                  FFAppState().valuecategoryshit.trim().isEmpty) {
+                                errorMessage = 'Выберите категорию';
+                              } else if (phone.isEmpty ||
+                                  phone
+                                          .replaceAll(RegExp(r'[^0-9]'), '')
+                                          .length <
+                                      10) {
+                                errorMessage =
+                                    'Укажите корректный номер телефона';
+                              } else if (city.isEmpty) {
+                                errorMessage = 'Укажите адрес';
+                              }
+
+                              if (errorMessage != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(errorMessage),
+                                    backgroundColor:
+                                        FlutterFlowTheme.of(context).error,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              String? sellerName;
+                              final sellerRows =
+                                  await UserTable().querySingleRow(
+                                queryFn: (q) =>
+                                    q.eqOrNull('id', currentUserUid),
+                              );
+                              if (sellerRows.isNotEmpty) {
+                                sellerName = sellerRows.first.name;
+                              }
+
+                              final data = {
                                 'title': _model.namefildTextController.text,
                                 'description':
                                     _model.opisanifildTextController.text,
@@ -1543,13 +1677,33 @@ class _CreateListingPageCopyWidgetState
                                 'phonnumber':
                                     _model.numberfildTextController.text,
                                 'category_name': FFAppState().valuecategoryshit,
-                                'user_id': currentUserUid,
                                 'img': _model.uploadedFileUrl_uploadData89k,
-                              });
+                                if (sellerName != null &&
+                                    sellerName.trim().isNotEmpty)
+                                  'user_name': sellerName,
+                              };
+
+                              if (_isEditing) {
+                                await ListingsTable().update(
+                                  data: data,
+                                  matchingRows: (rows) => rows.eqOrNull(
+                                    'id',
+                                    widget.editListingId,
+                                  ),
+                                );
+                              } else {
+                                await ListingsTable().insert({
+                                  ...data,
+                                  'user_id': currentUserUid,
+                                });
+                              }
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'ваш обивление добавлень',
+                                    _isEditing
+                                        ? 'изменения сохранены'
+                                        : 'ваш обивление добавлень',
                                     style: TextStyle(
                                       color: FlutterFlowTheme.of(context)
                                           .primaryText,
@@ -1561,10 +1715,16 @@ class _CreateListingPageCopyWidgetState
                                 ),
                               );
 
-                              context.pushNamed(DbddWidget.routeName);
+                              if (_isEditing) {
+                                context.pop();
+                              } else {
+                                context.pushNamed(DbddWidget.routeName);
+                              }
                             },
                             text: FFLocalizations.of(context).getText(
-                              'i3w2hise' /* Публиковать */,
+                              _isEditing
+                                  ? 'editlst02' /* Сохранить */
+                                  : 'i3w2hise' /* Публиковать */,
                             ),
                             options: FFButtonOptions(
                               width: double.infinity,
@@ -1648,7 +1808,9 @@ class _CreateListingPageCopyWidgetState
               padding: const EdgeInsets.symmetric(horizontal: 48),
               child: Text(
                 FFLocalizations.of(context).getText(
-                  'ucddso9j' /* заполните страницу */,
+                  _isEditing
+                      ? 'editlst01' /* Редактировать объявление */
+                      : 'ucddso9j' /* заполните страницу */,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

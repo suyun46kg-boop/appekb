@@ -118,7 +118,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             path: CreateListingPageCopyWidget.routePath,
             builder: (context, params) => NavBarPage(
                   initialPage: '',
-                  page: CreateListingPageCopyWidget(),
+                  page: CreateListingPageCopyWidget(
+                    editListingId: params.getParam(
+                      'editListingId',
+                      ParamType.String,
+                    ),
+                  ),
                 )),
         FFRoute(
             name: TovarypocategoyWidget.routeName,

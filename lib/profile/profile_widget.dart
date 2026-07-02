@@ -1,4 +1,5 @@
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -29,10 +30,23 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   static const _border = Color(0xFFE2E8F0);
   static const _pageHPad = 20.0;
 
+  String? _userName;
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProfileModel());
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final rows = await UserTable().querySingleRow(
+      queryFn: (q) => q.eqOrNull('id', currentUserUid),
+    );
+    if (!mounted) return;
+    if (rows.isNotEmpty && (rows.first.name?.trim().isNotEmpty ?? false)) {
+      safeSetState(() => _userName = rows.first.name!.trim());
+    }
   }
 
   @override
@@ -42,16 +56,15 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 
   String _userInitials() {
-    final email = currentUserEmail;
-    if (email.isEmpty || email == '...') return '?';
-    final name = email.split('@').first;
+    final name = _userName ?? currentUserEmail.split('@').first;
+    if (name.isEmpty || name == '...') return '?';
     if (name.length >= 2) return name.substring(0, 2).toUpperCase();
     return name.substring(0, 1).toUpperCase();
   }
 
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
-    final email = valueOrDefault<String>(currentUserEmail, '...');
+    final displayName = valueOrDefault<String>(_userName, '...');
 
     return Container(
       width: double.infinity,
@@ -80,7 +93,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           ),
           const SizedBox(height: 6),
           Text(
-            email,
+            displayName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
