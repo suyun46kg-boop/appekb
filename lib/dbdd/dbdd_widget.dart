@@ -72,6 +72,7 @@ class _DbddWidgetState extends State<DbddWidget> {
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
   static const _text = Color(0xFF0F172A);
+  static const _titleColor = Color(0xFF334155);
   static const _text2 = Color(0xFF475569);
   static const _text3 = Color(0xFF94A3B8);
   static const _border = Color(0xFFE2E8F0);
@@ -182,7 +183,7 @@ class _DbddWidgetState extends State<DbddWidget> {
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.4,
-              color: active ? _blue : Colors.white.withValues(alpha: 0.7),
+              color: active ? _blue : Colors.white.withValues(alpha: 0.88),
             ),
           ),
         ),
@@ -269,7 +270,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       style: GoogleFonts.inter(
         fontSize: 17,
         fontWeight: FontWeight.w700,
-        color: _text,
+        color: _titleColor,
         letterSpacing: -0.2,
         height: 1.2,
       ),
@@ -317,8 +318,8 @@ class _DbddWidgetState extends State<DbddWidget> {
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: _categoryText,
+              fontWeight: FontWeight.w600,
+              color: _text,
               height: 1.2,
             ),
           ),
@@ -559,7 +560,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: _text,
+                      color: _titleColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -581,7 +582,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: _blue,
+                              color: _titleColor,
                               letterSpacing: -0.3,
                             ),
                           ),
@@ -592,7 +593,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: _blue,
+                            color: _titleColor,
                           ),
                         ),
                       ],
@@ -676,8 +677,10 @@ class _DbddWidgetState extends State<DbddWidget> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
                             _pageHPad, 20, _pageHPad, 0),
-                        child:
-                            _sectionTitle(context, 'zvs9dp80' /* Категории */),
+                        child: _sectionTitle(
+                          context,
+                          'zvs9dp80' /* Категории */,
+                        ),
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -692,7 +695,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
                             crossAxisSpacing: 12,
-                            mainAxisSpacing: 5,
+                            mainAxisSpacing: 0,
                             childAspectRatio: 0.68,
                           ),
                           itemCount: _categories.length,
@@ -704,7 +707,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
-                            _pageHPad, 6, _pageHPad, 0),
+                            _pageHPad, 0, _pageHPad, 0),
                         child: _sectionTitle(
                           context,
                           'xy92q7cu' /* Свежие объявления */,
