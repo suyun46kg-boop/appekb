@@ -558,6 +558,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
             },
             child: PagedGridView<int, ListingsRow>(
               pagingController: _pagingController,
+              cacheExtent: 600,
               padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 40.0),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -1529,7 +1530,7 @@ class _ListingCard extends StatelessWidget {
             SizedBox(
               height: 125.0,
               width: double.infinity,
-              child: _listingImage(row.img),
+              child: _listingImage(context, row.img),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 10.0),
@@ -1615,16 +1616,23 @@ class _ListingCard extends StatelessWidget {
     );
   }
 
-  Widget _listingImage(String? imageUrl) {
+  Widget _listingImage(BuildContext context, String? imageUrl) {
     if (imageUrl == null || imageUrl.isEmpty) {
       return _placeholderImage();
     }
+
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cardWidth = MediaQuery.sizeOf(context).width / 2;
+    final memCacheWidth = (cardWidth * dpr).round();
+
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      fadeInDuration: const Duration(milliseconds: 200),
+      memCacheWidth: memCacheWidth,
+      fadeInDuration: Duration.zero,
+      placeholderFadeInDuration: Duration.zero,
       placeholder: (_, __) => const _ShimmerBox(
         width: double.infinity,
         height: double.infinity,

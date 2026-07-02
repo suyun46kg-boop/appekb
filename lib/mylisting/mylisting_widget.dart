@@ -119,16 +119,22 @@ class _MylistingWidgetState extends State<MylistingWidget> {
     );
   }
 
-  Widget _listingImage(String? imageUrl) {
+  Widget _listingImage(BuildContext context, String? imageUrl) {
     if (imageUrl == null || imageUrl.isEmpty) {
       return _placeholderImage();
     }
+
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final memCacheWidth = (100 * dpr).round();
+
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      fadeInDuration: const Duration(milliseconds: 200),
+      memCacheWidth: memCacheWidth,
+      fadeInDuration: Duration.zero,
+      placeholderFadeInDuration: Duration.zero,
       placeholder: (_, __) => Container(color: _border),
       errorWidget: (_, __, ___) => _placeholderImage(),
     );
@@ -186,7 +192,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
               SizedBox(
                 width: 100,
                 height: 104,
-                child: _listingImage(listing.img),
+                child: _listingImage(context, listing.img),
               ),
               Expanded(
                 child: Padding(
@@ -352,6 +358,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
 
                   return ListView.separated(
                     padding: const EdgeInsets.all(16),
+                    cacheExtent: 600,
                     itemCount: listings.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) =>

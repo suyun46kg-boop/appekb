@@ -7,6 +7,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'dbdd_model.dart';
@@ -68,6 +69,7 @@ class _DbddWidgetState extends State<DbddWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _carouselTimer;
   int? _carouselSlideCount;
+  late final Future<List<CaruselRow>> _carouselFuture;
 
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
@@ -95,6 +97,7 @@ class _DbddWidgetState extends State<DbddWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => DbddModel());
+    _carouselFuture = CaruselTable().queryRows(queryFn: (q) => q);
   }
 
   @override
@@ -369,7 +372,7 @@ class _DbddWidgetState extends State<DbddWidget> {
 
   Widget _bannerCarousel(BuildContext context) {
     return FutureBuilder<List<CaruselRow>>(
-      future: CaruselTable().queryRows(queryFn: (q) => q),
+      future: _carouselFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return _bannerSkeleton();
@@ -485,17 +488,23 @@ class _DbddWidgetState extends State<DbddWidget> {
     );
   }
 
-  Widget _listingImage(String? imageUrl) {
+  Widget _listingImage(BuildContext context, String? imageUrl) {
     if (imageUrl == null || imageUrl.isEmpty) {
       return _listingPlaceholderImage();
     }
+
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cardWidth = MediaQuery.sizeOf(context).width / 2;
+    final memCacheWidth = (cardWidth * dpr).round();
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      fadeInDuration: const Duration(milliseconds: 200),
+      memCacheWidth: memCacheWidth,
+      fadeInDuration: Duration.zero,
+      placeholderFadeInDuration: Duration.zero,
       placeholder: (_, __) => _bannerShimmer(),
       errorWidget: (_, __, ___) => _listingPlaceholderImage(),
     );
@@ -541,6 +550,7 @@ class _DbddWidgetState extends State<DbddWidget> {
               height: 125,
               width: double.infinity,
               child: _listingImage(
+                context,
                 getJsonField(item, r'''$.img''')?.toString(),
               ),
             ),
@@ -665,6 +675,7 @@ class _DbddWidgetState extends State<DbddWidget> {
               _header(context),
               Expanded(
                 child: CustomScrollView(
+                  cacheExtent: 600,
                   slivers: [
                     SliverToBoxAdapter(
                       child: Padding(
@@ -734,17 +745,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                         ),
                         builderDelegate: PagedChildBuilderDelegate<dynamic>(
                           firstPageProgressIndicatorBuilder: (_) =>
-                              const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(
-                              child: SizedBox(
-                                width: 36,
-                                height: 36,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                          ),
+                              const _ListingSkeletonGrid(),
                           firstPageErrorIndicatorBuilder: (_) => Padding(
                             padding: const EdgeInsets.all(24),
                             child: Text(
@@ -790,5 +791,97 @@ class _DbddWidgetState extends State<DbddWidget> {
         ),
       ),
     );
+  }
+}
+
+class _ListingSkeletonGrid extends StatelessWidget {
+  const _ListingSkeletonGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.72,
+      ),
+      itemCount: 6,
+      itemBuilder: (_, __) => const _ListingSkeletonCard(),
+    );
+  }
+}
+
+class _ListingSkeletonCard extends StatelessWidget {
+  const _ListingSkeletonCard();
+
+  static const _border = Color(0xFFE2E8F0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ShimmerBox(
+            width: double.infinity,
+            height: 125,
+            borderRadius: BorderRadius.zero,
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _ShimmerBox(width: double.infinity, height: 13),
+                SizedBox(height: 8),
+                _ShimmerBox(width: 80, height: 16),
+                SizedBox(height: 8),
+                _ShimmerBox(width: double.infinity, height: 11),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShimmerBox extends StatelessWidget {
+  const _ShimmerBox({
+    required this.width,
+    required this.height,
+    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
+  });
+
+  final double width;
+  final double height;
+  final BorderRadius borderRadius;
+
+  static const _base = Color(0xFFE7ECF5);
+  static const _highlight = Color(0xFFF6F8FC);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: _base,
+        borderRadius: borderRadius,
+      ),
+    ).animate(onPlay: (c) => c.repeat()).shimmer(
+          duration: 1200.ms,
+          color: _highlight,
+        );
   }
 }
