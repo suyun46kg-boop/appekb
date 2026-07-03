@@ -64,6 +64,7 @@ dependencies:
   intl: 0.20.2
   json_path: 0.7.2
   mime_type: 1.0.0
+  package_info_plus: 8.3.0
   page_transition: 2.2.2
   path_provider: 2.1.4
   path_provider_android: 2.2.10

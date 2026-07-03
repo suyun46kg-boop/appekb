@@ -5,6 +5,7 @@ export '../supabase.dart';
 export 'row.dart';
 export 'table.dart';
 
+export 'tables/app_config.dart';
 export 'tables/carusel.dart';
 export 'tables/categories.dart';
 export 'tables/listings.dart';

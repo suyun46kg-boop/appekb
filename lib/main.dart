@@ -15,6 +15,8 @@ import 'flutter_flow/internationalization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
+import 'components/app_update_widgets.dart';
+import 'services/app_update_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,10 +78,35 @@ class _MyAppState extends State<MyApp> {
         _appStateNotifier.update(user);
       });
     jwtTokenStream.listen((_) {});
-    Future.delayed(
-      Duration(milliseconds: 1000),
-      () => _appStateNotifier.stopShowingSplashImage(),
-    );
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    final minSplash = Future.delayed(const Duration(milliseconds: 1000));
+    final updateCheck = AppUpdateService.checkUpdate();
+
+    await minSplash;
+    final result = await updateCheck;
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result != null && result.forceUpdate) {
+      _appStateNotifier.setForceUpdate(result);
+      return;
+    }
+
+    _appStateNotifier.stopShowingSplashImage();
+
+    if (result != null && result.softUpdate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final context = appNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          AppUpdateDialog.showSoft(context, result);
+        }
+      });
+    }
   }
 
   void setLocale(String language) {

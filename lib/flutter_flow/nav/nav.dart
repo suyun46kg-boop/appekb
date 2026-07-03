@@ -17,6 +17,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 
 import '/index.dart';
+import '/components/app_update_widgets.dart';
+import '/services/app_update_service.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -35,6 +37,7 @@ class AppStateNotifier extends ChangeNotifier {
   BaseAuthUser? user;
   bool showSplashImage = true;
   String? _redirectLocation;
+  AppUpdateCheckResult? forceUpdateInfo;
 
   /// Determines whether the app will refresh and build again when a sign
   /// in or sign out happens. This is useful when the app is launched or
@@ -44,6 +47,7 @@ class AppStateNotifier extends ChangeNotifier {
   bool notifyOnAuthChange = true;
 
   bool get loading => user == null || showSplashImage;
+  bool get requiresForceUpdate => forceUpdateInfo != null;
   bool get loggedIn => user?.loggedIn ?? false;
   bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
@@ -74,6 +78,11 @@ class AppStateNotifier extends ChangeNotifier {
 
   void stopShowingSplashImage() {
     showSplashImage = false;
+    notifyListeners();
+  }
+
+  void setForceUpdate(AppUpdateCheckResult result) {
+    forceUpdateInfo = result;
     notifyListeners();
   }
 }
@@ -368,7 +377,11 @@ class FFRoute {
                   builder: (context, _) => builder(context, ffParams),
                 )
               : builder(context, ffParams);
-          final child = appStateNotifier.loading
+          final child = appStateNotifier.requiresForceUpdate
+              ? AppForceUpdateScreen(
+                  result: appStateNotifier.forceUpdateInfo!,
+                )
+              : appStateNotifier.loading
               ? Center(
                   child: SizedBox(
                     width: 50.0,
