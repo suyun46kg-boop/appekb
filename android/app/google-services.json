@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "283106418601",
+    "project_id": "ekbkyrgyzdar",
+    "storage_bucket": "ekbkyrgyzdar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283106418601:android:15a38c2ba479971f60eeb8",
+        "android_client_info": {
+          "package_name": "mycompany.ekbkyrgyzdar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZEx3xUG411F00-TguAcPxtXc3aW_aWzE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

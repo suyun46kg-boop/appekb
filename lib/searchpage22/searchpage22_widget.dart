@@ -369,7 +369,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
           ),
           decoration: InputDecoration(
             isDense: true,
-            hintText: 'Найти товары и категории',
+            hintText: FFLocalizations.of(context).getText('srchhint1'),
             hintStyle: theme.bodyMedium.override(
               font: GoogleFonts.inter(),
               color: theme.secondaryText,
@@ -405,7 +405,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Недавние запросы',
+                  FFLocalizations.of(context).getText('srchrec1'),
                   style: theme.titleSmall.override(
                     font: GoogleFonts.inter(fontWeight: FontWeight.w700),
                     fontSize: 16.0,
@@ -414,7 +414,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                 InkWell(
                   onTap: () => setState(() => _model.recentSearches.clear()),
                   child: Text(
-                    'Очистить',
+                    FFLocalizations.of(context).getText('srchclr1'),
                     style: theme.bodySmall.override(
                       font: GoogleFonts.inter(),
                       color: _brand,
@@ -443,7 +443,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                   color: Color(0xFFFF6B35), size: 20.0),
               const SizedBox(width: 6.0),
               Text(
-                'Популярное',
+                FFLocalizations.of(context).getText('srchpop1'),
                 style: theme.titleSmall.override(
                   font: GoogleFonts.inter(fontWeight: FontWeight.w700),
                   fontSize: 16.0,
@@ -468,7 +468,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                   .toList();
               if (tags.isEmpty) {
                 return Text(
-                  'Начните вводить запрос',
+                  FFLocalizations.of(context).getText('srchtyp1'),
                   style: theme.bodyMedium.override(
                     font: GoogleFonts.inter(),
                     color: theme.secondaryText,
@@ -511,7 +511,9 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
         ),
         _SuggestionRow(
           icon: Icons.search_rounded,
-          label: 'Искать «$typed»',
+          label: FFLocalizations.of(context)
+              .getText('srchsea1')
+              .replaceAll('{term}', typed),
           highlight: typed,
           emphasize: true,
           onTap: () => _runSearch(typed),
@@ -607,7 +609,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
               Expanded(
                 child: _PillButton(
                   icon: Icons.swap_vert_rounded,
-                  label: _model.sort.shortLabel,
+                  label: _model.sort.shortLabel(context),
                   onTap: _openSortSheet,
                 ),
               ),
@@ -615,7 +617,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
               Expanded(
                 child: _PillButton(
                   icon: Icons.tune_rounded,
-                  label: 'Фильтры',
+                  label: FFLocalizations.of(context).getText('srchflt1'),
                   badgeCount: filterCount,
                   active: filterCount > 0,
                   onTap: _openFilters,
@@ -636,13 +638,17 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
     if (_model.priceMin != null || _model.priceMax != null) {
       final min = _model.priceMin;
       final max = _model.priceMax;
+      final l = FFLocalizations.of(context);
+      final cur = l.getText('srchcur1');
       String label;
       if (min != null && max != null) {
-        label = '${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)} с';
+        label = '${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)} $cur';
       } else if (min != null) {
-        label = 'от ${min.toStringAsFixed(0)} с';
+        label =
+            '${l.getText('srchfrm1')} ${min.toStringAsFixed(0)} $cur';
       } else {
-        label = 'до ${max!.toStringAsFixed(0)} с';
+        label =
+            '${l.getText('srchto01')} ${max!.toStringAsFixed(0)} $cur';
       }
       chips.add(_ActiveFilterChip(
         label: label,
@@ -668,7 +674,8 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
 
     if (_model.filterCategoryId != null) {
       chips.add(_ActiveFilterChip(
-        label: _model.filterCategoryName ?? 'Категория',
+        label: _model.filterCategoryName ??
+            FFLocalizations.of(context).getText('srchcat1'),
         onRemove: () {
           setState(() {
             _model.filterCategoryId = null;
@@ -712,7 +719,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Сортировка',
+                  FFLocalizations.of(context).getText('srchsrt1'),
                   style: theme.titleMedium.override(
                     font: GoogleFonts.inter(fontWeight: FontWeight.w700),
                   ),
@@ -731,7 +738,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                       children: [
                         Expanded(
                           child: Text(
-                            option.label,
+                            option.label(context),
                             style: theme.bodyMedium.override(
                               font: GoogleFonts.inter(
                                   fontWeight: isSelected
@@ -898,7 +905,7 @@ class _FilterSheetState extends State<_FilterSheet> {
               child: Row(
                 children: [
                   Text(
-                    'Фильтры',
+                    FFLocalizations.of(context).getText('srchflt1'),
                     style: theme.titleMedium.override(
                       font: GoogleFonts.inter(fontWeight: FontWeight.w700),
                     ),
@@ -913,7 +920,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                       _catName = null;
                     }),
                     child: Text(
-                      'Сбросить',
+                      FFLocalizations.of(context).getText('srchrs1'),
                       style: theme.bodyMedium.override(
                         font: GoogleFonts.inter(),
                         color: theme.secondaryText,
@@ -930,25 +937,32 @@ class _FilterSheetState extends State<_FilterSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionTitle(theme, 'Цена, сом'),
+                    _sectionTitle(
+                        theme, FFLocalizations.of(context).getText('srchprc1')),
                     const SizedBox(height: 10.0),
                     Row(
                       children: [
-                        Expanded(child: _priceField(theme, _minCtrl, 'от')),
+                        Expanded(
+                            child: _priceField(theme, _minCtrl,
+                                FFLocalizations.of(context).getText('srchfrm1'))),
                         const SizedBox(width: 12.0),
-                        Expanded(child: _priceField(theme, _maxCtrl, 'до')),
+                        Expanded(
+                            child: _priceField(theme, _maxCtrl,
+                                FFLocalizations.of(context).getText('srchto01'))),
                       ],
                     ),
                     if (widget.cities.isNotEmpty) ...[
                       const SizedBox(height: 22.0),
-                      _sectionTitle(theme, 'Город'),
+                      _sectionTitle(
+                          theme, FFLocalizations.of(context).getText('srchcty1')),
                       const SizedBox(height: 10.0),
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 8.0,
                         children: [
                           _ChoicePill(
-                            label: 'Все',
+                            label:
+                                FFLocalizations.of(context).getText('srchall1'),
                             selected: _city == null,
                             onTap: () => setState(() => _city = null),
                           ),
@@ -964,14 +978,16 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ],
                     if (widget.categories.isNotEmpty) ...[
                       const SizedBox(height: 22.0),
-                      _sectionTitle(theme, 'Категория'),
+                      _sectionTitle(
+                          theme, FFLocalizations.of(context).getText('srchcat1')),
                       const SizedBox(height: 10.0),
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 8.0,
                         children: [
                           _ChoicePill(
-                            label: 'Все',
+                            label:
+                                FFLocalizations.of(context).getText('srchall1'),
                             selected: _catId == null,
                             onTap: () => setState(() {
                               _catId = null;
@@ -1019,7 +1035,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                       ),
                     ),
                     child: Text(
-                      'Показать результаты',
+                      FFLocalizations.of(context).getText('srchsho1'),
                       style: theme.titleSmall.override(
                         font: GoogleFonts.inter(fontWeight: FontWeight.w600),
                         color: Colors.white,
@@ -1421,7 +1437,9 @@ class _NoSuggestions extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
       child: Text(
-        'Нет совпадений. Нажмите «Искать «$term»», чтобы искать по всем полям.',
+        FFLocalizations.of(context)
+            .getText('srchnos1')
+            .replaceAll('{term}', term),
         style: theme.bodyMedium.override(
           font: GoogleFonts.inter(),
           color: theme.secondaryText,
@@ -1539,7 +1557,9 @@ class _ListingCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    valueOrDefault<String>(row.title, 'загаловок'),
+                    valueOrDefault<String>(
+                        row.title,
+                        FFLocalizations.of(context).getText('srchttl1')),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
@@ -1577,7 +1597,9 @@ class _ListingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4.0),
                   Text(
-                    valueOrDefault<String>(row.description, 'описания'),
+                    valueOrDefault<String>(
+                        row.description,
+                        FFLocalizations.of(context).getText('srchdes1')),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
@@ -1681,7 +1703,7 @@ class _EmptyState extends StatelessWidget {
                 color: theme.secondaryText, size: 64.0),
             const SizedBox(height: 16.0),
             Text(
-              'Ничего не найдено',
+              FFLocalizations.of(context).getText('srchnon1'),
               style: theme.headlineSmall.override(
                 font: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
@@ -1689,8 +1711,12 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 8.0),
             Text(
               hasFilters
-                  ? 'По запросу «$term» с текущими фильтрами ничего нет.\nПопробуйте изменить фильтры.'
-                  : 'По запросу «$term» результатов нет.\nПопробуйте изменить формулировку.',
+                  ? FFLocalizations.of(context)
+                      .getText('srchnof1')
+                      .replaceAll('{term}', term)
+                  : FFLocalizations.of(context)
+                      .getText('srchnor1')
+                      .replaceAll('{term}', term),
               textAlign: TextAlign.center,
               style: theme.bodyMedium.override(
                 font: GoogleFonts.inter(),
@@ -1708,7 +1734,7 @@ class _EmptyState extends StatelessWidget {
                 ),
                 onPressed: onResetFilters,
                 child: Text(
-                  'Сбросить фильтры',
+                  FFLocalizations.of(context).getText('srchrf1'),
                   style: theme.bodyMedium.override(
                     font: GoogleFonts.inter(fontWeight: FontWeight.w600),
                     color: _Searchpage22WidgetState._brand,
@@ -1740,7 +1766,7 @@ class _ErrorState extends StatelessWidget {
             Icon(Icons.wifi_off_rounded, color: theme.secondaryText, size: 56.0),
             const SizedBox(height: 16.0),
             Text(
-              'Не удалось загрузить',
+              FFLocalizations.of(context).getText('srcherr1'),
               style: theme.titleMedium.override(
                 font: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
@@ -1755,7 +1781,7 @@ class _ErrorState extends StatelessWidget {
               ),
               onPressed: onRetry,
               child: Text(
-                'Повторить',
+                FFLocalizations.of(context).getText('srchret1'),
                 style: theme.bodyMedium.override(
                   font: GoogleFonts.inter(fontWeight: FontWeight.w600),
                   color: Colors.white,

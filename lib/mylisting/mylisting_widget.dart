@@ -72,25 +72,25 @@ class _MylistingWidgetState extends State<MylistingWidget> {
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
-          'Удалить объявление?',
+          FFLocalizations.of(context).getText('mldelttl'),
           style: GoogleFonts.inter(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Это действие нельзя отменить.',
+          FFLocalizations.of(context).getText('mldelmsg'),
           style: GoogleFonts.inter(color: _text3),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
-              'Отмена',
+              FFLocalizations.of(context).getText('mlcancel'),
               style: GoogleFonts.inter(color: _text3, fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
-              'Удалить',
+              FFLocalizations.of(context).getText('mldelete'),
               style: GoogleFonts.inter(color: _red, fontWeight: FontWeight.w700),
             ),
           ),
@@ -205,7 +205,10 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            valueOrDefault<String>(listing.title, 'объявление'),
+                            valueOrDefault<String>(
+                                listing.title,
+                                FFLocalizations.of(context)
+                                    .getText('c5j5d6pi')),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
@@ -345,7 +348,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                       child: Padding(
                         padding: const EdgeInsets.all(24),
                         child: Text(
-                          'У вас пока нет объявлений',
+                          FFLocalizations.of(context).getText('mlempty'),
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             color: _text3,

@@ -123,7 +123,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   }
 
   void _shareListing(ListingsRow listing) {
-    final title = valueOrDefault<String>(listing.title, 'объявление');
+    final title = valueOrDefault<String>(
+        listing.title, FFLocalizations.of(context).getText('c5j5d6pi'));
     final price = valueOrDefault<String>(
       listing.price?.toStringAsFixed(0),
       '0',
@@ -323,7 +324,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   Widget _sellerCard(ListingsRow listing) {
     final name = valueOrDefault<String>(
       valueOrDefault<String>(listing.userName, _resolvedSellerName ?? ''),
-      'Пользователь',
+      FFLocalizations.of(context).getText('pguser01'),
     );
     final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
     return _sectionCard(
@@ -588,7 +589,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                     listing.createdAt,
                     locale: FFLocalizations.of(context).languageCode,
                   )
-                : 'Нет';
+                : FFLocalizations.of(context).getText('pgno01');
             final isNew = listing.createdAt != null &&
                 DateTime.now().difference(listing.createdAt!).inDays < 3;
 
@@ -628,7 +629,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                             Text(
                               valueOrDefault<String>(
                                 listing.title,
-                                'объявление',
+                                FFLocalizations.of(context).getText('c5j5d6pi'),
                               ),
                               style: GoogleFonts.inter(
                                 fontSize: 19,
@@ -681,20 +682,24 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                                   .getText('au4pejr1' /* категория */),
                               valueOrDefault<String>(
                                 listing.categoryName,
-                                'Нет',
+                                FFLocalizations.of(context).getText('pgno01'),
                               ),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
                               FFLocalizations.of(context)
                                   .getText('z3v0tnuw' /* адрес */),
-                              valueOrDefault<String>(listing.city, 'Нет'),
+                              valueOrDefault<String>(
+                                  listing.city,
+                                  FFLocalizations.of(context).getText('pgno01')),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
                               FFLocalizations.of(context)
                                   .getText('jo0q04xo' /* контакты */),
-                              valueOrDefault<String>(phone, 'Нет'),
+                              valueOrDefault<String>(
+                                  phone,
+                                  FFLocalizations.of(context).getText('pgno01')),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
@@ -715,7 +720,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                             Text(
                               valueOrDefault<String>(
                                 listing.description,
-                                'пусто',
+                                FFLocalizations.of(context).getText('pgempty1'),
                               ),
                               style: GoogleFonts.inter(
                                 fontSize: 14,

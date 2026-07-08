@@ -301,7 +301,8 @@ class _CreateListingPageCopyWidgetState
                                         child: Text(
                                           valueOrDefault<String>(
                                             FFAppState().valuecategoryshit,
-                                            'выбирите категории...',
+                                            FFLocalizations.of(context)
+                                                .getText('clselcat'),
                                           ),
                                           textAlign: TextAlign.start,
                                           style: FlutterFlowTheme.of(context)
@@ -1454,7 +1455,8 @@ class _CreateListingPageCopyWidgetState
                                                 .showSnackBar(
                                               SnackBar(
                                                 content: Text(
-                                                  'фото добавлень',
+                                                  FFLocalizations.of(context)
+                                                      .getText('clphotok'),
                                                   style: TextStyle(
                                                     color: FlutterFlowTheme.of(
                                                             context)
@@ -1515,7 +1517,8 @@ class _CreateListingPageCopyWidgetState
                                                   0.0, 8.0, 0.0, 2.0),
                                           child: Text(
                                             _model.isDataUploading_uploadData89k
-                                                ? 'загрузка...'
+                                                ? FFLocalizations.of(context)
+                                                    .getText('clloading')
                                                 : FFLocalizations.of(context)
                                                     .getText(
                                                     'tyg5vjcc' /* загрузить фото */,
@@ -1623,26 +1626,32 @@ class _CreateListingPageCopyWidgetState
 
                               String? errorMessage;
                               if (_model.isDataUploading_uploadData89k) {
-                                errorMessage = 'Дождитесь загрузки фото';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clwaitph');
                               } else if (title.isEmpty) {
-                                errorMessage = 'Укажите название товара';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrttl');
                               } else if (description.isEmpty) {
-                                errorMessage = 'Укажите описание товара';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrdes');
                               } else if (priceText.isNotEmpty &&
                                   (double.tryParse(priceText) ?? 0) <= 0) {
-                                errorMessage = 'Укажите корректную цену';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrprc');
                               } else if (FFAppState().idcategorysheet == 0 ||
                                   FFAppState().valuecategoryshit.trim().isEmpty) {
-                                errorMessage = 'Выберите категорию';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrcat');
                               } else if (phone.isEmpty ||
                                   phone
                                           .replaceAll(RegExp(r'[^0-9]'), '')
                                           .length <
                                       10) {
-                                errorMessage =
-                                    'Укажите корректный номер телефона';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrphn');
                               } else if (city.isEmpty) {
-                                errorMessage = 'Укажите адрес';
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerradr');
                               }
 
                               if (errorMessage != null) {
@@ -1702,8 +1711,10 @@ class _CreateListingPageCopyWidgetState
                                 SnackBar(
                                   content: Text(
                                     _isEditing
-                                        ? 'изменения сохранены'
-                                        : 'ваш обивление добавлень',
+                                        ? FFLocalizations.of(context)
+                                            .getText('clsaved')
+                                        : FFLocalizations.of(context)
+                                            .getText('cladded'),
                                     style: TextStyle(
                                       color: FlutterFlowTheme.of(context)
                                           .primaryText,

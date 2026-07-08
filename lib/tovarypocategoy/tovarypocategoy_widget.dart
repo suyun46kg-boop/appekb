@@ -250,7 +250,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                   Text(
                     valueOrDefault<String>(
                       getJsonField(item, r'''$.title''')?.toString(),
-                      'загаловок',
+                      FFLocalizations.of(context).getText('srchttl1'),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -293,7 +293,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                   Text(
                     valueOrDefault<String>(
                       getJsonField(item, r'''$.description''')?.toString(),
-                      'описания',
+                      FFLocalizations.of(context).getText('srchdes1'),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -393,7 +393,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                             firstPageErrorIndicatorBuilder: (_) => Padding(
                               padding: const EdgeInsets.all(24),
                               child: Text(
-                                'Не удалось загрузить объявления',
+                                FFLocalizations.of(context).getText('caterr1'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   color: _text2,
@@ -418,7 +418,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                             noItemsFoundIndicatorBuilder: (_) => Padding(
                               padding: const EdgeInsets.all(24),
                               child: Text(
-                                'Объявлений в этой категории пока нет',
+                                FFLocalizations.of(context).getText('catemp1'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   color: _text2,

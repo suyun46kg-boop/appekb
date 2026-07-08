@@ -17,13 +17,18 @@ import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 import 'components/app_update_widgets.dart';
 import 'services/app_update_service.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
+  await FFLocalizations.initialize();
+
   await SupaFlow.initialize();
+
+  await PushNotificationService.initialize();
 
   await FlutterFlowTheme.initialize();
 
@@ -46,7 +51,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Locale? _locale;
+  Locale? _locale = FFLocalizations.getStoredLocale();
 
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 

@@ -418,11 +418,11 @@ class _AvtoryzasiaWidgetState extends State<AvtoryzasiaWidget> {
 
   Future<void> _onLogin() async {
     if (!_phoneValid) {
-      _showSnack('Номер телефона введён неверно');
+      _showSnack(FFLocalizations.of(context).getText('authphn1'));
       return;
     }
     if (!_passwordValid) {
-      _showSnack('Введите пароль');
+      _showSnack(FFLocalizations.of(context).getText('authpwd1'));
       return;
     }
 
@@ -476,9 +476,9 @@ class _AvtoryzasiaWidgetState extends State<AvtoryzasiaWidget> {
                           .getText('tsagqfgt' /* номер телефона */),
                       field: _phoneField(),
                       hint: _phoneState == _FieldState.valid
-                          ? 'Номер введён верно'
+                          ? FFLocalizations.of(context).getText('authphok')
                           : _phoneState == _FieldState.invalid
-                              ? 'Номер введён неверно'
+                              ? FFLocalizations.of(context).getText('authphno')
                               : FFLocalizations.of(context).getText(
                                   'tcqkbk1z' /* номер должен начинаться с 9 */,
                                 ),
@@ -493,7 +493,7 @@ class _AvtoryzasiaWidgetState extends State<AvtoryzasiaWidget> {
                       alignment: AlignmentDirectional.centerEnd,
                       child: TextButton(
                         onPressed: () => _showSnack(
-                          'Восстановление пароля скоро будет доступно',
+                          FFLocalizations.of(context).getText('authforg'),
                           isError: false,
                         ),
                         style: TextButton.styleFrom(

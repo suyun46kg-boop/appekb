@@ -15,6 +15,8 @@ import '../main.dart';
 
 import 'lat_lng.dart';
 
+import 'internationalization.dart' show FFLocalizations;
+
 export 'lat_lng.dart';
 export 'place.dart';
 export 'uploaded_file.dart';
@@ -273,8 +275,10 @@ extension IterableExt<T> on Iterable<T> {
       .toList();
 }
 
-void setAppLanguage(BuildContext context, String language) =>
-    MyApp.of(context).setLocale(language);
+void setAppLanguage(BuildContext context, String language) {
+  MyApp.of(context).setLocale(language);
+  FFLocalizations.storeLocale(language);
+}
 
 void setDarkModeSetting(BuildContext context, ThemeMode themeMode) =>
     MyApp.of(context).setThemeMode(themeMode);

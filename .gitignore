@@ -48,3 +48,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Supabase CLI temp
+supabase/.temp/
+
+# Local previews / duplicates at repo root
+/bazar_preview.html
+/zag.jpg
+
+# Distribution archives
+*.zip

@@ -563,7 +563,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                   Text(
                     valueOrDefault<String>(
                       getJsonField(item, r'''$.title''')?.toString(),
-                      'загаловок',
+                      FFLocalizations.of(context).getText('srchttl1'),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -613,7 +613,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                   Text(
                     valueOrDefault<String>(
                       getJsonField(item, r'''$.description''')?.toString(),
-                      'описания',
+                      FFLocalizations.of(context).getText('srchdes1'),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -749,7 +749,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                           firstPageErrorIndicatorBuilder: (_) => Padding(
                             padding: const EdgeInsets.all(24),
                             child: Text(
-                              'Не удалось загрузить объявления',
+                              FFLocalizations.of(context).getText('dbdderr1'),
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                   color: _text2, fontSize: 14),
@@ -769,7 +769,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                           noItemsFoundIndicatorBuilder: (_) => Padding(
                             padding: const EdgeInsets.all(24),
                             child: Text(
-                              'Объявлений пока нет',
+                              FFLocalizations.of(context).getText('dbddemp1'),
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
                                   color: _text2, fontSize: 14),

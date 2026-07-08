@@ -8,6 +8,7 @@ export 'table.dart';
 export 'tables/app_config.dart';
 export 'tables/carusel.dart';
 export 'tables/categories.dart';
+export 'tables/device_tokens.dart';
 export 'tables/listings.dart';
 export 'tables/profiles.dart';
 export 'tables/search_index.dart';

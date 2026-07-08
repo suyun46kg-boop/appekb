@@ -12,29 +12,31 @@ enum SearchSort {
 }
 
 extension SearchSortX on SearchSort {
-  String get label {
+  String label(BuildContext context) {
+    final l = FFLocalizations.of(context);
     switch (this) {
       case SearchSort.relevance:
-        return 'По релевантности';
+        return l.getText('srchsl1');
       case SearchSort.newest:
-        return 'Сначала новые';
+        return l.getText('srchsl2');
       case SearchSort.priceAsc:
-        return 'Сначала дешевле';
+        return l.getText('srchsl3');
       case SearchSort.priceDesc:
-        return 'Сначала дороже';
+        return l.getText('srchsl4');
     }
   }
 
-  String get shortLabel {
+  String shortLabel(BuildContext context) {
+    final l = FFLocalizations.of(context);
     switch (this) {
       case SearchSort.relevance:
-        return 'Релевантность';
+        return l.getText('srchss1');
       case SearchSort.newest:
-        return 'Новые';
+        return l.getText('srchss2');
       case SearchSort.priceAsc:
-        return 'Дешевле';
+        return l.getText('srchss3');
       case SearchSort.priceDesc:
-        return 'Дороже';
+        return l.getText('srchss4');
     }
   }
 

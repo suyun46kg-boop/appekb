@@ -493,15 +493,15 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
 
   Future<void> _onSignUp() async {
     if (!_phoneValid) {
-      _showSnack('Номер телефона введён неверно');
+      _showSnack(FFLocalizations.of(context).getText('authphn1'));
       return;
     }
     if (!_passwordValid) {
-      _showSnack('Пароль должен содержать минимум 8 символов (латиница)');
+      _showSnack(FFLocalizations.of(context).getText('authpwd8'));
       return;
     }
     if (!_confirmValid) {
-      _showSnack('Пароли не совпадают');
+      _showSnack(FFLocalizations.of(context).getText('authpwdf'));
       return;
     }
 
@@ -589,9 +589,9 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                             .getText('ehrfrdcl' /* телефон номер */),
                         field: _phoneField(),
                         hint: _phoneState == _FieldState.valid
-                            ? 'Номер введён верно'
+                            ? FFLocalizations.of(context).getText('authphok')
                             : _phoneState == _FieldState.invalid
-                                ? 'Номер введён неверно'
+                                ? FFLocalizations.of(context).getText('authphno')
                                 : FFLocalizations.of(context).getText(
                                     '40hofkj8' /* Номер должен начинаться с 9 (б... */,
                                   ),
@@ -622,9 +622,9 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                               .asValidator(context),
                         ),
                         hint: _passwordState == _FieldState.valid
-                            ? 'Надёжный пароль'
+                            ? FFLocalizations.of(context).getText('authpwds')
                             : _passwordState == _FieldState.invalid
-                                ? 'Слишком короткий пароль'
+                                ? FFLocalizations.of(context).getText('authpwds2')
                                 : FFLocalizations.of(context).getText(
                                     'mjp8jm3a' /* пароль должень состаить миними... */,
                                   ),
@@ -658,10 +658,10 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                               .asValidator(context),
                         ),
                         hint: _confirmState == _FieldState.valid
-                            ? 'Пароли совпадают'
+                            ? FFLocalizations.of(context).getText('authpwdm')
                             : _confirmState == _FieldState.invalid
-                                ? 'Пароли не совпадают'
-                                : 'Введите пароль ещё раз для подтверждения',
+                                ? FFLocalizations.of(context).getText('authpwdf')
+                                : FFLocalizations.of(context).getText('authpwdr'),
                         hintState: _confirmState,
                       ),
                       const SizedBox(height: 8),
