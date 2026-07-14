@@ -29,6 +29,7 @@ class PagpageWidget extends StatefulWidget {
 class _PagpageWidgetState extends State<PagpageWidget> {
   late PagpageModel _model;
   late final Future<ListingsRow?> _listingFuture;
+  late final Future<List<ListingsRow>> _recommendationsFuture;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -52,7 +53,59 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     super.initState();
     _model = createModel(context, () => PagpageModel());
     _listingFuture = _loadListing();
+    _recommendationsFuture = _loadRecommendations();
     _loadFavoriteState();
+  }
+
+  Future<List<ListingsRow>> _loadRecommendations() async {
+    final excludeId = widget.idproductpage;
+
+    try {
+      final recData = await SupaFlow.client
+          .from('recommendations')
+          .select('listing_id, sort_order')
+          .eq('is_active', true)
+          .order('sort_order', ascending: true)
+          .limit(5) as List;
+
+      if (recData.isNotEmpty) {
+        final orderedIds = <String>[];
+        final sortOrder = <String, int>{};
+
+        for (final row in recData) {
+          final id = row['listing_id']?.toString();
+          if (id == null || id.isEmpty || id == excludeId) {
+            continue;
+          }
+          orderedIds.add(id);
+          sortOrder[id] = row['sort_order'] as int? ?? 0;
+        }
+
+        if (orderedIds.isNotEmpty) {
+          final listings = await ListingsTable().queryRows(
+            queryFn: (q) => q.inFilter('id', orderedIds),
+          );
+
+          listings.sort((a, b) {
+            final aOrder = sortOrder[a.id] ?? 999;
+            final bOrder = sortOrder[b.id] ?? 999;
+            return aOrder.compareTo(bOrder);
+          });
+
+          return listings.take(4).toList();
+        }
+      }
+    } catch (_) {}
+
+    try {
+      return await ListingsTable().queryRows(
+        queryFn: (q) =>
+            q.neq('id', excludeId).order('created_at', ascending: false),
+        limit: 4,
+      );
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<ListingsRow?> _loadListing() async {
@@ -547,6 +600,168 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
+  Widget _recommendationImage(BuildContext context, String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return _placeholderImage();
+    }
+
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cardWidth = MediaQuery.sizeOf(context).width / 2;
+    final memCacheWidth = (cardWidth * dpr).round();
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      memCacheWidth: memCacheWidth,
+      fadeInDuration: const Duration(milliseconds: 200),
+      placeholder: (_, __) => Container(color: const Color(0xFFE2E8F0)),
+      errorWidget: (_, __, ___) => _placeholderImage(),
+    );
+  }
+
+  Widget _recommendationCard(ListingsRow item) {
+    final description = item.description?.trim() ?? '';
+
+    return InkWell(
+      onTap: () {
+        context.pushNamed(
+          PagpageWidget.routeName,
+          queryParameters: {
+            'idproductpage': serializeParam(item.id, ParamType.String),
+          }.withoutNulls,
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _border),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x12000000),
+              blurRadius: 3,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 125,
+              width: double.infinity,
+              child: _recommendationImage(context, item.img),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    valueOrDefault<String>(
+                      item.title,
+                      FFLocalizations.of(context).getText('c5j5d6pi'),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _text,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        valueOrDefault<String>(
+                          item.price?.toStringAsFixed(0),
+                          '0',
+                        ),
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: _blue,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        FFLocalizations.of(context).getText('gf7pmm28'),
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: _blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: _text2,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _recommendationsSection() {
+    return FutureBuilder<List<ListingsRow>>(
+      future: _recommendationsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const SizedBox.shrink();
+        }
+
+        final items = snapshot.data ?? [];
+        if (items.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return _sectionCard(
+          children: [
+            _sectionTitle(
+              FFLocalizations.of(context).getText('pgrec1'),
+            ),
+            const Divider(height: 20, color: _border),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.68,
+              ),
+              itemBuilder: (context, index) =>
+                  _recommendationCard(items[index]),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final heroHeight =
@@ -734,6 +949,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                         _sellerCard(listing),
                         const SizedBox(height: 16),
                         if (phone.isNotEmpty) _contactButtons(phone),
+                        const SizedBox(height: 20),
+                        _recommendationsSection(),
                         SizedBox(
                           height: 90 + MediaQuery.of(context).padding.bottom,
                         ),

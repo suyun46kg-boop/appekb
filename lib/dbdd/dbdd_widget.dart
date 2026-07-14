@@ -14,10 +14,18 @@ import 'dbdd_model.dart';
 export 'dbdd_model.dart';
 
 class _DbddCategory {
-  const _DbddCategory(this.emoji, this.labelKey, this.catId);
-  final String emoji;
+  const _DbddCategory(
+    this.assetPath,
+    this.labelKey,
+    this.catId, {
+    this.iconOffset = Offset.zero,
+    this.iconSize = 47,
+  });
+  final String assetPath;
   final String labelKey;
   final int catId;
+  final Offset iconOffset;
+  final double iconSize;
 }
 
 class _PulsingPlaceholder extends StatefulWidget {
@@ -83,14 +91,14 @@ class _DbddWidgetState extends State<DbddWidget> {
   static const _listingPlaceholder = 'assets/images/zag.jpg';
 
   static const _categories = [
-    _DbddCategory('🏠', 'cukp48gd', 3),
-    _DbddCategory('💼', 'me5sh2dc', 2),
-    _DbddCategory('🌍', '4lwpgqmm', 14),
-    _DbddCategory('🚗', 'r4qsbrdp', 1),
-    _DbddCategory('🎫', 'vp95t6yz', 13),
-    _DbddCategory('🛠️', 'ccc9cors', 4),
-    _DbddCategory('📦', 'pnpqtuk7', 9),
-    _DbddCategory('💸', 'noun7do1', 5),
+    _DbddCategory('assets/images/categories/category_apartment.png', 'cukp48gd', 3),
+    _DbddCategory('assets/images/categories/category_job.png', 'me5sh2dc', 2),
+    _DbddCategory('assets/images/categories/category_border.png', '4lwpgqmm', 14),
+    _DbddCategory('assets/images/categories/category_auto.png', 'r4qsbrdp', 1),
+    _DbddCategory('assets/images/categories/category_ticket.png', 'vp95t6yz', 13),
+    _DbddCategory('assets/images/categories/category_services.png', 'ccc9cors', 4),
+    _DbddCategory('assets/images/categories/category_sale.png', 'pnpqtuk7', 9),
+    _DbddCategory('assets/images/categories/category_parttime.png', 'noun7do1', 5),
   ];
 
   @override
@@ -293,11 +301,12 @@ class _DbddWidgetState extends State<DbddWidget> {
       borderRadius: BorderRadius.circular(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 61,
-            height: 61,
+            width: 59,
+            height: 59,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -310,8 +319,22 @@ class _DbddWidgetState extends State<DbddWidget> {
                 ),
               ],
             ),
-            alignment: Alignment.center,
-            child: Text(cat.emoji, style: const TextStyle(fontSize: 26)),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.zero,
+                child: Transform.translate(
+                  offset: cat.iconOffset,
+                  child: Image.asset(
+                    cat.assetPath,
+                    width: cat.iconSize,
+                    height: cat.iconSize,
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -710,8 +733,12 @@ class _DbddWidgetState extends State<DbddWidget> {
                             childAspectRatio: 0.68,
                           ),
                           itemCount: _categories.length,
-                          itemBuilder: (context, index) =>
-                              _categoryTile(context, _categories[index]),
+                          itemBuilder: (context, index) => Center(
+                            child: _categoryTile(
+                              context,
+                              _categories[index],
+                            ),
+                          ),
                         ),
                       ),
                     ),

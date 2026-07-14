@@ -320,7 +320,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               title: FFLocalizations.of(context).getText(
                                 'wrj9lx0v' /* поддержка */,
                               ),
-                              onTap: () {},
+                              onTap: () async {
+                                await launchURL('https://wa.me/79089197909');
+                              },
                             ),
                             _menuTile(
                               icon: Icons.privacy_tip_outlined,
@@ -329,10 +331,23 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               title: FFLocalizations.of(context).getText(
                                 '6ay3t2sd' /* политика конфиденциальности */,
                               ),
-                              showDivider: false,
                               onTap: () async {
                                 await launchURL(
                                   'https://telegra.ph/Ekaterinburg-Kyrgyzdar-06-20',
+                                );
+                              },
+                            ),
+                            _menuTile(
+                              icon: Icons.person_remove_outlined,
+                              iconColor: const Color(0xFFB45309),
+                              iconBg: const Color(0xFFFFF7ED),
+                              title: FFLocalizations.of(context).getText(
+                                'dltacnt01' /* удаление аккаунта */,
+                              ),
+                              showDivider: false,
+                              onTap: () async {
+                                await launchURL(
+                                  'https://telegra.ph/Udalenie-akkaunta-07-12',
                                 );
                               },
                             ),

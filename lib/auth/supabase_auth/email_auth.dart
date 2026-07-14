@@ -16,9 +16,12 @@ Future<User?> emailCreateAccountFunc(
   final AuthResponse res =
       await SupaFlow.client.auth.signUp(email: email, password: password);
 
-  // If the Supabase project is configured to not let users sign in until the
-  // email has been confirmed, the user returned in the AuthResponse still has
-  // all the user info. But since the user shouldn't be able to sign in without
-  // their email verified, return a null User.
-  return res.user?.lastSignInAt == null ? null : res.user;
+  // A session means the user is signed in (email confirmation disabled).
+  // lastSignInAt is often null right after signUp even with a valid session.
+  if (res.session != null) {
+    return res.user;
+  }
+
+  // Email confirmation required — user created but not signed in yet.
+  return null;
 }

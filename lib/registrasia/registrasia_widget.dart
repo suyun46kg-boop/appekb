@@ -26,6 +26,7 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   late RegistrasiaModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _submitting = false;
 
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
@@ -492,6 +493,13 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   }
 
   Future<void> _onSignUp() async {
+    if (!_formValid || _submitting) {
+      return;
+    }
+    if (!_nameValid) {
+      _showSnack(FFLocalizations.of(context).getText('authname1'));
+      return;
+    }
     if (!_phoneValid) {
       _showSnack(FFLocalizations.of(context).getText('authphn1'));
       return;
@@ -504,6 +512,8 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
       _showSnack(FFLocalizations.of(context).getText('authpwdf'));
       return;
     }
+
+    safeSetState(() => _submitting = true);
 
     FFAppState().emailstate = '${_model.phoneTextController.text}@app.com';
     FFAppState().hh1 = true;
@@ -518,21 +528,33 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
       ),
       _model.passwordTextController.text,
     );
+
+    if (!mounted) return;
+    safeSetState(() => _submitting = false);
+
     if (user == null) {
+      _showSnack(FFLocalizations.of(context).getText('authregf'));
       return;
     }
 
-    await UserTable().insert({
-      'nomer': FFAppState().emailstate,
-      'id': currentUserUid,
-      'pass': _model.passwordTextController.text,
-      'name': _model.namefildTextController.text,
-    });
+    try {
+      await UserTable().insert({
+        'nomer': FFAppState().emailstate,
+        'id': currentUserUid,
+        'pass': _model.passwordTextController.text,
+        'name': _model.namefildTextController.text,
+      });
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack(FFLocalizations.of(context).getText('authregp'));
+    }
 
     if (!mounted) return;
-    context.pushNamedAuth(
+    GoRouter.of(context).clearRedirectLocation();
+    context.goNamedAuth(
       CreateListingPageCopyWidget.routeName,
       mounted,
+      ignoreRedirect: true,
     );
   }
 
@@ -698,18 +720,31 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(14),
-                              onTap: _onSignUp,
+                              onTap: (_formValid && !_submitting)
+                                  ? _onSignUp
+                                  : null,
                               child: Center(
-                                child: Text(
-                                  FFLocalizations.of(context).getText(
-                                    'qy7d86gi' /* создать аккаунт */,
-                                  ),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                child: _submitting
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.4,
+                                          valueColor: AlwaysStoppedAnimation(
+                                            Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        FFLocalizations.of(context).getText(
+                                          'qy7d86gi' /* создать аккаунт */,
+                                        ),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),
