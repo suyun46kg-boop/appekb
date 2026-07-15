@@ -19,7 +19,7 @@ class _DbddCategory {
     this.labelKey,
     this.catId, {
     this.iconOffset = Offset.zero,
-    this.iconSize = 47,
+    this.iconSize = 45,
   });
   final String assetPath;
   final String labelKey;
@@ -94,7 +94,12 @@ class _DbddWidgetState extends State<DbddWidget> {
     _DbddCategory('assets/images/categories/category_apartment.png', 'cukp48gd', 3),
     _DbddCategory('assets/images/categories/category_job.png', 'me5sh2dc', 2),
     _DbddCategory('assets/images/categories/category_border.png', '4lwpgqmm', 14),
-    _DbddCategory('assets/images/categories/category_auto.png', 'r4qsbrdp', 1),
+    _DbddCategory(
+      'assets/images/categories/category_auto.png',
+      'r4qsbrdp',
+      1,
+      iconOffset: const Offset(0, 4),
+    ),
     _DbddCategory('assets/images/categories/category_ticket.png', 'vp95t6yz', 13),
     _DbddCategory('assets/images/categories/category_services.png', 'ccc9cors', 4),
     _DbddCategory('assets/images/categories/category_sale.png', 'pnpqtuk7', 9),
