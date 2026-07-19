@@ -780,8 +780,8 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'ky': 'кызматтар',
     },
     'pnpqtuk7': {
-      'ru': 'куплю/продам',
-      'ky': 'Алу/сатуу',
+      'ru': 'купи/прод',
+      'ky': 'Алу/сат',
     },
     'noun7do1': {
       'ru': 'подработка',

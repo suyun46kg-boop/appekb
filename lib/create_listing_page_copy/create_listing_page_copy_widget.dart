@@ -1,3 +1,4 @@
+import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/sheet2_widget.dart';
@@ -1784,20 +1785,8 @@ class _CreateListingPageCopyWidgetState
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(4, topPad + 8, 20, 16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
       child: SizedBox(
         height: 48,
         child: Stack(

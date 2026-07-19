@@ -1,3 +1,4 @@
+import '/dbdd/category_block_background.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -31,12 +32,6 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
   static const Color _brand = Color(0xFF0679EE);
   static const Color _brandSoft = Color(0x140679EE);
   static const int _pageSize = 20;
-
-  static const LinearGradient _brandGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-  );
 
   late PagingController<int, ListingsRow> _pagingController;
 
@@ -293,23 +288,12 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
     final topPad = MediaQuery.paddingOf(context).top;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(10.0, topPad + 10.0, 16.0, 16.0),
-        decoration: const BoxDecoration(
-          gradient: _brandGradient,
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(22.0),
-            bottomRight: Radius.circular(22.0),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x261341B0),
-              blurRadius: 16.0,
-              offset: Offset(0.0, 6.0),
-            ),
-          ],
+      child: EkbAppBarBackground(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(22),
+          bottomRight: Radius.circular(22),
         ),
+        padding: EdgeInsets.fromLTRB(10.0, topPad + 10.0, 16.0, 16.0),
         child: SizedBox(
           height: 48.0,
           child: Row(
@@ -1535,9 +1519,15 @@ class _ListingCard extends StatelessWidget {
           border: Border.all(color: _cardBorder),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 3.0,
-              offset: Offset(0.0, 1.0),
+              color: Color(0x16000000),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+              spreadRadius: -1,
+            ),
+            BoxShadow(
+              color: Color(0x08000000),
+              blurRadius: 3,
+              offset: Offset(0, 1),
             ),
           ],
         ),

@@ -1,3 +1,4 @@
+import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -100,28 +101,9 @@ class _AvtoryzasiaWidgetState extends State<AvtoryzasiaWidget> {
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding:
           EdgeInsets.fromLTRB(_pageHPad - 4, topPad + 14, _pageHPad - 4, 12),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1F1341B0),
-            blurRadius: 16,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
       child: SizedBox(
         height: 46,
         child: Stack(

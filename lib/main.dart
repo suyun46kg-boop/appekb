@@ -15,6 +15,7 @@ import 'flutter_flow/internationalization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
+import 'dbdd/category_block_background.dart';
 import 'components/app_update_widgets.dart';
 import 'services/app_update_service.dart';
 import 'services/push_notification_service.dart';
@@ -168,8 +169,6 @@ class _NavBarPageState extends State<NavBarPage> {
   late Widget? _currentPage;
 
   static const _navBlue = Color(0xFF1A56DB);
-  static const _navHeaderStart = Color(0xFF1E5FE8);
-  static const _navHeaderEnd = Color(0xFF1341B0);
   static const _navInactive = Colors.white;
   static const _addAccentStart = Color(0xFFFF9500);
   static const _addAccentEnd = Color(0xFFFF5F00);
@@ -214,11 +213,17 @@ class _NavBarPageState extends State<NavBarPage> {
           color: active ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
           boxShadow: active
-              ? [
+              ? const [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+                    color: Color(0x1F000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                    spreadRadius: -1,
+                  ),
+                  BoxShadow(
+                    color: Color(0x0A000000),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
                   ),
                 ]
               : null,
@@ -319,52 +324,51 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabKeys = ['dbdd', 'searchpage22', 'politpage', 'Profile'];
     final bottomPad = MediaQuery.paddingOf(context).bottom;
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPad),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_navHeaderStart, _navHeaderEnd],
+    return CategoryBlockBackground(
+      borderRadius: BorderRadius.zero,
+      showBorder: false,
+      showShadow: false,
+      bokehCount: 4,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPad),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Flexible(
+              child: _navItem(
+                active: currentIndex == 0,
+                icon: Icons.home_outlined,
+                label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+                onTap: () => _switchTab(0, tabKeys),
+              ),
+            ),
+            Flexible(
+              child: _navItem(
+                active: currentIndex == 1,
+                icon: Icons.search_rounded,
+                label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+                onTap: () => _switchTab(1, tabKeys),
+              ),
+            ),
+            Flexible(
+              child: _addNavItem(
+                active: false,
+                label:
+                    FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+                onTap: () => _openCreateListingFlow(context),
+              ),
+            ),
+            Flexible(
+              child: _navItem(
+                active: currentIndex == 3,
+                icon: Icons.person_outline,
+                label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+                onTap: () => _switchTab(3, tabKeys),
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Flexible(
-            child: _navItem(
-              active: currentIndex == 0,
-              icon: Icons.home_outlined,
-              label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
-              onTap: () => _switchTab(0, tabKeys),
-            ),
-          ),
-          Flexible(
-            child: _navItem(
-              active: currentIndex == 1,
-              icon: Icons.search_rounded,
-              label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
-              onTap: () => _switchTab(1, tabKeys),
-            ),
-          ),
-          Flexible(
-            child: _addNavItem(
-              active: false,
-              label:
-                  FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
-              onTap: () => _openCreateListingFlow(context),
-            ),
-          ),
-          Flexible(
-            child: _navItem(
-              active: currentIndex == 3,
-              icon: Icons.person_outline,
-              label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
-              onTap: () => _switchTab(3, tabKeys),
-            ),
-          ),
-        ],
       ),
     );
   }

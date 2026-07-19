@@ -1,5 +1,6 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
+import '/dbdd/category_block_background.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -66,20 +67,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     final topPad = MediaQuery.paddingOf(context).top;
     final displayName = valueOrDefault<String>(_userName, '...');
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(_pageHPad, topPad + 14, _pageHPad, 52),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
       child: Column(
         children: [
           Text(

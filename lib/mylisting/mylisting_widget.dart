@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -177,7 +178,13 @@ class _MylistingWidgetState extends State<MylistingWidget> {
           border: Border.all(color: _border),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x12000000),
+              color: Color(0x16000000),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+              spreadRadius: -1,
+            ),
+            BoxShadow(
+              color: Color(0x08000000),
               blurRadius: 3,
               offset: Offset(0, 1),
             ),
@@ -256,20 +263,8 @@ class _MylistingWidgetState extends State<MylistingWidget> {
 
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(16, topPad + 14, 20, 16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
       child: Row(
         children: [
           InkWell(

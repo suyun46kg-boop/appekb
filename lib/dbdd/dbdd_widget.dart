@@ -10,8 +10,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'category_block_background.dart';
 import 'dbdd_model.dart';
 export 'dbdd_model.dart';
+
+/// Layered elevation tokens for the home screen.
+const _shadowBanner = [
+  BoxShadow(
+    color: Color(0x06000000),
+    blurRadius: 14,
+    offset: Offset(0, 4),
+    spreadRadius: -5,
+  ),
+];
+
+const _shadowCard = [
+  BoxShadow(
+    color: Color(0x16000000),
+    blurRadius: 12,
+    offset: Offset(0, 4),
+    spreadRadius: -1,
+  ),
+  BoxShadow(
+    color: Color(0x08000000),
+    blurRadius: 3,
+    offset: Offset(0, 1),
+  ),
+];
+
+const _shadowCategoryIcon = [
+  BoxShadow(
+    color: Color(0x12000000),
+    blurRadius: 8,
+    offset: Offset(0, 2),
+    spreadRadius: -1,
+  ),
+  BoxShadow(
+    color: Color(0x06000000),
+    blurRadius: 2,
+    offset: Offset(0, 1),
+  ),
+];
 
 class _DbddCategory {
   const _DbddCategory(
@@ -19,7 +58,7 @@ class _DbddCategory {
     this.labelKey,
     this.catId, {
     this.iconOffset = Offset.zero,
-    this.iconSize = 45,
+    this.iconSize = 48,
   });
   final String assetPath;
   final String labelKey;
@@ -79,14 +118,13 @@ class _DbddWidgetState extends State<DbddWidget> {
   int? _carouselSlideCount;
   late final Future<List<CaruselRow>> _carouselFuture;
 
-  static const _bg = Color(0xFFF1F4FB);
+  static const _bg = Colors.white;
   static const _blue = Color(0xFF1A56DB);
   static const _text = Color(0xFF0F172A);
   static const _titleColor = Color(0xFF334155);
   static const _text2 = Color(0xFF475569);
   static const _text3 = Color(0xFF94A3B8);
   static const _border = Color(0xFFE2E8F0);
-  static const _categoryText = Color(0xFF0C2447);
   static const _pageHPad = 20.0;
   static const _listingPlaceholder = 'assets/images/zag.jpg';
 
@@ -98,7 +136,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       'assets/images/categories/category_auto.png',
       'r4qsbrdp',
       1,
-      iconOffset: const Offset(0, 4),
+      iconOffset: Offset(0, 4),
     ),
     _DbddCategory('assets/images/categories/category_ticket.png', 'vp95t6yz', 13),
     _DbddCategory('assets/images/categories/category_services.png', 'ccc9cors', 4),
@@ -152,20 +190,8 @@ class _DbddWidgetState extends State<DbddWidget> {
     final lang = FFLocalizations.of(context).languageCode;
     final topPad = MediaQuery.paddingOf(context).top;
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 12),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
       child: SizedBox(
         height: 46,
         child: Row(
@@ -242,18 +268,7 @@ class _DbddWidgetState extends State<DbddWidget> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(999),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1A000000),
-              blurRadius: 24,
-              offset: Offset(0, 8),
-            ),
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 6,
-              offset: Offset(0, 2),
-            ),
-          ],
+          boxShadow: _shadowBanner,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -310,19 +325,12 @@ class _DbddWidgetState extends State<DbddWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 59,
-            height: 59,
+            width: 62,
+            height: 62,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _border),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x12000000),
-                  blurRadius: 3,
-                  offset: Offset(0, 1),
-                ),
-              ],
+              boxShadow: _shadowCategoryIcon,
             ),
             child: Center(
               child: Padding(
@@ -341,20 +349,45 @@ class _DbddWidgetState extends State<DbddWidget> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             FFLocalizations.of(context).getText(cat.labelKey),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: _text,
-              height: 1.2,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: _text2,
+              letterSpacing: -0.15,
+              height: 1.15,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _categoriesGrid(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      child: GridView.builder(
+        padding: EdgeInsets.zero,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 0,
+          childAspectRatio: 0.82,
+        ),
+        itemCount: _categories.length,
+        itemBuilder: (context, index) => Center(
+          child: _categoryTile(
+            context,
+            _categories[index],
+          ),
+        ),
       ),
     );
   }
@@ -380,18 +413,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       height: 168,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 24,
-            offset: Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: _shadowBanner,
       ),
       clipBehavior: Clip.antiAlias,
       child: _bannerShimmer(),
@@ -422,18 +444,7 @@ class _DbddWidgetState extends State<DbddWidget> {
           height: 168,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x1A000000),
-                blurRadius: 24,
-                offset: Offset(0, 8),
-              ),
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
+            boxShadow: _shadowBanner,
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(
@@ -561,14 +572,7 @@ class _DbddWidgetState extends State<DbddWidget> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _border),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 3,
-              offset: Offset(0, 1),
-            ),
-          ],
+          boxShadow: _shadowCard,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -708,49 +712,20 @@ class _DbddWidgetState extends State<DbddWidget> {
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
-                            _pageHPad, 20, _pageHPad, 0),
+                            _pageHPad, 10, _pageHPad, 0),
                         child: _bannerCarousel(context),
                       ),
                     ),
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            _pageHPad, 20, _pageHPad, 0),
-                        child: _sectionTitle(
-                          context,
-                          'zvs9dp80' /* Категории */,
-                        ),
+                        padding: const EdgeInsets.only(top: 10),
+                        child: _categoriesGrid(context),
                       ),
                     ),
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
-                            _pageHPad, 16, _pageHPad, 0),
-                        child: GridView.builder(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 0,
-                            childAspectRatio: 0.68,
-                          ),
-                          itemCount: _categories.length,
-                          itemBuilder: (context, index) => Center(
-                            child: _categoryTile(
-                              context,
-                              _categories[index],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            _pageHPad, 0, _pageHPad, 0),
+                            _pageHPad, 8, _pageHPad, 0),
                         child: _sectionTitle(
                           context,
                           'xy92q7cu' /* Свежие объявления */,
@@ -758,7 +733,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ),
                     ),
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(5, 12, 5, 0),
+                      padding: const EdgeInsets.fromLTRB(5, 8, 5, 0),
                       sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
                         pagingController: _model.setGridViewController2(
                           (nextPageMarker) => GlavniapiCall.call(
@@ -813,7 +788,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ),
                     ),
                     const SliverToBoxAdapter(
-                      child: SizedBox(height: 100),
+                      child: SizedBox(height: 72),
                     ),
                   ],
                 ),
@@ -850,15 +825,13 @@ class _ListingSkeletonGrid extends StatelessWidget {
 class _ListingSkeletonCard extends StatelessWidget {
   const _ListingSkeletonCard();
 
-  static const _border = Color(0xFFE2E8F0);
-
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        boxShadow: _shadowCard,
       ),
       clipBehavior: Clip.antiAlias,
       child: const Column(
