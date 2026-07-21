@@ -188,15 +188,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
             name: MylistingWidget.routeName,
             path: MylistingWidget.routePath,
-            builder: (context, params) => NavBarPage(
-                  initialPage: '',
-                  page: MylistingWidget(
-                    mylisid: params.getParam(
-                      'mylisid',
-                      ParamType.String,
+            builder: (context, params) => params.isEmpty
+                ? NavBarPage(initialPage: 'mylisting')
+                : NavBarPage(
+                    initialPage: 'mylisting',
+                    page: MylistingWidget(
+                      mylisid: params.getParam(
+                        'mylisid',
+                        ParamType.String,
+                      ),
                     ),
-                  ),
-                ))
+                  ))
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
@@ -382,17 +384,7 @@ class FFRoute {
                   result: appStateNotifier.forceUpdateInfo!,
                 )
               : appStateNotifier.loading
-              ? Center(
-                  child: SizedBox(
-                    width: 50.0,
-                    height: 50.0,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        FlutterFlowTheme.of(context).primary,
-                      ),
-                    ),
-                  ),
-                )
+              ? NavBarPage()
               : page;
 
           final transitionInfo = state.transitionInfo;

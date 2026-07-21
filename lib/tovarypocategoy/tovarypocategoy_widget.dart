@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '/theme/ekb_typography.dart';
 import 'tovarypocategoy_model.dart';
 export 'tovarypocategoy_model.dart';
 
@@ -204,11 +205,11 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
           }.withoutNulls,
         );
       },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(5),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(5),
           border: Border.all(color: _border),
           boxShadow: const [
             BoxShadow(
@@ -256,35 +257,6 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          valueOrDefault<String>(
-                            getJsonField(item, r'''$.price''')?.toString(),
-                            '0',
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: _titleColor,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        FFLocalizations.of(context).getText('gf7pmm28' /* р */),
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: _titleColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
                   Text(
                     valueOrDefault<String>(
                       getJsonField(item, r'''$.description''')?.toString(),
@@ -297,6 +269,26 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                       color: _text2,
                       height: 1.4,
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          valueOrDefault<String>(
+                            getJsonField(item, r'''$.price''')?.toString(),
+                            '0',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: EkbTypography.price,
+                        ),
+                      ),
+                      Text(
+                        FFLocalizations.of(context).getText('gf7pmm28' /* р */),
+                        style: EkbTypography.price,
+                      ),
+                    ],
                   ),
                   if (publishedAt.isNotEmpty) ...[
                     const SizedBox(height: 6),
@@ -380,7 +372,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                             crossAxisCount: 2,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
-                            childAspectRatio: 0.72,
+                            childAspectRatio: 0.76,
                           ),
                           builderDelegate: PagedChildBuilderDelegate<dynamic>(
                             firstPageProgressIndicatorBuilder: (_) =>
@@ -454,7 +446,7 @@ class _ListingSkeletonGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.76,
       ),
       itemCount: 6,
       itemBuilder: (_, __) => const _ListingSkeletonCard(),
@@ -472,7 +464,7 @@ class _ListingSkeletonCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(5),
         border: Border.all(color: _border),
       ),
       clipBehavior: Clip.antiAlias,
@@ -491,9 +483,9 @@ class _ListingSkeletonCard extends StatelessWidget {
               children: [
                 _ShimmerBox(width: double.infinity, height: 13),
                 SizedBox(height: 8),
-                _ShimmerBox(width: 80, height: 16),
-                SizedBox(height: 8),
                 _ShimmerBox(width: double.infinity, height: 11),
+                SizedBox(height: 8),
+                _ShimmerBox(width: 80, height: 16),
               ],
             ),
           ),

@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/theme/ekb_typography.dart';
 import 'pagpage_model.dart';
 export 'pagpage_model.dart';
 
@@ -684,21 +685,12 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                           item.price?.toStringAsFixed(0),
                           '0',
                         ),
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: _blue,
-                          letterSpacing: -0.3,
-                        ),
+                        style: EkbTypography.price,
                       ),
                       const SizedBox(width: 2),
                       Text(
                         FFLocalizations.of(context).getText('gf7pmm28'),
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: _blue,
-                        ),
+                        style: EkbTypography.price,
                       ),
                     ],
                   ),
@@ -751,7 +743,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 0.68,
+                childAspectRatio: 0.72,
               ),
               itemBuilder: (context, index) =>
                   _recommendationCard(items[index]),

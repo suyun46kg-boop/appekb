@@ -1,13 +1,15 @@
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
+import '/components/shimmer_widgets.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/theme/ekb_typography.dart';
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'category_block_background.dart';
@@ -38,66 +40,21 @@ const _shadowCard = [
   ),
 ];
 
-const _shadowCategoryIcon = [
-  BoxShadow(
-    color: Color(0x12000000),
-    blurRadius: 8,
-    offset: Offset(0, 2),
-    spreadRadius: -1,
-  ),
-  BoxShadow(
-    color: Color(0x06000000),
-    blurRadius: 2,
-    offset: Offset(0, 1),
-  ),
-];
-
 class _DbddCategory {
   const _DbddCategory(
     this.assetPath,
     this.labelKey,
     this.catId, {
     this.iconOffset = Offset.zero,
-    this.iconSize = 48,
+    this.iconSize = 56,
+    this.iconRotationDeg = -8,
   });
   final String assetPath;
   final String labelKey;
   final int catId;
   final Offset iconOffset;
   final double iconSize;
-}
-
-class _PulsingPlaceholder extends StatefulWidget {
-  const _PulsingPlaceholder();
-
-  static const _color = Color(0xFFE2E8F0);
-
-  @override
-  State<_PulsingPlaceholder> createState() => _PulsingPlaceholderState();
-}
-
-class _PulsingPlaceholderState extends State<_PulsingPlaceholder>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  )..repeat(reverse: true);
-  late final Animation<double> _opacity = Tween<double>(begin: 1, end: 0.45)
-      .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _opacity,
-      child: Container(color: _PulsingPlaceholder._color),
-    );
-  }
+  final double iconRotationDeg;
 }
 
 class DbddWidget extends StatefulWidget {
@@ -119,29 +76,69 @@ class _DbddWidgetState extends State<DbddWidget> {
   late final Future<List<CaruselRow>> _carouselFuture;
 
   static const _bg = Colors.white;
-  static const _blue = Color(0xFF1A56DB);
-  static const _text = Color(0xFF0F172A);
-  static const _titleColor = Color(0xFF334155);
-  static const _text2 = Color(0xFF475569);
-  static const _text3 = Color(0xFF94A3B8);
-  static const _border = Color(0xFFE2E8F0);
+  static const _blue = EkbTypography.brandBlue;
+  static const _text3 = EkbTypography.textMuted;
   static const _pageHPad = 20.0;
   static const _listingPlaceholder = 'assets/images/zag.jpg';
 
   static const _categories = [
-    _DbddCategory('assets/images/categories/category_apartment.png', 'cukp48gd', 3),
-    _DbddCategory('assets/images/categories/category_job.png', 'me5sh2dc', 2),
-    _DbddCategory('assets/images/categories/category_border.png', '4lwpgqmm', 14),
+    _DbddCategory(
+      'assets/images/categories/category_apartment.png',
+      'cukp48gd',
+      3,
+      iconRotationDeg: -4,
+      iconSize: 62,
+    ),
+    _DbddCategory(
+      'assets/images/categories/category_job.png',
+      'me5sh2dc',
+      2,
+      iconRotationDeg: 3,
+      iconSize: 62,
+    ),
+    _DbddCategory(
+      'assets/images/categories/category_border.png',
+      '4lwpgqmm',
+      14,
+      iconRotationDeg: 2,
+      iconSize: 64,
+    ),
     _DbddCategory(
       'assets/images/categories/category_auto.png',
       'r4qsbrdp',
       1,
-      iconOffset: Offset(0, 4),
+      iconOffset: Offset(0, 2),
+      iconRotationDeg: -3,
+      iconSize: 66,
     ),
-    _DbddCategory('assets/images/categories/category_ticket.png', 'vp95t6yz', 13),
-    _DbddCategory('assets/images/categories/category_services.png', 'ccc9cors', 4),
-    _DbddCategory('assets/images/categories/category_sale.png', 'pnpqtuk7', 9),
-    _DbddCategory('assets/images/categories/category_parttime.png', 'noun7do1', 5),
+    _DbddCategory(
+      'assets/images/categories/category_ticket.png',
+      'vp95t6yz',
+      13,
+      iconRotationDeg: -6,
+      iconSize: 60,
+    ),
+    _DbddCategory(
+      'assets/images/categories/category_services.png',
+      'ccc9cors',
+      4,
+      iconRotationDeg: -5,
+      iconSize: 62,
+    ),
+    _DbddCategory(
+      'assets/images/categories/category_sale_v2.png',
+      'pnpqtuk7',
+      9,
+      iconRotationDeg: 2,
+      iconSize: 60,
+    ),
+    _DbddCategory(
+      'assets/images/categories/category_parttime.png',
+      'noun7do1',
+      5,
+      iconRotationDeg: -2,
+      iconSize: 60,
+    ),
   ];
 
   @override
@@ -279,10 +276,7 @@ class _DbddWidgetState extends State<DbddWidget> {
               child: Text(
                 FFLocalizations.of(context).getText('fmw9cm8g' /* Найти */),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: _text3,
-                ),
+                style: EkbTypography.searchHint,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -295,98 +289,88 @@ class _DbddWidgetState extends State<DbddWidget> {
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String key) {
-    return Text(
-      FFLocalizations.of(context).getText(key),
-      style: GoogleFonts.inter(
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
-        color: _titleColor,
-        letterSpacing: -0.2,
-        height: 1.2,
-      ),
-    );
-  }
-
   Widget _categoryTile(BuildContext context, _DbddCategory cat) {
-    return InkWell(
-      onTap: () {
-        context.pushNamed(
-          TovarypocategoyWidget.routeName,
-          queryParameters: {
-            'paramcatid': serializeParam(cat.catId, ParamType.int),
-          }.withoutNulls,
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 62,
-            height: 62,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: _shadowCategoryIcon,
-            ),
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.zero,
-                child: Transform.translate(
-                  offset: cat.iconOffset,
-                  child: Image.asset(
-                    cat.assetPath,
-                    width: cat.iconSize,
-                    height: cat.iconSize,
-                    fit: BoxFit.contain,
-                    alignment: Alignment.center,
-                    filterQuality: FilterQuality.high,
+    const tileBg = Color(0xFFF1F0EE);
+    const tileRadius = 5.0;
+    const iconSize = 77.0;
+    return Material(
+      color: tileBg,
+      borderRadius: BorderRadius.circular(tileRadius),
+      child: InkWell(
+        onTap: () {
+          context.pushNamed(
+            TovarypocategoyWidget.routeName,
+            queryParameters: {
+              'paramcatid': serializeParam(cat.catId, ParamType.int),
+            }.withoutNulls,
+          );
+        },
+        borderRadius: BorderRadius.circular(tileRadius),
+        splashColor: Colors.black.withValues(alpha: 0.06),
+        highlightColor: const Color(0xFFEDEBE9),
+        child: SizedBox(
+          height: 92,
+          child: Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              Positioned(
+                right: -10,
+                bottom: -12,
+                width: iconSize,
+                height: iconSize,
+                child: IgnorePointer(
+                  child: Transform.rotate(
+                    angle: cat.iconRotationDeg * math.pi / 180,
+                    child: Transform.translate(
+                      offset: cat.iconOffset,
+                      child: Image.asset(
+                        cat.assetPath,
+                        width: iconSize,
+                        height: iconSize,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.bottomRight,
+                        filterQuality: FilterQuality.high,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              Positioned(
+                left: 10,
+                top: 10,
+                right: 8,
+                child: Text(
+                  FFLocalizations.of(context).getText(cat.labelKey),
+                  textAlign: TextAlign.left,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: EkbTypography.category,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            FFLocalizations.of(context).getText(cat.labelKey),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: _text2,
-              letterSpacing: -0.15,
-              height: 1.15,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _categoriesGrid(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      padding: const EdgeInsets.fromLTRB(_pageHPad, 14, _pageHPad, 10),
       child: GridView.builder(
         padding: EdgeInsets.zero,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 0,
-          childAspectRatio: 0.82,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          mainAxisExtent: 92,
         ),
         itemCount: _categories.length,
-        itemBuilder: (context, index) => Center(
-          child: _categoryTile(
-            context,
-            _categories[index],
-          ),
+        itemBuilder: (context, index) => _categoryTile(
+          context,
+          _categories[index],
         ),
       ),
     );
@@ -405,14 +389,18 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _bannerShimmer() {
-    return const _PulsingPlaceholder();
+    return const ShimmerBox(
+      width: double.infinity,
+      height: double.infinity,
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    );
   }
 
   Widget _bannerSkeleton() {
     return Container(
-      height: 168,
+      height: 136,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: _shadowBanner,
       ),
       clipBehavior: Clip.antiAlias,
@@ -429,7 +417,7 @@ class _DbddWidgetState extends State<DbddWidget> {
         }
         final slides = snapshot.data!;
         if (slides.isEmpty) {
-          return const SizedBox(height: 168);
+          return const SizedBox(height: 136);
         }
 
         _model.pageViewController ??= PageController();
@@ -441,9 +429,9 @@ class _DbddWidgetState extends State<DbddWidget> {
         });
 
         return Container(
-          height: 168,
+          height: 136,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(10),
             boxShadow: _shadowBanner,
           ),
           clipBehavior: Clip.antiAlias,
@@ -542,9 +530,11 @@ class _DbddWidgetState extends State<DbddWidget> {
       width: double.infinity,
       height: double.infinity,
       memCacheWidth: memCacheWidth,
-      fadeInDuration: Duration.zero,
-      placeholderFadeInDuration: Duration.zero,
-      placeholder: (_, __) => _bannerShimmer(),
+      fadeInDuration: const Duration(milliseconds: 250),
+      placeholder: (_, __) => const ShimmerBox(
+        width: double.infinity,
+        height: double.infinity,
+      ),
       errorWidget: (_, __, ___) => _listingPlaceholderImage(),
     );
   }
@@ -567,11 +557,11 @@ class _DbddWidgetState extends State<DbddWidget> {
           }.withoutNulls,
         );
       },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(5),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(5),
           boxShadow: _shadowCard,
         ),
         clipBehavior: Clip.antiAlias,
@@ -597,13 +587,19 @@ class _DbddWidgetState extends State<DbddWidget> {
                       getJsonField(item, r'''$.title''')?.toString(),
                       FFLocalizations.of(context).getText('srchttl1'),
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _titleColor,
+                    style: EkbTypography.listingTitle,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    valueOrDefault<String>(
+                      getJsonField(item, r'''$.description''')?.toString(),
+                      FFLocalizations.of(context).getText('srchdes1'),
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: EkbTypography.listingDesc,
                   ),
                   const SizedBox(height: 4),
                   InkWell(
@@ -621,38 +617,15 @@ class _DbddWidgetState extends State<DbddWidget> {
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: _titleColor,
-                              letterSpacing: -0.3,
-                            ),
+                            style: EkbTypography.price,
                           ),
                         ),
                         Text(
                           FFLocalizations.of(context)
                               .getText('gf7pmm28' /* р */),
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: _titleColor,
-                          ),
+                          style: EkbTypography.price,
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    valueOrDefault<String>(
-                      getJsonField(item, r'''$.description''')?.toString(),
-                      FFLocalizations.of(context).getText('srchdes1'),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: _text2,
-                      height: 1.4,
                     ),
                   ),
                   if (publishedAt.isNotEmpty) ...[
@@ -661,19 +634,16 @@ class _DbddWidgetState extends State<DbddWidget> {
                       children: [
                         const Icon(
                           Icons.schedule_rounded,
-                          size: 10,
-                          color: _text3,
+                          size: 14,
+                          color: EkbTypography.textMuted,
                         ),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             publishedAt,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: _text3,
-                            ),
+                            style: EkbTypography.meta,
                           ),
                         ),
                       ],
@@ -722,18 +692,8 @@ class _DbddWidgetState extends State<DbddWidget> {
                         child: _categoriesGrid(context),
                       ),
                     ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            _pageHPad, 8, _pageHPad, 0),
-                        child: _sectionTitle(
-                          context,
-                          'xy92q7cu' /* Свежие объявления */,
-                        ),
-                      ),
-                    ),
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(5, 8, 5, 0),
+                      padding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
                       sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
                         pagingController: _model.setGridViewController2(
                           (nextPageMarker) => GlavniapiCall.call(
@@ -748,7 +708,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 0.72,
+                          childAspectRatio: 0.66,
                         ),
                         builderDelegate: PagedChildBuilderDelegate<dynamic>(
                           firstPageProgressIndicatorBuilder: (_) =>
@@ -758,28 +718,19 @@ class _DbddWidgetState extends State<DbddWidget> {
                             child: Text(
                               FFLocalizations.of(context).getText('dbdderr1'),
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                  color: _text2, fontSize: 14),
+                              style: EkbTypography.listingDesc,
                             ),
                           ),
                           newPageProgressIndicatorBuilder: (_) => const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Center(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
+                            padding: EdgeInsets.fromLTRB(20, 12, 20, 8),
+                            child: RunningLoaderBar(),
                           ),
                           noItemsFoundIndicatorBuilder: (_) => Padding(
                             padding: const EdgeInsets.all(24),
                             child: Text(
                               FFLocalizations.of(context).getText('dbddemp1'),
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                  color: _text2, fontSize: 14),
+                              style: EkbTypography.listingDesc,
                             ),
                           ),
                           itemBuilder: (context, item, index) =>
@@ -814,7 +765,7 @@ class _ListingSkeletonGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.66,
       ),
       itemCount: 6,
       itemBuilder: (_, __) => const _ListingSkeletonCard(),
@@ -830,14 +781,14 @@ class _ListingSkeletonCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(5),
         boxShadow: _shadowCard,
       ),
       clipBehavior: Clip.antiAlias,
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ShimmerBox(
+          ShimmerBox(
             width: double.infinity,
             height: 125,
             borderRadius: BorderRadius.zero,
@@ -847,11 +798,13 @@ class _ListingSkeletonCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _ShimmerBox(width: double.infinity, height: 13),
+                ShimmerBox(width: double.infinity, height: 22),
                 SizedBox(height: 8),
-                _ShimmerBox(width: 80, height: 16),
+                ShimmerBox(width: double.infinity, height: 20),
                 SizedBox(height: 8),
-                _ShimmerBox(width: double.infinity, height: 11),
+                ShimmerBox(width: 96, height: 24),
+                SizedBox(height: 6),
+                ShimmerBox(width: 120, height: 18),
               ],
             ),
           ),
@@ -861,32 +814,3 @@ class _ListingSkeletonCard extends StatelessWidget {
   }
 }
 
-class _ShimmerBox extends StatelessWidget {
-  const _ShimmerBox({
-    required this.width,
-    required this.height,
-    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
-  });
-
-  final double width;
-  final double height;
-  final BorderRadius borderRadius;
-
-  static const _base = Color(0xFFE7ECF5);
-  static const _highlight = Color(0xFFF6F8FC);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: _base,
-        borderRadius: borderRadius,
-      ),
-    ).animate(onPlay: (c) => c.repeat()).shimmer(
-          duration: 1200.ms,
-          color: _highlight,
-        );
-  }
-}

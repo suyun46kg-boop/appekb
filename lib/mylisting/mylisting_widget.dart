@@ -170,11 +170,11 @@ class _MylistingWidgetState extends State<MylistingWidget> {
           'idproductpage': serializeParam(listing.id, ParamType.String),
         }.withoutNulls,
       ),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(5),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(5),
           border: Border.all(color: _border),
           boxShadow: const [
             BoxShadow(

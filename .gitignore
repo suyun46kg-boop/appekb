@@ -56,5 +56,9 @@ supabase/.temp/
 /bazar_preview.html
 /zag.jpg
 
+# Dev tool dependencies
+tools/bg-remove/node_modules/
+tools/bg-remove/backup/
+
 # Distribution archives
 *.zip

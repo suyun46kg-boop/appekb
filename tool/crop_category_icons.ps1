@@ -95,7 +95,7 @@ public static class CategoryIconTools
 
 $names = @(
   'category_apartment.png','category_job.png','category_border.png','category_auto.png',
-  'category_ticket.png','category_services.png','category_sale.png','category_parttime.png'
+  'category_ticket.png','category_services.png','category_sale_v2.png','category_parttime.png'
 )
 
 New-Item -ItemType Directory -Force -Path $destDir | Out-Null

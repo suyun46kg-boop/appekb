@@ -1,6 +1,7 @@
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -12,11 +13,10 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
-import 'dbdd/category_block_background.dart';
 import 'components/app_update_widgets.dart';
+import 'components/ekb_bottom_nav.dart';
 import 'services/app_update_service.dart';
 import 'services/push_notification_service.dart';
 
@@ -76,6 +76,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     _appStateNotifier = AppStateNotifier.instance;
+    currentUser = EkbkyrgyzdarSupabaseUser(SupaFlow.client.auth.currentUser);
+    _appStateNotifier.update(currentUser!);
+    _appStateNotifier.stopShowingSplashImage();
     _router = createRouter(_appStateNotifier);
     userStream = ekbkyrgyzdarSupabaseUserStream()
       ..listen((user) {
@@ -86,11 +89,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initializeApp() async {
-    final minSplash = Future.delayed(const Duration(milliseconds: 1000));
-    final updateCheck = AppUpdateService.checkUpdate();
-
-    await minSplash;
-    final result = await updateCheck;
+    final result = await AppUpdateService.checkUpdate();
 
     if (!mounted) {
       return;
@@ -100,8 +99,6 @@ class _MyAppState extends State<MyApp> {
       _appStateNotifier.setForceUpdate(result);
       return;
     }
-
-    _appStateNotifier.stopShowingSplashImage();
 
     if (result != null && result.softUpdate) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -168,10 +165,7 @@ class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'dbdd';
   late Widget? _currentPage;
 
-  static const _navBlue = Color(0xFF1A56DB);
-  static const _navInactive = Colors.white;
-  static const _addAccentStart = Color(0xFFFF9500);
-  static const _addAccentEnd = Color(0xFFFF5F00);
+  static const _tabKeys = ['dbdd', 'searchpage22', 'mylisting', 'Profile'];
 
   @override
   void initState() {
@@ -180,10 +174,11 @@ class _NavBarPageState extends State<NavBarPage> {
     _currentPage = widget.page;
   }
 
-  void _switchTab(int index, List<String> tabKeys) {
+  void _switchTab(int index) {
+    HapticFeedback.selectionClick();
     safeSetState(() {
       _currentPage = null;
-      _currentPageName = tabKeys[index];
+      _currentPageName = _tabKeys[index];
     });
   }
 
@@ -195,181 +190,27 @@ class _NavBarPageState extends State<NavBarPage> {
     }
   }
 
-  Widget _navItem({
-    required bool active,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    final fg = active ? _navBlue : _navInactive;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          color: active ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
-          boxShadow: active
-              ? const [
-                  BoxShadow(
-                    color: Color(0x1F000000),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                    spreadRadius: -1,
-                  ),
-                  BoxShadow(
-                    color: Color(0x0A000000),
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-            color: fg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: Icon(
-                  icon,
-                  key: ValueKey(active),
-                  size: 22,
-                  color: fg,
-                ),
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(label, maxLines: 1, softWrap: false),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _addNavItem({
-    required bool active,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    const size = 26.0;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            width: size,
-            height: size,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_addAccentStart, _addAccentEnd],
-              ),
-              border: Border.fromBorderSide(
-                BorderSide(color: Colors.white, width: 3),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x66FF5F00),
-                  blurRadius: 14,
-                  offset: Offset(0, 5),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.add_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _openMyListings(BuildContext context) {
+    if (currentUserUid.isEmpty) {
+      context.pushNamed(RegistrasiaWidget.routeName);
+      return;
+    }
+    _switchTab(2);
   }
 
   Widget _buildBottomNav(BuildContext context, int currentIndex) {
-    final tabKeys = ['dbdd', 'searchpage22', 'politpage', 'Profile'];
-    final bottomPad = MediaQuery.paddingOf(context).bottom;
-
-    return CategoryBlockBackground(
-      borderRadius: BorderRadius.zero,
-      showBorder: false,
-      showShadow: false,
-      bokehCount: 4,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPad),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Flexible(
-              child: _navItem(
-                active: currentIndex == 0,
-                icon: Icons.home_outlined,
-                label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
-                onTap: () => _switchTab(0, tabKeys),
-              ),
-            ),
-            Flexible(
-              child: _navItem(
-                active: currentIndex == 1,
-                icon: Icons.search_rounded,
-                label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
-                onTap: () => _switchTab(1, tabKeys),
-              ),
-            ),
-            Flexible(
-              child: _addNavItem(
-                active: false,
-                label:
-                    FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
-                onTap: () => _openCreateListingFlow(context),
-              ),
-            ),
-            Flexible(
-              child: _navItem(
-                active: currentIndex == 3,
-                icon: Icons.person_outline,
-                label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
-                onTap: () => _switchTab(3, tabKeys),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return EkbBottomNavBar(
+      currentIndex: currentIndex,
+      homeLabel: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+      searchLabel: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+      createLabel: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+      listingsLabel: FFLocalizations.of(context).getText('wmxh68pv' /* мои объявления */),
+      profileLabel: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+      onHomeTap: () => _switchTab(0),
+      onSearchTap: () => _switchTab(1),
+      onCreateTap: () => _openCreateListingFlow(context),
+      onListingsTap: () => _openMyListings(context),
+      onProfileTap: () => _switchTab(3),
     );
   }
 
@@ -378,10 +219,10 @@ class _NavBarPageState extends State<NavBarPage> {
     final tabs = {
       'dbdd': DbddWidget(),
       'searchpage22': Searchpage22Widget(),
-      'politpage': PolitpageWidget(),
+      'mylisting': MylistingWidget(mylisid: currentUserUid),
       'Profile': ProfileWidget(),
     };
-    final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
+    final currentIndex = _tabKeys.indexOf(_currentPageName);
 
     final MediaQueryData queryData = MediaQuery.of(context);
 
@@ -391,8 +232,20 @@ class _NavBarPageState extends State<NavBarPage> {
           data: queryData
               .removeViewInsets(removeBottom: true)
               .removeViewPadding(removeBottom: true),
-          child: _currentPage ?? tabs[_currentPageName]!),
-      extendBody: true,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+            child: KeyedSubtree(
+              key: ValueKey(_currentPageName),
+              child: _currentPage ?? tabs[_currentPageName]!,
+            ),
+          )),
+      extendBody: false,
       bottomNavigationBar: _buildBottomNav(context, currentIndex),
     );
   }

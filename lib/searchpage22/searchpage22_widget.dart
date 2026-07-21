@@ -11,6 +11,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
+import '/theme/ekb_typography.dart';
 import 'searchpage22_model.dart';
 export 'searchpage22_model.dart';
 
@@ -550,7 +551,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12.0,
                 mainAxisSpacing: 12.0,
-                childAspectRatio: 0.72,
+                childAspectRatio: 0.76,
               ),
               showNewPageProgressIndicatorAsGridChild: false,
               builderDelegate: PagedChildBuilderDelegate<ListingsRow>(
@@ -1511,11 +1512,11 @@ class _ListingCard extends StatelessWidget {
           'idproductpage': serializeParam(row.id, ParamType.String),
         }.withoutNulls,
       ),
-      borderRadius: BorderRadius.circular(16.0),
+      borderRadius: BorderRadius.circular(5.0),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(5.0),
           border: Border.all(color: _cardBorder),
           boxShadow: const [
             BoxShadow(
@@ -1559,33 +1560,6 @@ class _ListingCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4.0),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          valueOrDefault<String>(
-                              row.price?.toStringAsFixed(0), '0'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w800,
-                            color: _cardBlue,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        ' р',
-                        style: GoogleFonts.inter(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.w800,
-                          color: _cardBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4.0),
                   Text(
                     valueOrDefault<String>(
                         row.description,
@@ -1597,6 +1571,24 @@ class _ListingCard extends StatelessWidget {
                       color: _cardText2,
                       height: 1.4,
                     ),
+                  ),
+                  const SizedBox(height: 4.0),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          valueOrDefault<String>(
+                              row.price?.toStringAsFixed(0), '0'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: EkbTypography.price,
+                        ),
+                      ),
+                      Text(
+                        ' р',
+                        style: EkbTypography.price,
+                      ),
+                    ],
                   ),
                   if (publishedAt.isNotEmpty) ...[
                     const SizedBox(height: 6.0),
@@ -1907,7 +1899,7 @@ class _SkeletonGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 12.0,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.76,
       ),
       itemCount: 6,
       itemBuilder: (_, __) => const _SkeletonCard(),
