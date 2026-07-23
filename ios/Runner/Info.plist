@@ -47,16 +47,20 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 
 	<key>NSCameraUsageDescription</key>
-    <string>In order to take a picture or video, this app requires permission to access the camera.</string>
+	<string>Приложению нужен доступ к камере, чтобы сделать фото для объявления.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-    <string>In order to upload data, this app requires permission to access the photo library.</string>
+	<string>Приложению нужен доступ к галерее, чтобы выбрать фото для объявления.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Приложению нужен доступ к галерее, чтобы сохранить фото объявления.</string>
 
 
 

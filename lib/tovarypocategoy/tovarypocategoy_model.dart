@@ -28,6 +28,13 @@ class TovarypocategoyModel extends FlutterFlowModel<TovarypocategoyWidget> {
     gridViewPagingController?.dispose();
   }
 
+  /// Сброс пагинации при смене чипа подкатегории.
+  void resetGridController() {
+    gridViewPagingController?.dispose();
+    gridViewPagingController = null;
+    gridViewApiCall = null;
+  }
+
   /// Additional helper methods.
   PagingController<ApiPagingParams, dynamic> setGridViewController(
     Function(ApiPagingParams) apiCall,

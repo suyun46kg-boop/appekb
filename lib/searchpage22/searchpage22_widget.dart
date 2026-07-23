@@ -239,6 +239,8 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       final cats = await CategoriesTable().queryRows(
         queryFn: (q) => q.order('name', ascending: true),
       );
+      // В фильтрах поиска — только корневые; RPC подтягивает и подкатегории.
+      final rootCats = cats.where((c) => c.isRoot).toList();
       final cityData =
           await SupaFlow.client.from('listings').select('city') as List;
       final citySet = <String>{};
@@ -249,7 +251,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
         }
       }
       final cityList = citySet.toList()..sort();
-      _model.categories = cats;
+      _model.categories = rootCats;
       _model.cities = cityList;
       _model.filterOptionsLoaded = true;
     } catch (_) {

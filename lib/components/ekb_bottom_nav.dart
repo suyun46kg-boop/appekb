@@ -1,6 +1,7 @@
 import 'dart:math' show pi;
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,118 +42,128 @@ class EkbBottomNavBar extends StatelessWidget {
   static const _inactive = Color(0xFF374151);
   static const _barHeight = 62.0;
 
-  // iOS-style liquid glass tokens
+  // iOS-style liquid glass tokens (reduced blur on iOS for GPU stability)
   static const _glassBlur = 36.0;
+  static const _glassBlurIOS = 18.0;
   static const _glassTintTop = Color(0xFFF9F9FB);
   static const _glassTintBottom = Color(0xFFEFEFF4);
 
   @override
   Widget build(BuildContext context) {
     final bottomPad = MediaQuery.paddingOf(context).bottom;
+    final useHeavyBlur = !kIsWeb &&
+        defaultTargetPlatform != TargetPlatform.iOS;
+    final blurSigma = useHeavyBlur ? _glassBlur : _glassBlurIOS;
+
+    final barContent = DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            _glassTintTop.withValues(alpha: useHeavyBlur ? 0.94 : 0.97),
+            _glassTintBottom.withValues(alpha: useHeavyBlur ? 0.92 : 0.96),
+          ],
+        ),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.52),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.85),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(bottom: bottomPad),
+            child: SizedBox(
+              height: _barHeight,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _NavTab(
+                      active: currentIndex == 0,
+                      icon: Icons.home_outlined,
+                      activeIcon: Icons.home_rounded,
+                      label: homeLabel,
+                      onTap: onHomeTap,
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavTab(
+                      active: currentIndex == 1,
+                      icon: Icons.search_rounded,
+                      activeIcon: Icons.search_rounded,
+                      label: searchLabel,
+                      onTap: onSearchTap,
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavTab(
+                      active: false,
+                      icon: Icons.add_circle_outline_rounded,
+                      activeIcon: Icons.add_circle_rounded,
+                      label: createLabel,
+                      spinIcon: true,
+                      iconColor: _headerBlue,
+                      onTap: onCreateTap,
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavTab(
+                      active: currentIndex == 2,
+                      icon: Icons.list_alt_outlined,
+                      activeIcon: Icons.list_alt_rounded,
+                      label: listingsLabel,
+                      onTap: onListingsTap,
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavTab(
+                      active: currentIndex == 3,
+                      icon: Icons.person_outline_rounded,
+                      activeIcon: Icons.person_rounded,
+                      label: profileLabel,
+                      onTap: onProfileTap,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!useHeavyBlur) {
+      return barContent;
+    }
 
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(
-          sigmaX: _glassBlur,
-          sigmaY: _glassBlur,
+          sigmaX: blurSigma,
+          sigmaY: blurSigma,
           tileMode: TileMode.clamp,
         ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                _glassTintTop.withValues(alpha: 0.94),
-                _glassTintBottom.withValues(alpha: 0.92),
-              ],
-            ),
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.52),
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0),
-                        Colors.white.withValues(alpha: 0.85),
-                        Colors.white.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: bottomPad),
-                child: SizedBox(
-                  height: _barHeight,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _NavTab(
-                          active: currentIndex == 0,
-                          icon: Icons.home_outlined,
-                          activeIcon: Icons.home_rounded,
-                          label: homeLabel,
-                          onTap: onHomeTap,
-                        ),
-                      ),
-                      Expanded(
-                        child: _NavTab(
-                          active: currentIndex == 1,
-                          icon: Icons.search_rounded,
-                          activeIcon: Icons.search_rounded,
-                          label: searchLabel,
-                          onTap: onSearchTap,
-                        ),
-                      ),
-                      Expanded(
-                        child: _NavTab(
-                          active: false,
-                          icon: Icons.add_circle_outline_rounded,
-                          activeIcon: Icons.add_circle_rounded,
-                          label: createLabel,
-                          spinIcon: true,
-                          iconColor: _headerBlue,
-                          onTap: onCreateTap,
-                        ),
-                      ),
-                      Expanded(
-                        child: _NavTab(
-                          active: currentIndex == 2,
-                          icon: Icons.list_alt_outlined,
-                          activeIcon: Icons.list_alt_rounded,
-                          label: listingsLabel,
-                          onTap: onListingsTap,
-                        ),
-                      ),
-                      Expanded(
-                        child: _NavTab(
-                          active: currentIndex == 3,
-                          icon: Icons.person_outline_rounded,
-                          activeIcon: Icons.person_rounded,
-                          label: profileLabel,
-                          onTap: onProfileTap,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: barContent,
       ),
     );
   }
@@ -165,7 +176,6 @@ class _NavTab extends StatefulWidget {
     required this.activeIcon,
     required this.label,
     required this.onTap,
-    this.iconSize = 26,
     this.spinIcon = false,
     this.iconColor,
   });
@@ -175,7 +185,7 @@ class _NavTab extends StatefulWidget {
   final IconData activeIcon;
   final String label;
   final VoidCallback onTap;
-  final double iconSize;
+  final double iconSize = 26;
   final bool spinIcon;
   final Color? iconColor;
 
@@ -190,11 +200,25 @@ class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    if (widget.spinIcon) {
-      _spin = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 10000),
-      )..repeat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!widget.spinIcon) {
+      return;
+    }
+    final disableMotion = MediaQuery.disableAnimationsOf(context);
+    if (disableMotion) {
+      _spin?.stop();
+      return;
+    }
+    _spin ??= AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 10000),
+    );
+    if (!_spin!.isAnimating) {
+      _spin!.repeat();
     }
   }
 

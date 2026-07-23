@@ -52,24 +52,31 @@ class _CategoryBlockBackgroundState extends State<CategoryBlockBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     )..addListener(_tickParticles);
+  }
 
-    _particleController.repeat();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final disableMotion = MediaQuery.disableAnimationsOf(context);
+    if (disableMotion) {
+      _particleController.stop();
+    } else if (!_particleController.isAnimating) {
+      _particleController.repeat();
+    }
   }
 
   void _tickParticles() {
     const dt = 1 / 60.0;
-    setState(() {
-      _time += dt;
-      _nextStreakAt -= dt;
-      if (_nextStreakAt <= 0) {
-        _spawnStreaks();
-        _nextStreakAt = 1 + _random.nextDouble() * 2;
-      }
-      _streaks.removeWhere((s) => s.life >= s.maxLife);
-      for (final s in _streaks) {
-        s.life += 1;
-      }
-    });
+    _time += dt;
+    _nextStreakAt -= dt;
+    if (_nextStreakAt <= 0) {
+      _spawnStreaks();
+      _nextStreakAt = 1 + _random.nextDouble() * 2;
+    }
+    _streaks.removeWhere((s) => s.life >= s.maxLife);
+    for (final s in _streaks) {
+      s.life += 1;
+    }
   }
 
   @override
@@ -111,12 +118,17 @@ class _CategoryBlockBackgroundState extends State<CategoryBlockBackground>
         child: Stack(
           children: [
             Positioned.fill(
-              child: CustomPaint(
-                painter: _CategoryParticlePainter(
-                  time: _time,
-                  bokeh: _bokeh,
-                  streaks: _streaks,
-                  random: _random,
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _particleController,
+                  builder: (context, _) => CustomPaint(
+                    painter: _CategoryParticlePainter(
+                      time: _time,
+                      bokeh: _bokeh,
+                      streaks: _streaks,
+                      random: _random,
+                    ),
+                  ),
                 ),
               ),
             ),

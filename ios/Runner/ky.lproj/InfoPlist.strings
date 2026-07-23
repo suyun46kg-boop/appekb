@@ -1,1 +1,3 @@
-
+NSCameraUsageDescription = "Жарыя үчүн сүрөт тартуу үчүн камерага уруксат керек.";
+NSPhotoLibraryUsageDescription = "Жарыя үчүн сүрөт тандоо үчүн галереяга уруксат керек.";
+NSPhotoLibraryAddUsageDescription = "Жарыя сүрөтүн сактоо үчүн галереяга уруксат керек.";

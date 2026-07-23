@@ -199,6 +199,44 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     );
   }
 
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          FFLocalizations.of(context).getText('dltacnt02'),
+        ),
+        content: Text(
+          FFLocalizations.of(context).getText('dltacnt03'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              FFLocalizations.of(context).getText('dltacnt05'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFDC2626),
+            ),
+            child: Text(
+              FFLocalizations.of(context).getText('dltacnt04'),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    GoRouter.of(context).prepareAuthEvent();
+    await authManager.deleteUser(context);
+  }
+
   Widget _logoutButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -334,11 +372,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 'dltacnt01' /* удаление аккаунта */,
                               ),
                               showDivider: false,
-                              onTap: () async {
-                                await launchURL(
-                                  'https://telegra.ph/Udalenie-akkaunta-07-12',
-                                );
-                              },
+                              onTap: () => _confirmDeleteAccount(context),
                             ),
                           ],
                         ),

@@ -88,7 +88,8 @@ class AppStateNotifier extends ChangeNotifier {
 }
 
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-      initialLocation: '/',
+      initialLocation:
+          FFAppState().hasSeenWelcome ? '/' : WelcomeWidget.routePath,
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
@@ -98,6 +99,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: '_initialize',
           path: '/',
           builder: (context, _) => NavBarPage(),
+        ),
+        FFRoute(
+          name: WelcomeWidget.routeName,
+          path: WelcomeWidget.routePath,
+          builder: (context, _) => const WelcomeWidget(),
         ),
         FFRoute(
             name: AvtoryzasiaWidget.routeName,

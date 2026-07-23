@@ -62,3 +62,7 @@ tools/bg-remove/backup/
 
 # Distribution archives
 *.zip
+
+# Design HTML previews (not shipped)
+design/**/*.html
+

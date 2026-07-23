@@ -18,8 +18,7 @@ class EkbkyrgyzdarSupabaseUser extends BaseAuthUser {
       );
 
   @override
-  Future? delete() =>
-      throw UnsupportedError('The delete user operation is not yet supported.');
+  Future? delete() => SupaFlow.client.rpc('delete_own_account');
 
   @override
   Future? updateEmail(String email) async {

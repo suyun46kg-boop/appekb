@@ -1,5 +1,6 @@
 import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/category_utils.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/sheet2_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -225,19 +226,14 @@ class _CreateListingPageCopyWidgetState
                                       enableDrag: false,
                                       context: context,
                                       builder: (context) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: Container(
-                                              height: 500.0,
-                                              child: Sheet2Widget(),
-                                            ),
+                                        return Padding(
+                                          padding: MediaQuery.viewInsetsOf(
+                                              context),
+                                          child: SizedBox(
+                                            height: MediaQuery.sizeOf(context)
+                                                    .height *
+                                                0.65,
+                                            child: const Sheet2Widget(),
                                           ),
                                         );
                                       },
@@ -277,22 +273,16 @@ class _CreateListingPageCopyWidgetState
                                             enableDrag: false,
                                             context: context,
                                             builder: (context) {
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  FocusScope.of(context)
-                                                      .unfocus();
-                                                  FocusManager
-                                                      .instance.primaryFocus
-                                                      ?.unfocus();
-                                                },
-                                                child: Padding(
-                                                  padding:
-                                                      MediaQuery.viewInsetsOf(
-                                                          context),
-                                                  child: Container(
-                                                    height: 500.0,
-                                                    child: Sheet2Widget(),
-                                                  ),
+                                              return Padding(
+                                                padding:
+                                                    MediaQuery.viewInsetsOf(
+                                                        context),
+                                                child: SizedBox(
+                                                  height: MediaQuery.sizeOf(
+                                                              context)
+                                                          .height *
+                                                      0.65,
+                                                  child: const Sheet2Widget(),
                                                 ),
                                               );
                                             },
@@ -348,19 +338,14 @@ class _CreateListingPageCopyWidgetState
                                       enableDrag: false,
                                       context: context,
                                       builder: (context) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: Container(
-                                              height: 500.0,
-                                              child: Sheet2Widget(),
-                                            ),
+                                        return Padding(
+                                          padding: MediaQuery.viewInsetsOf(
+                                              context),
+                                          child: SizedBox(
+                                            height: MediaQuery.sizeOf(context)
+                                                    .height *
+                                                0.65,
+                                            child: const Sheet2Widget(),
                                           ),
                                         );
                                       },
@@ -1643,6 +1628,10 @@ class _CreateListingPageCopyWidgetState
                                   FFAppState().valuecategoryshit.trim().isEmpty) {
                                 errorMessage = FFLocalizations.of(context)
                                     .getText('clerrcat');
+                              } else if (kCategoriesRequiringSubcategory
+                                  .contains(FFAppState().idcategorysheet)) {
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrsub');
                               } else if (phone.isEmpty ||
                                   phone
                                           .replaceAll(RegExp(r'[^0-9]'), '')

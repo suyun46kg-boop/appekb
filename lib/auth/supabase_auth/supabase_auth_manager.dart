@@ -1,8 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+
 import '/auth/auth_manager.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
+import '/dbdd/dbdd_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'email_auth.dart';
 
@@ -20,14 +21,38 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   Future deleteUser(BuildContext context) async {
     try {
       if (!loggedIn) {
-        print('Error: delete user attempted with no logged in user!');
         return;
       }
       await currentUser?.delete();
-    } on AuthException catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      await signOut();
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message!}')),
+        SnackBar(
+          content: Text(
+            FFLocalizations.of(context).getText('dltacnt06'),
+          ),
+        ),
+      );
+      context.goNamed(DbddWidget.routeName);
+    } on AuthException catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    } catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            FFLocalizations.of(context).getText('dltacnt07'),
+          ),
+        ),
       );
     }
   }

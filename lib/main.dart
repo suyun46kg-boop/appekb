@@ -1,5 +1,5 @@
 import 'package:provider/provider.dart';
-import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -22,24 +22,32 @@ import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
 
-  await FFLocalizations.initialize();
+  if (kIsWeb) {
+    GoRouter.optionURLReflectsImperativeAPIs = true;
+    usePathUrlStrategy();
+  }
 
-  await SupaFlow.initialize();
+  await _safeInit('localizations', FFLocalizations.initialize);
+  await _safeInit('supabase', SupaFlow.initialize);
+  await _safeInit('push', PushNotificationService.initialize);
+  await _safeInit('theme', FlutterFlowTheme.initialize);
 
-  await PushNotificationService.initialize();
-
-  await FlutterFlowTheme.initialize();
-
-  final appState = FFAppState(); // Initialize FFAppState
+  final appState = FFAppState();
   await appState.initializePersistedState();
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,
     child: MyApp(),
   ));
+}
+
+Future<void> _safeInit(String name, Future<void> Function() init) async {
+  try {
+    await init();
+  } catch (e, stack) {
+    debugPrint('$name init failed: $e\n$stack');
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -137,6 +145,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
+        fontFamily: 'Inter',
       ),
       themeMode: ThemeMode.light,
       routerConfig: _router,
@@ -163,7 +172,8 @@ class NavBarPage extends StatefulWidget {
 /// This is the private State class that goes with NavBarPage.
 class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'dbdd';
-  late Widget? _currentPage;
+  Widget? _currentPage;
+  final Map<int, Widget> _tabCache = {};
 
   static const _tabKeys = ['dbdd', 'searchpage22', 'mylisting', 'Profile'];
 
@@ -172,6 +182,25 @@ class _NavBarPageState extends State<NavBarPage> {
     super.initState();
     _currentPageName = widget.initialPage ?? _currentPageName;
     _currentPage = widget.page;
+  }
+
+  Widget _createTab(int index) {
+    switch (index) {
+      case 0:
+        return DbddWidget();
+      case 1:
+        return Searchpage22Widget();
+      case 2:
+        return MylistingWidget(mylisid: currentUserUid);
+      case 3:
+        return ProfileWidget();
+      default:
+        return DbddWidget();
+    }
+  }
+
+  Widget _tabBody(int currentIndex) {
+    return _tabCache.putIfAbsent(currentIndex, () => _createTab(currentIndex));
   }
 
   void _switchTab(int index) {
@@ -216,15 +245,11 @@ class _NavBarPageState extends State<NavBarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = {
-      'dbdd': DbddWidget(),
-      'searchpage22': Searchpage22Widget(),
-      'mylisting': MylistingWidget(mylisid: currentUserUid),
-      'Profile': ProfileWidget(),
-    };
     final currentIndex = _tabKeys.indexOf(_currentPageName);
 
     final MediaQueryData queryData = MediaQuery.of(context);
+    final bodyChild = _currentPage ??
+        _tabBody(currentIndex.clamp(0, _tabKeys.length - 1));
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
@@ -232,19 +257,7 @@ class _NavBarPageState extends State<NavBarPage> {
           data: queryData
               .removeViewInsets(removeBottom: true)
               .removeViewPadding(removeBottom: true),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
-            child: KeyedSubtree(
-              key: ValueKey(_currentPageName),
-              child: _currentPage ?? tabs[_currentPageName]!,
-            ),
-          )),
+          child: bodyChild),
       extendBody: false,
       bottomNavigationBar: _buildBottomNav(context, currentIndex),
     );

@@ -10,7 +10,6 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'category_block_background.dart';
 import 'dbdd_model.dart';
@@ -86,6 +85,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       'assets/images/categories/category_apartment.png',
       'cukp48gd',
       3,
+      iconOffset: Offset(0, 12),
       iconRotationDeg: -4,
       iconSize: 62,
     ),
@@ -218,7 +218,7 @@ class _DbddWidgetState extends State<DbddWidget> {
           ),
           child: Text(
             label,
-            style: GoogleFonts.inter(
+            style: EkbTypography.inter(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.4,
@@ -289,65 +289,293 @@ class _DbddWidgetState extends State<DbddWidget> {
     );
   }
 
+  void _openCategoryById(BuildContext context, int catId) {
+    context.pushNamed(
+      TovarypocategoyWidget.routeName,
+      queryParameters: {
+        'paramcatid': serializeParam(catId, ParamType.int),
+      }.withoutNulls,
+    );
+  }
+
+  /// PNG-иконки для всех корневых категорий в bottom sheet.
+  static const _sheetCategoryAssets = <int, String>{
+    1: 'assets/images/categories/category_auto.png',
+    2: 'assets/images/categories/category_job.png',
+    3: 'assets/images/categories/category_apartment.png',
+    4: 'assets/images/categories/category_services.png',
+    5: 'assets/images/categories/category_parttime.png',
+    6: 'assets/images/categories/category_repair.png',
+    7: 'assets/images/categories/category_beauty.png',
+    8: 'assets/images/categories/category_kids.png',
+    9: 'assets/images/categories/category_sale_v2.png',
+    11: 'assets/images/categories/category_from_kg.png',
+    12: 'assets/images/categories/category_hotel.png',
+    13: 'assets/images/categories/category_ticket.png',
+    14: 'assets/images/categories/category_border.png',
+  };
+
+  Widget _sheetCategoryLeading(int id1) {
+    final asset =
+        _sheetCategoryAssets[id1] ?? 'assets/images/categories/category_sale_v2.png';
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Image.asset(
+          asset,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openCategoriesSheet(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.72;
+        return SafeArea(
+          child: SizedBox(
+            height: maxHeight,
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD1D5DB),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 40),
+                      Expanded(
+                        child: Text(
+                          FFLocalizations.of(context).getText('zvs9dp80'),
+                          textAlign: TextAlign.center,
+                          style: EkbTypography.inter(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: EkbTypography.textPrimary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: EkbTypography.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                Expanded(
+                  child: FutureBuilder<List<CategoriesRow>>(
+                    future: CategoriesTable().queryRows(
+                      queryFn: (q) => q.order('id1', ascending: true),
+                    ),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(
+                          child: SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          ),
+                        );
+                      }
+                      final roots =
+                          snapshot.data!.where((c) => c.isRoot).toList();
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                        itemCount: roots.length,
+                        separatorBuilder: (_, __) => const Divider(
+                          height: 1,
+                          indent: 72,
+                          color: Color(0xFFF3F4F6),
+                        ),
+                        itemBuilder: (itemContext, index) {
+                          final cat = roots[index];
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                Navigator.pop(sheetContext);
+                                _openCategoryById(context, cat.id1);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                child: Row(
+                                  children: [
+                                    _sheetCategoryLeading(cat.id1),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Text(
+                                        cat.name,
+                                        style: EkbTypography.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: EkbTypography.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: EkbTypography.textMuted,
+                                      size: 22,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _categoryTile(BuildContext context, _DbddCategory cat) {
-    const tileBg = Color(0xFFF1F0EE);
-    const tileRadius = 5.0;
+    const tileBg = Color(0xFFF5F5F7);
+    const tileRadius = 12.0;
     const iconSize = 77.0;
-    return Material(
-      color: tileBg,
-      borderRadius: BorderRadius.circular(tileRadius),
-      child: InkWell(
-        onTap: () {
-          context.pushNamed(
-            TovarypocategoyWidget.routeName,
-            queryParameters: {
-              'paramcatid': serializeParam(cat.catId, ParamType.int),
-            }.withoutNulls,
-          );
-        },
-        borderRadius: BorderRadius.circular(tileRadius),
-        splashColor: Colors.black.withValues(alpha: 0.06),
-        highlightColor: const Color(0xFFEDEBE9),
-        child: SizedBox(
-          height: 92,
-          child: Stack(
-            clipBehavior: Clip.hardEdge,
-            children: [
-              Positioned(
-                right: -10,
-                bottom: -12,
-                width: iconSize,
-                height: iconSize,
-                child: IgnorePointer(
-                  child: Transform.rotate(
-                    angle: cat.iconRotationDeg * math.pi / 180,
-                    child: Transform.translate(
-                      offset: cat.iconOffset,
-                      child: Image.asset(
-                        cat.assetPath,
-                        width: iconSize,
-                        height: iconSize,
-                        fit: BoxFit.contain,
-                        alignment: Alignment.bottomRight,
-                        filterQuality: FilterQuality.high,
+    final radius = BorderRadius.circular(tileRadius);
+    return ClipRRect(
+      borderRadius: radius,
+      child: Material(
+        color: tileBg,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: () => _openCategoryById(context, cat.catId),
+          borderRadius: radius,
+          splashColor: Colors.black.withValues(alpha: 0.06),
+          highlightColor: const Color(0xFFEDEBE9),
+          child: SizedBox(
+            height: 92,
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
+              children: [
+                Positioned(
+                  right: -10,
+                  bottom: -12,
+                  width: iconSize,
+                  height: iconSize,
+                  child: IgnorePointer(
+                    child: Transform.rotate(
+                      angle: cat.iconRotationDeg * math.pi / 180,
+                      child: Transform.translate(
+                        offset: cat.iconOffset,
+                        child: Image.asset(
+                          cat.assetPath,
+                          width: iconSize,
+                          height: iconSize,
+                          fit: BoxFit.contain,
+                          alignment: Alignment.bottomRight,
+                          filterQuality: FilterQuality.high,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 10,
-                top: 10,
-                right: 8,
-                child: Text(
-                  FFLocalizations.of(context).getText(cat.labelKey),
-                  textAlign: TextAlign.left,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: EkbTypography.category,
+                Positioned(
+                  left: 9,
+                  top: 12,
+                  right: 8,
+                  child: Text(
+                    FFLocalizations.of(context).getText(cat.labelKey),
+                    textAlign: TextAlign.left,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: EkbTypography.category,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _moreCategoryTile(BuildContext context) {
+    const tileBg = Color(0xFFF5F5F7);
+    final radius = BorderRadius.circular(12);
+    return ClipRRect(
+      borderRadius: radius,
+      child: Material(
+        color: tileBg,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: () => _openCategoriesSheet(context),
+          borderRadius: radius,
+          splashColor: Colors.black.withValues(alpha: 0.06),
+          highlightColor: const Color(0xFFEDEBE9),
+          child: SizedBox(
+            height: 92,
+            child: Stack(
+              children: [
+                Positioned(
+                  right: 10,
+                  bottom: 10,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.apps_rounded,
+                      size: 22,
+                      color: EkbTypography.textSecondary,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 9,
+                  top: 12,
+                  right: 8,
+                  child: Text(
+                    FFLocalizations.of(context).getText('dbddmore'),
+                    textAlign: TextAlign.left,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: EkbTypography.category,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -355,6 +583,10 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _categoriesGrid(BuildContext context) {
+    // 7 категорий + плитка «ещё» = 2 ряда по 4.
+    const visibleCount = 7;
+    final homeCount = math.min(_categories.length, visibleCount);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(_pageHPad, 14, _pageHPad, 10),
       child: GridView.builder(
@@ -367,11 +599,13 @@ class _DbddWidgetState extends State<DbddWidget> {
           mainAxisSpacing: 8,
           mainAxisExtent: 92,
         ),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) => _categoryTile(
-          context,
-          _categories[index],
-        ),
+        itemCount: homeCount + 1,
+        itemBuilder: (context, index) {
+          if (index < homeCount) {
+            return _categoryTile(context, _categories[index]);
+          }
+          return _moreCategoryTile(context);
+        },
       ),
     );
   }

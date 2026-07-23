@@ -1,5 +1,6 @@
 import '/dbdd/category_block_background.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/backend/category_utils.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -11,6 +12,16 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '/theme/ekb_typography.dart';
 import 'tovarypocategoy_model.dart';
 export 'tovarypocategoy_model.dart';
+
+class _CategoryPageData {
+  const _CategoryPageData({
+    required this.category,
+    required this.subcategories,
+  });
+
+  final CategoriesRow? category;
+  final List<CategoriesRow> subcategories;
+}
 
 class _PulsingPlaceholder extends StatefulWidget {
   const _PulsingPlaceholder();
@@ -64,11 +75,13 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
   late TovarypocategoyModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  late final Future<CategoriesRow?> _categoryFuture;
+  late final Future<_CategoryPageData> _pageDataFuture;
+
+  /// null = чип «Все».
+  int? _selectedSubId;
 
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
-  static const _text = Color(0xFF0F172A);
   static const _titleColor = Color(0xFF334155);
   static const _text2 = Color(0xFF475569);
   static const _text3 = Color(0xFF94A3B8);
@@ -76,21 +89,42 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
   static const _pageHPad = 20.0;
   static const _listingPlaceholder = 'assets/images/zag.jpg';
 
+  int get _rootId => valueOrDefault<int>(widget.paramcatid, 1);
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => TovarypocategoyModel());
-    _categoryFuture = _loadCategory();
+    _pageDataFuture = _loadPageData();
   }
 
-  Future<CategoriesRow?> _loadCategory() async {
+  Future<_CategoryPageData> _loadPageData() async {
     final rows = await CategoriesTable().querySingleRow(
-      queryFn: (q) => q.eqOrNull(
-        'id1',
-        valueOrDefault<int>(widget.paramcatid, 1),
-      ),
+      queryFn: (q) => q.eqOrNull('id1', _rootId),
     );
-    return rows.isNotEmpty ? rows.first : null;
+    List<CategoriesRow> subs = const [];
+    try {
+      subs = await CategoriesTable().queryRows(
+        queryFn: (q) =>
+            q.eq('parent_id1', _rootId).order('id1', ascending: true),
+      );
+    } catch (_) {
+      // Колонка parent_id1 ещё не применена в Supabase — лента без чипов.
+    }
+    return _CategoryPageData(
+      category: rows.isNotEmpty ? rows.first : null,
+      subcategories: subs,
+    );
+  }
+
+  void _selectSubcategory(int? subId) {
+    if (_selectedSubId == subId) return;
+    setState(() => _selectedSubId = subId);
+    // Обновляем apiCall в build, затем перезапрашиваем первую страницу.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _model.gridViewPagingController?.refresh();
+    });
   }
 
   @override
@@ -134,6 +168,80 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _subcategoryChips(List<CategoriesRow> subs) {
+    if (subs.isEmpty) return const SizedBox.shrink();
+
+    final items = <({String label, int? id})>[
+      (label: FFLocalizations.of(context).getText('srchall1'), id: null),
+      ...subs.map((s) => (label: s.name, id: s.id1)),
+    ];
+
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: _pageHPad),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final item = items[index];
+          final selected = _selectedSubId == item.id;
+          return Center(
+            child: _chip(
+              label: item.label,
+              selected: selected,
+              onTap: () => _selectSubcategory(item.id),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _chip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? const Color(0x1A1A56DB) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected ? const Color(0x661A56DB) : _border,
+            width: 1,
+          ),
+          boxShadow: selected
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x0A000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Text(
+          label,
+          style: EkbTypography.inter(
+            fontSize: 14,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            height: 18 / 14,
+            color: selected ? EkbTypography.brandBlue : EkbTypography.textPrimary,
+          ),
         ),
       ),
     );
@@ -333,38 +441,70 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: _bg,
-        body: FutureBuilder<CategoriesRow?>(
-          future: _categoryFuture,
+        body: FutureBuilder<_CategoryPageData>(
+          future: _pageDataFuture,
           builder: (context, snapshot) {
-            final title = snapshot.hasData
-                ? valueOrDefault<String>(
-                    snapshot.data?.name,
+            if (!snapshot.hasData) {
+              return Column(
+                children: [
+                  _header(
+                    context,
                     FFLocalizations.of(context)
                         .getText('au4pejr1' /* категория */),
-                  )
-                : FFLocalizations.of(context)
-                    .getText('au4pejr1' /* категория */);
+                  ),
+                  const Expanded(
+                    child: Center(
+                      child: SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: _blue,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            final data = snapshot.data!;
+            final title = valueOrDefault<String>(
+              data.category?.name,
+              FFLocalizations.of(context).getText('au4pejr1' /* категория */),
+            );
+            final subs = data.subcategories;
+            final childIds = subs.map((s) => s.id1).toList();
+            final categoryFilter = buildCategoryIdFilter(
+              rootId: _rootId,
+              childIds: childIds,
+              selectedSubId: _selectedSubId,
+            );
 
             return Column(
               children: [
                 _header(context, title),
+                if (subs.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  _subcategoryChips(subs),
+                  const SizedBox(height: 10),
+                ],
                 Expanded(
                   child: CustomScrollView(
                     cacheExtent: 600,
                     slivers: [
                       SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(5, 12, 5, 0),
+                        padding: EdgeInsets.fromLTRB(
+                          5,
+                          subs.isEmpty ? 12 : 8,
+                          5,
+                          0,
+                        ),
                         sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
                           pagingController: _model.setGridViewController(
                             (nextPageMarker) => ApibirCall.call(
                               offset: nextPageMarker.numItems,
-                              categoryId: valueOrDefault<String>(
-                                'eq.${valueOrDefault<String>(
-                                  widget.paramcatid?.toString(),
-                                  'eq.0',
-                                )}',
-                                '1',
-                              ),
+                              categoryId: categoryFilter,
                             ),
                           ),
                           gridDelegate:

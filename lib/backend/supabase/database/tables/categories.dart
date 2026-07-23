@@ -22,4 +22,10 @@ class CategoriesRow extends SupabaseDataRow {
 
   int get id1 => getField<int>('id1')!;
   set id1(int value) => setField<int>('id1', value);
+
+  /// null = корневая категория; иначе id1 родителя.
+  int? get parentId1 => getField<int>('parent_id1');
+  set parentId1(int? value) => setField<int>('parent_id1', value);
+
+  bool get isRoot => parentId1 == null;
 }

@@ -5,7 +5,25 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static const String _placeholder = 'REPLACE_ME';
 
-  static bool get isConfigured => android.apiKey != _placeholder;
+  static bool _isPlatformConfigured(FirebaseOptions options) =>
+      options.apiKey != _placeholder &&
+      options.appId != _placeholder &&
+      options.projectId != _placeholder;
+
+  /// True only when Firebase is configured for the current platform.
+  static bool get isConfigured {
+    if (kIsWeb) {
+      return false;
+    }
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return _isPlatformConfigured(android);
+      case TargetPlatform.iOS:
+        return _isPlatformConfigured(ios);
+      default:
+        return false;
+    }
+  }
 
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
