@@ -529,34 +529,37 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _moreCategoryTile(BuildContext context) {
-    const softBlue = Color(0xFFE8EEFF);
+    const tileBg = Color(0xFFF5F5F7);
     final radius = BorderRadius.circular(12);
     return ClipRRect(
       borderRadius: radius,
       child: Material(
-        color: softBlue,
+        color: tileBg,
         borderRadius: radius,
         child: InkWell(
           onTap: () => _openCategoriesSheet(context),
           borderRadius: radius,
-          splashColor: _blue.withValues(alpha: 0.10),
-          highlightColor: _blue.withValues(alpha: 0.06),
+          splashColor: Colors.black.withValues(alpha: 0.06),
+          highlightColor: const Color(0xFFEDEBE9),
           child: SizedBox(
             height: 92,
             width: double.infinity,
-            child: Center(
-              child: Text(
-                FFLocalizations.of(context).getText('dbddmore'),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: EkbTypography.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: _blue,
-                  letterSpacing: -0.2,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  FFLocalizations.of(context).getText('dbddmore'),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: EkbTypography.category,
                 ),
-              ),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 28,
+                  color: EkbTypography.textSecondary,
+                ),
+              ],
             ),
           ),
         ),
