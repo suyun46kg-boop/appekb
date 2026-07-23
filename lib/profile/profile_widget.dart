@@ -3,6 +3,7 @@ import '/backend/supabase/supabase.dart';
 import '/dbdd/category_block_background.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/services/ekb_image_cache.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -117,9 +118,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         child: hasPhoto
             ? CachedNetworkImage(
                 imageUrl: photoUrl,
+                cacheManager: EkbImageCacheManager.instance,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
+                memCacheWidth: 264,
                 errorWidget: (_, __, ___) => _avatarFallback(),
               )
             : _avatarFallback(),
@@ -196,6 +199,19 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             color: _border,
           ),
       ],
+    );
+  }
+
+  Future<void> _clearImageCache(BuildContext context) async {
+    await EkbImageCacheManager.clearAll();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          FFLocalizations.of(context).getText('clrcache02'),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -363,6 +379,15 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                   'https://telegra.ph/Ekaterinburg-Kyrgyzdar-06-20',
                                 );
                               },
+                            ),
+                            _menuTile(
+                              icon: Icons.cleaning_services_outlined,
+                              iconColor: const Color(0xFF047857),
+                              iconBg: const Color(0xFFECFDF5),
+                              title: FFLocalizations.of(context).getText(
+                                'clrcache01' /* Очистить кеш */,
+                              ),
+                              onTap: () => _clearImageCache(context),
                             ),
                             _menuTile(
                               icon: Icons.person_remove_outlined,

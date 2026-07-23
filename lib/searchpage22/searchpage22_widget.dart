@@ -11,6 +11,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
+import '/services/ekb_image_cache.dart';
 import '/theme/ekb_typography.dart';
 import 'searchpage22_model.dart';
 export 'searchpage22_model.dart';
@@ -1633,6 +1634,7 @@ class _ListingCard extends StatelessWidget {
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: EkbImageCacheManager.instance,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,

@@ -3,6 +3,7 @@ import '/backend/supabase/supabase.dart';
 import '/components/shimmer_widgets.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/services/ekb_image_cache.dart';
 import '/theme/ekb_typography.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -85,8 +86,8 @@ class _DbddWidgetState extends State<DbddWidget> {
       'assets/images/categories/category_apartment.png',
       'cukp48gd',
       3,
-      iconOffset: Offset(0, 12),
-      iconRotationDeg: -4,
+      iconOffset: Offset(0, 10),
+      iconRotationDeg: 0,
       iconSize: 62,
     ),
     _DbddCategory(
@@ -107,7 +108,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       'assets/images/categories/category_auto.png',
       'r4qsbrdp',
       1,
-      iconOffset: Offset(0, 2),
+      iconOffset: Offset(-2, 0),
       iconRotationDeg: -3,
       iconSize: 66,
     ),
@@ -675,6 +676,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                             slide.images,
                             'https://images.unsplash.com/photo-1555215695-3004980ad54e',
                           ),
+                          cacheManager: EkbImageCacheManager.instance,
                           fit: BoxFit.cover,
                           fadeInDuration: const Duration(milliseconds: 250),
                           placeholder: (_, __) => _bannerShimmer(),
@@ -745,6 +747,7 @@ class _DbddWidgetState extends State<DbddWidget> {
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: EkbImageCacheManager.instance,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,

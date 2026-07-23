@@ -8,8 +8,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
+import '/services/ekb_image_cache.dart';
 import 'dart:ui';
 import '/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1556,12 +1558,16 @@ class _CreateListingPageCopyWidgetState
                                             child: ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
-                                              child: Image.network(
-                                                _model
+                                              child: CachedNetworkImage(
+                                                imageUrl: _model
                                                     .uploadedFileUrl_uploadData89k,
+                                                cacheManager:
+                                                    EkbImageCacheManager
+                                                        .instance,
                                                 width: 200.0,
                                                 height: 200.0,
                                                 fit: BoxFit.cover,
+                                                memCacheWidth: 400,
                                               ),
                                             ),
                                           ),

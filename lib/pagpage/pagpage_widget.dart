@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/services/ekb_image_cache.dart';
 import '/theme/ekb_typography.dart';
 import 'pagpage_model.dart';
 export 'pagpage_model.dart';
@@ -232,6 +233,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     }
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: EkbImageCacheManager.instance,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
@@ -612,6 +614,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: EkbImageCacheManager.instance,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
@@ -982,6 +985,7 @@ class _FullscreenImageViewer extends StatelessWidget {
                   ? Image.asset(placeholderAsset, fit: BoxFit.contain)
                   : CachedNetworkImage(
                       imageUrl: imageUrl!,
+                      cacheManager: EkbImageCacheManager.instance,
                       fit: BoxFit.contain,
                       errorWidget: (_, __, ___) =>
                           Image.asset(placeholderAsset, fit: BoxFit.contain),

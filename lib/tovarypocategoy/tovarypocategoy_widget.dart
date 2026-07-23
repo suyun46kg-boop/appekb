@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '/services/ekb_image_cache.dart';
 import '/theme/ekb_typography.dart';
 import 'tovarypocategoy_model.dart';
 export 'tovarypocategoy_model.dart';
@@ -284,6 +285,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: EkbImageCacheManager.instance,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
