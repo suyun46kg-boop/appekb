@@ -529,52 +529,34 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _moreCategoryTile(BuildContext context) {
-    const tileBg = Color(0xFFF5F5F7);
+    const softBlue = Color(0xFFE8EEFF);
     final radius = BorderRadius.circular(12);
     return ClipRRect(
       borderRadius: radius,
       child: Material(
-        color: tileBg,
+        color: softBlue,
         borderRadius: radius,
         child: InkWell(
           onTap: () => _openCategoriesSheet(context),
           borderRadius: radius,
-          splashColor: Colors.black.withValues(alpha: 0.06),
-          highlightColor: const Color(0xFFEDEBE9),
+          splashColor: _blue.withValues(alpha: 0.10),
+          highlightColor: _blue.withValues(alpha: 0.06),
           child: SizedBox(
             height: 92,
-            child: Stack(
-              children: [
-                Positioned(
-                  right: 10,
-                  bottom: 10,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.apps_rounded,
-                      size: 22,
-                      color: EkbTypography.textSecondary,
-                    ),
-                  ),
+            width: double.infinity,
+            child: Center(
+              child: Text(
+                FFLocalizations.of(context).getText('dbddmore'),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: EkbTypography.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _blue,
+                  letterSpacing: -0.2,
                 ),
-                Positioned(
-                  left: 9,
-                  top: 12,
-                  right: 8,
-                  child: Text(
-                    FFLocalizations.of(context).getText('dbddmore'),
-                    textAlign: TextAlign.left,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: EkbTypography.category,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

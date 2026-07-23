@@ -786,8 +786,8 @@ final kTranslationsMap = <Map<String, Map<String, String>>>[
       'ky': 'Категориялар',
     },
     'dbddmore': {
-      'ru': 'ещё',
-      'ky': 'дагы',
+      'ru': 'Ещё',
+      'ky': 'Дагы',
     },
     'cukp48gd': {
       'ru': 'квартира',
