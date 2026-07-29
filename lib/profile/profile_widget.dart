@@ -222,8 +222,27 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         title: Text(
           FFLocalizations.of(context).getText('dltacnt02'),
         ),
-        content: Text(
-          FFLocalizations.of(context).getText('dltacnt03'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              FFLocalizations.of(context).getText('dltacnt03'),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => launchURL(
+                'https://telegra.ph/Udalenie-akkaunta-07-12',
+              ),
+              child: Text(
+                FFLocalizations.of(context).getText('dltacnt08'),
+                style: const TextStyle(
+                  color: Color(0xFF1A56DB),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(

@@ -5,6 +5,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/dbdd/dbdd_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/services/moderation_service.dart';
 import 'email_auth.dart';
 
 import 'supabase_user_provider.dart';
@@ -13,7 +14,8 @@ export '/auth/base_auth_user_provider.dart';
 
 class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   @override
-  Future signOut() {
+  Future signOut() async {
+    ModerationService.clearCache();
     return SupaFlow.client.auth.signOut();
   }
 

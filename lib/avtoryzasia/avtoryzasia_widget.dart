@@ -471,29 +471,6 @@ class _AvtoryzasiaWidgetState extends State<AvtoryzasiaWidget> {
                           .getText('mojwaje4' /* пароль */),
                       field: _passwordField(),
                     ),
-                    Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: TextButton(
-                        onPressed: () => _showSnack(
-                          FFLocalizations.of(context).getText('authforg'),
-                          isError: false,
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          FFLocalizations.of(context)
-                              .getText('runv4yix' /* забыл пароль */),
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _blue,
-                          ),
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 28),
                     SizedBox(
                       width: double.infinity,

@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/components/ekb_listing_card.dart';
 import '/services/ekb_image_cache.dart';
+import '/services/moderation_service.dart';
 import '/theme/ekb_typography.dart';
 import 'pagpage_model.dart';
 export 'pagpage_model.dart';
@@ -48,6 +51,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   static const _listingPlaceholder = 'assets/images/zag.jpg';
 
   bool _isFavorite = false;
+  bool _sellerBlocked = false;
   String? _resolvedSellerName;
 
   @override
@@ -94,7 +98,19 @@ class _PagpageWidgetState extends State<PagpageWidget> {
             return aOrder.compareTo(bOrder);
           });
 
-          return listings.take(4).toList();
+          final blocked = await ModerationService.getBlockedUserIds();
+          final filtered = blocked.isEmpty
+              ? listings
+              : listings
+                  .where((row) {
+                    final userId = row.userId;
+                    return userId == null ||
+                        userId.isEmpty ||
+                        !blocked.contains(userId);
+                  })
+                  .toList();
+
+          return filtered.take(4).toList();
         }
       }
     } catch (_) {}
@@ -103,8 +119,22 @@ class _PagpageWidgetState extends State<PagpageWidget> {
       return await ListingsTable().queryRows(
         queryFn: (q) =>
             q.neq('id', excludeId).order('created_at', ascending: false),
-        limit: 4,
-      );
+        limit: 8,
+      ).then((rows) async {
+        final blocked = await ModerationService.getBlockedUserIds();
+        if (blocked.isEmpty) {
+          return rows.take(4).toList();
+        }
+        return rows
+            .where((row) {
+              final userId = row.userId;
+              return userId == null ||
+                  userId.isEmpty ||
+                  !blocked.contains(userId);
+            })
+            .take(4)
+            .toList();
+      });
     } catch (_) {
       return [];
     }
@@ -124,6 +154,9 @@ class _PagpageWidgetState extends State<PagpageWidget> {
       if (sellerRows.isNotEmpty) {
         _resolvedSellerName = sellerRows.first.name;
       }
+    }
+    if (userId != null && userId.isNotEmpty) {
+      _sellerBlocked = await ModerationService.isUserBlocked(userId);
     }
     return listing;
   }
@@ -189,6 +222,217 @@ class _PagpageWidgetState extends State<PagpageWidget> {
         text: '$title — $price р\n${listing.description ?? ''}'.trim(),
       ),
     );
+  }
+
+  bool get _isLoggedIn => currentUserUid.isNotEmpty;
+
+  void _requireLoginSnack() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(FFLocalizations.of(context).getText('modlogin1')),
+      ),
+    );
+  }
+
+  Future<void> _showModerationSheet(ListingsRow listing) async {
+    if (!_isLoggedIn) {
+      _requireLoginSnack();
+      return;
+    }
+
+    final sellerId = listing.userId?.trim() ?? '';
+    final isOwnListing =
+        sellerId.isNotEmpty && sellerId == currentUserUid;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: _border,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined, color: _text),
+                  title: Text(
+                    FFLocalizations.of(context).getText('modreport'),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _text,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showReportReasons(listing);
+                  },
+                ),
+                if (!isOwnListing && sellerId.isNotEmpty)
+                  ListTile(
+                    leading: const Icon(Icons.block_rounded, color: Color(0xFFDC2626)),
+                    title: Text(
+                      FFLocalizations.of(context).getText('modblock'),
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _confirmBlockSeller(sellerId);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showReportReasons(ListingsRow listing) async {
+    const reasons = <(String, String)>[
+      ('spam', 'modrsn01'),
+      ('fraud', 'modrsn02'),
+      ('prohibited', 'modrsn03'),
+      ('offensive', 'modrsn04'),
+      ('other', 'modrsn05'),
+    ];
+
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: _border,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  FFLocalizations.of(context).getText('modrsnttl'),
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: _text,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...reasons.map(
+                  (item) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      FFLocalizations.of(context).getText(item.$2),
+                      style: GoogleFonts.inter(fontSize: 14, color: _text),
+                    ),
+                    onTap: () => Navigator.pop(sheetContext, item.$1),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected == null || !mounted) {
+      return;
+    }
+
+    try {
+      await ModerationService.reportListing(
+        listingId: listing.id ?? widget.idproductpage,
+        reason: selected,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modrepsok')),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modreperr')),
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmBlockSeller(String sellerId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(FFLocalizations.of(context).getText('modblktit')),
+        content: Text(FFLocalizations.of(context).getText('modblkmsg')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(FFLocalizations.of(context).getText('mlcancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              FFLocalizations.of(context).getText('modblock'),
+              style: const TextStyle(color: Color(0xFFDC2626)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    try {
+      await ModerationService.blockUser(sellerId);
+      if (!mounted) return;
+      setState(() => _sellerBlocked = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modblksok')),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modblkerr')),
+        ),
+      );
+    }
   }
 
   void _openFullscreenImage(String? imageUrl) {
@@ -275,12 +519,18 @@ class _PagpageWidgetState extends State<PagpageWidget> {
             ),
             Row(
               children: [
-                if (listing != null)
+                if (listing != null) ...[
+                  _circleIconButton(
+                    icon: Icons.flag_outlined,
+                    onTap: () => _showModerationSheet(listing),
+                  ),
+                  const SizedBox(width: 8),
                   _circleIconButton(
                     icon: Icons.ios_share_rounded,
                     onTap: () => _shareListing(listing),
                   ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 _circleIconButton(
                   icon: _isFavorite
                       ? Icons.favorite_rounded
@@ -603,122 +853,6 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
-  Widget _recommendationImage(BuildContext context, String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return _placeholderImage();
-    }
-
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cardWidth = MediaQuery.sizeOf(context).width / 2;
-    final memCacheWidth = (cardWidth * dpr).round();
-
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      cacheManager: EkbImageCacheManager.instance,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      memCacheWidth: memCacheWidth,
-      fadeInDuration: const Duration(milliseconds: 200),
-      placeholder: (_, __) => Container(color: const Color(0xFFE2E8F0)),
-      errorWidget: (_, __, ___) => _placeholderImage(),
-    );
-  }
-
-  Widget _recommendationCard(ListingsRow item) {
-    final description = item.description?.trim() ?? '';
-
-    return InkWell(
-      onTap: () {
-        context.pushNamed(
-          PagpageWidget.routeName,
-          queryParameters: {
-            'idproductpage': serializeParam(item.id, ParamType.String),
-          }.withoutNulls,
-        );
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _border),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 3,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 125,
-              width: double.infinity,
-              child: _recommendationImage(context, item.img),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    valueOrDefault<String>(
-                      item.title,
-                      FFLocalizations.of(context).getText('c5j5d6pi'),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _text,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        valueOrDefault<String>(
-                          item.price?.toStringAsFixed(0),
-                          '0',
-                        ),
-                        style: EkbTypography.price,
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        FFLocalizations.of(context).getText('gf7pmm28'),
-                        style: EkbTypography.price,
-                      ),
-                    ],
-                  ),
-                  if (description.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: _text2,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _recommendationsSection() {
     return FutureBuilder<List<ListingsRow>>(
       future: _recommendationsFuture,
@@ -744,12 +878,12 @@ class _PagpageWidgetState extends State<PagpageWidget> {
               itemCount: items.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.72,
+                crossAxisSpacing: EkbListingCard.gridSpacing,
+                mainAxisSpacing: EkbListingCard.gridSpacing,
+                childAspectRatio: EkbListingCard.gridAspectRatio,
               ),
               itemBuilder: (context, index) =>
-                  _recommendationCard(items[index]),
+                  EkbListingCard.fromListingsRow(items[index], showDescription: false),
             ),
           ],
         );
@@ -907,9 +1041,13 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                             _infoRow(
                               FFLocalizations.of(context)
                                   .getText('jo0q04xo' /* контакты */),
-                              valueOrDefault<String>(
-                                  phone,
-                                  FFLocalizations.of(context).getText('pgno01')),
+                              _sellerBlocked
+                                  ? FFLocalizations.of(context)
+                                      .getText('modhidden')
+                                  : valueOrDefault<String>(
+                                      phone,
+                                      FFLocalizations.of(context)
+                                          .getText('pgno01')),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
@@ -943,7 +1081,26 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                         const SizedBox(height: 12),
                         _sellerCard(listing),
                         const SizedBox(height: 16),
-                        if (phone.isNotEmpty) _contactButtons(phone),
+                        if (_sellerBlocked)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: Text(
+                              FFLocalizations.of(context).getText('modblknote'),
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF991B1B),
+                              ),
+                            ),
+                          )
+                        else if (phone.isNotEmpty)
+                          _contactButtons(phone),
                         const SizedBox(height: 20),
                         _recommendationsSection(),
                         SizedBox(

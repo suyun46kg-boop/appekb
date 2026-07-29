@@ -523,7 +523,6 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
       await UserTable().insert({
         'nomer': FFAppState().emailstate,
         'id': currentUserUid,
-        'pass': _model.passwordTextController.text,
         'name': _model.namefildTextController.text,
       });
     } catch (_) {

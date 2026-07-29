@@ -1,5 +1,6 @@
 import '/backend/api_requests/api_calls.dart';
 import '/backend/supabase/supabase.dart';
+import '/components/ekb_listing_card.dart';
 import '/components/shimmer_widgets.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -7,6 +8,7 @@ import '/services/ekb_image_cache.dart';
 import '/theme/ekb_typography.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -23,20 +25,6 @@ const _shadowBanner = [
     blurRadius: 14,
     offset: Offset(0, 4),
     spreadRadius: -5,
-  ),
-];
-
-const _shadowCard = [
-  BoxShadow(
-    color: Color(0x16000000),
-    blurRadius: 12,
-    offset: Offset(0, 4),
-    spreadRadius: -1,
-  ),
-  BoxShadow(
-    color: Color(0x08000000),
-    blurRadius: 3,
-    offset: Offset(0, 1),
   ),
 ];
 
@@ -79,7 +67,6 @@ class _DbddWidgetState extends State<DbddWidget> {
   static const _blue = EkbTypography.brandBlue;
   static const _text3 = EkbTypography.textMuted;
   static const _pageHPad = 20.0;
-  static const _listingPlaceholder = 'assets/images/zag.jpg';
 
   static const _categories = [
     _DbddCategory(
@@ -530,37 +517,148 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _moreCategoryTile(BuildContext context) {
-    const tileBg = Color(0xFFF5F5F7);
-    final radius = BorderRadius.circular(12);
+    // Translucent like KG/RU + white highlights for 3D (no blue glow).
+    const radius = 12.0;
+    final r = BorderRadius.circular(radius);
     return ClipRRect(
-      borderRadius: radius,
-      child: Material(
-        color: tileBg,
-        borderRadius: radius,
-        child: InkWell(
-          onTap: () => _openCategoriesSheet(context),
-          borderRadius: radius,
-          splashColor: Colors.black.withValues(alpha: 0.06),
-          highlightColor: const Color(0xFFEDEBE9),
-          child: SizedBox(
-            height: 92,
-            width: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  FFLocalizations.of(context).getText('dbddmore'),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: EkbTypography.category,
+      borderRadius: r,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _openCategoriesSheet(context),
+            borderRadius: r,
+            splashColor: Colors.black.withValues(alpha: 0.06),
+            highlightColor: Colors.black.withValues(alpha: 0.04),
+            child: Ink(
+              height: 92,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: r,
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.05,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.42),
+                    Colors.white.withValues(alpha: 0.28),
+                    const Color(0xFFF5F5F7).withValues(alpha: 0.55),
+                  ],
+                  stops: const [0.0, 0.55, 1.0],
                 ),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 28,
-                  color: EkbTypography.textSecondary,
+                border: Border.all(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  width: 0.7,
                 ),
-              ],
+              ),
+              child: Stack(
+                children: [
+                  // Top white rim — 3D bevel
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: 26,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(radius),
+                          ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.55),
+                              Colors.white.withValues(alpha: 0.18),
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Top-left specular glint
+                  Positioned(
+                    left: -8,
+                    top: -10,
+                    width: 52,
+                    height: 52,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.5),
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom soft shade — depth
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 28,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(radius),
+                          ),
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.06),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Thin white edge line
+                  Positioned(
+                    left: 1,
+                    right: 1,
+                    top: 0.6,
+                    height: 1,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.0),
+                              Colors.white.withValues(alpha: 0.7),
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                      FFLocalizations.of(context).getText('dbddmore'),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: EkbTypography.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.4,
+                        color: EkbTypography.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -593,18 +691,6 @@ class _DbddWidgetState extends State<DbddWidget> {
           return _moreCategoryTile(context);
         },
       ),
-    );
-  }
-
-  String _formatPublishedAt(BuildContext context, dynamic item) {
-    final raw = getJsonField(item, r'''$.created_at''')?.toString();
-    if (raw == null || raw.isEmpty) return '';
-    final parsed = DateTime.tryParse(raw);
-    if (parsed == null) return '';
-    return dateTimeFormat(
-      'relative',
-      parsed,
-      locale: FFLocalizations.of(context).languageCode,
     );
   }
 
@@ -722,164 +808,6 @@ class _DbddWidgetState extends State<DbddWidget> {
     );
   }
 
-  Widget _listingPlaceholderImage() {
-    return ClipRect(
-      child: Transform.scale(
-        scale: 1.85,
-        child: Image.asset(
-          _listingPlaceholder,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      ),
-    );
-  }
-
-  Widget _listingImage(BuildContext context, String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return _listingPlaceholderImage();
-    }
-
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cardWidth = MediaQuery.sizeOf(context).width / 2;
-    final memCacheWidth = (cardWidth * dpr).round();
-
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      cacheManager: EkbImageCacheManager.instance,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      memCacheWidth: memCacheWidth,
-      fadeInDuration: const Duration(milliseconds: 250),
-      placeholder: (_, __) => const ShimmerBox(
-        width: double.infinity,
-        height: double.infinity,
-      ),
-      errorWidget: (_, __, ___) => _listingPlaceholderImage(),
-    );
-  }
-
-  Widget _listingCard(BuildContext context, dynamic item) {
-    final publishedAt = _formatPublishedAt(context, item);
-
-    return InkWell(
-      onTap: () {
-        context.pushNamed(
-          PagpageWidget.routeName,
-          queryParameters: {
-            'idproductpage': serializeParam(
-              valueOrDefault<String>(
-                getJsonField(item, r'''$.id''')?.toString(),
-                '0',
-              ),
-              ParamType.String,
-            ),
-          }.withoutNulls,
-        );
-      },
-      borderRadius: BorderRadius.circular(5),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(5),
-          boxShadow: _shadowCard,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 125,
-              width: double.infinity,
-              child: _listingImage(
-                context,
-                getJsonField(item, r'''$.img''')?.toString(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    valueOrDefault<String>(
-                      getJsonField(item, r'''$.title''')?.toString(),
-                      FFLocalizations.of(context).getText('srchttl1'),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: EkbTypography.listingTitle,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    valueOrDefault<String>(
-                      getJsonField(item, r'''$.description''')?.toString(),
-                      FFLocalizations.of(context).getText('srchdes1'),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: EkbTypography.listingDesc,
-                  ),
-                  const SizedBox(height: 4),
-                  InkWell(
-                    onTap: () {
-                      FFAppState().searchText = '';
-                      safeSetState(() {});
-                    },
-                    child: Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            valueOrDefault<String>(
-                              getJsonField(item, r'''$.price''')?.toString(),
-                              '0',
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: EkbTypography.price,
-                          ),
-                        ),
-                        Text(
-                          FFLocalizations.of(context)
-                              .getText('gf7pmm28' /* р */),
-                          style: EkbTypography.price,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (publishedAt.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.schedule_rounded,
-                          size: 14,
-                          color: EkbTypography.textMuted,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            publishedAt,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: EkbTypography.meta,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -930,7 +858,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 0.66,
+                          childAspectRatio: EkbListingCard.gridAspectRatio,
                         ),
                         builderDelegate: PagedChildBuilderDelegate<dynamic>(
                           firstPageProgressIndicatorBuilder: (_) =>
@@ -956,7 +884,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                             ),
                           ),
                           itemBuilder: (context, item, index) =>
-                              _listingCard(context, item),
+                              EkbListingCard.fromJson(item),
                         ),
                       ),
                     ),
@@ -987,7 +915,7 @@ class _ListingSkeletonGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.66,
+        childAspectRatio: EkbListingCard.gridAspectRatio,
       ),
       itemCount: 6,
       itemBuilder: (_, __) => const _ListingSkeletonCard(),
@@ -1004,7 +932,7 @@ class _ListingSkeletonCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(5),
-        boxShadow: _shadowCard,
+        boxShadow: EkbListingCard.cardShadows,
       ),
       clipBehavior: Clip.antiAlias,
       child: const Column(

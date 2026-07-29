@@ -3,7 +3,6 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +10,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
-import '/services/ekb_image_cache.dart';
+import '/components/ekb_listing_card.dart';
+import '/services/moderation_service.dart';
 import '/theme/ekb_typography.dart';
 import 'searchpage22_model.dart';
 export 'searchpage22_model.dart';
@@ -225,8 +225,18 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       },
     ) as List;
 
-    return data
+    final rows = data
         .map((e) => ListingsTable().createRow(e as Map<String, dynamic>))
+        .toList();
+    final blocked = await ModerationService.getBlockedUserIds();
+    if (blocked.isEmpty) {
+      return rows;
+    }
+    return rows
+        .where((row) {
+          final userId = row.userId;
+          return userId == null || userId.isEmpty || !blocked.contains(userId);
+        })
         .toList();
   }
 
@@ -554,12 +564,12 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12.0,
                 mainAxisSpacing: 12.0,
-                childAspectRatio: 0.76,
+                childAspectRatio: EkbListingCard.gridAspectRatio,
               ),
               showNewPageProgressIndicatorAsGridChild: false,
               builderDelegate: PagedChildBuilderDelegate<ListingsRow>(
                 itemBuilder: (context, item, index) =>
-                    _ListingCard(row: item, theme: theme),
+                    EkbListingCard.fromListingsRow(item),
                 firstPageProgressIndicatorBuilder: (_) =>
                     const _SkeletonGrid(),
                 newPageProgressIndicatorBuilder: (_) => const Padding(
@@ -1481,190 +1491,6 @@ class _SuggestionChip extends StatelessWidget {
   }
 }
 
-class _ListingCard extends StatelessWidget {
-  const _ListingCard({required this.row, required this.theme});
-
-  final ListingsRow row;
-  final FlutterFlowTheme theme;
-
-  // Colors matched to the home page (`dbdd`) listing card.
-  static const Color _cardBlue = Color(0xFF1A56DB);
-  static const Color _cardText = Color(0xFF0F172A);
-  static const Color _cardText2 = Color(0xFF475569);
-  static const Color _cardText3 = Color(0xFF94A3B8);
-  static const Color _cardBorder = Color(0xFFE2E8F0);
-  static const String _placeholderAsset = 'assets/images/zag.jpg';
-
-  String _publishedAt(BuildContext context) {
-    final raw = row.createdAt;
-    if (raw == null) return '';
-    return dateTimeFormat(
-      'relative',
-      raw,
-      locale: FFLocalizations.of(context).languageCode,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final publishedAt = _publishedAt(context);
-    return InkWell(
-      onTap: () => context.pushNamed(
-        PagpageWidget.routeName,
-        queryParameters: {
-          'idproductpage': serializeParam(row.id, ParamType.String),
-        }.withoutNulls,
-      ),
-      borderRadius: BorderRadius.circular(5.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(5.0),
-          border: Border.all(color: _cardBorder),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x16000000),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-              spreadRadius: -1,
-            ),
-            BoxShadow(
-              color: Color(0x08000000),
-              blurRadius: 3,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 125.0,
-              width: double.infinity,
-              child: _listingImage(context, row.img),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    valueOrDefault<String>(
-                        row.title,
-                        FFLocalizations.of(context).getText('srchttl1')),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w600,
-                      color: _cardText,
-                    ),
-                  ),
-                  const SizedBox(height: 4.0),
-                  Text(
-                    valueOrDefault<String>(
-                        row.description,
-                        FFLocalizations.of(context).getText('srchdes1')),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 11.0,
-                      color: _cardText2,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 4.0),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          valueOrDefault<String>(
-                              row.price?.toStringAsFixed(0), '0'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: EkbTypography.price,
-                        ),
-                      ),
-                      Text(
-                        ' р',
-                        style: EkbTypography.price,
-                      ),
-                    ],
-                  ),
-                  if (publishedAt.isNotEmpty) ...[
-                    const SizedBox(height: 6.0),
-                    Row(
-                      children: [
-                        const Icon(Icons.schedule_rounded,
-                            size: 10.0, color: _cardText3),
-                        const SizedBox(width: 3.0),
-                        Expanded(
-                          child: Text(
-                            publishedAt,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.0,
-                              color: _cardText3,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _listingImage(BuildContext context, String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return _placeholderImage();
-    }
-
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cardWidth = MediaQuery.sizeOf(context).width / 2;
-    final memCacheWidth = (cardWidth * dpr).round();
-
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      cacheManager: EkbImageCacheManager.instance,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      memCacheWidth: memCacheWidth,
-      fadeInDuration: Duration.zero,
-      placeholderFadeInDuration: Duration.zero,
-      placeholder: (_, __) => const _ShimmerBox(
-        width: double.infinity,
-        height: double.infinity,
-        borderRadius: BorderRadius.zero,
-      ),
-      errorWidget: (_, __, ___) => _placeholderImage(),
-    );
-  }
-
-  Widget _placeholderImage() {
-    return ClipRect(
-      child: Transform.scale(
-        scale: 1.85,
-        child: Image.asset(
-          _placeholderAsset,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      ),
-    );
-  }
-}
-
 class _EmptyState extends StatelessWidget {
   const _EmptyState({
     required this.term,
@@ -1903,7 +1729,7 @@ class _SkeletonGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12.0,
         mainAxisSpacing: 12.0,
-        childAspectRatio: 0.76,
+        childAspectRatio: EkbListingCard.gridAspectRatio,
       ),
       itemCount: 6,
       itemBuilder: (_, __) => const _SkeletonCard(),
@@ -1919,8 +1745,8 @@ class _SkeletonCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(5.0),
+        boxShadow: EkbListingCard.cardShadows,
       ),
       clipBehavior: Clip.antiAlias,
       child: const Column(
