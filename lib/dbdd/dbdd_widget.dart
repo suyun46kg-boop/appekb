@@ -553,7 +553,6 @@ class _DbddWidgetState extends State<DbddWidget> {
               ),
               child: Stack(
                 children: [
-                  // Top white rim — 3D bevel
                   Positioned(
                     left: 0,
                     right: 0,
@@ -578,7 +577,6 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ),
                     ),
                   ),
-                  // Top-left specular glint
                   Positioned(
                     left: -8,
                     top: -10,
@@ -598,7 +596,6 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ),
                     ),
                   ),
-                  // Bottom soft shade — depth
                   Positioned(
                     left: 0,
                     right: 0,
@@ -622,7 +619,6 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ),
                     ),
                   ),
-                  // Thin white edge line
                   Positioned(
                     left: 1,
                     right: 1,

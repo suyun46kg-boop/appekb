@@ -16,13 +16,13 @@ class ApibirCall {
   }) async {
     return ApiManager.instance.makeApiCall(
       callName: 'apibir',
-      apiUrl: 'https://kavafhnszdzjtgxkqpqw.supabase.co/rest/v1/listings',
+      apiUrl: 'https://ekbkyrgyz.site/rest/v1/listings',
       callType: ApiCallType.GET,
       headers: {
         'apikey':
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthdmFmaG5zemR6anRneGtxcHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNjQ1MDEsImV4cCI6MjA5Nzk0MDUwMX0.GpXNDp0BpEddIokVtwSyqOBjMfpt89zKeldMP9qg73A',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg0NjMzOTU2LCJleHAiOjE5NDIzMTM5NTZ9.rYqfuiB6GTNYCv1aQjPlkMQIg5XD8K-coQ3VShOsS-I',
         'Authorization':
-            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthdmFmaG5zemR6anRneGtxcHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNjQ1MDEsImV4cCI6MjA5Nzk0MDUwMX0.GpXNDp0BpEddIokVtwSyqOBjMfpt89zKeldMP9qg73A',
+            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg0NjMzOTU2LCJleHAiOjE5NDIzMTM5NTZ9.rYqfuiB6GTNYCv1aQjPlkMQIg5XD8K-coQ3VShOsS-I',
       },
       params: {
         'limit': 10,
@@ -47,13 +47,13 @@ class GlavniapiCall {
   }) async {
     return ApiManager.instance.makeApiCall(
       callName: 'glavniapi',
-      apiUrl: 'https://kavafhnszdzjtgxkqpqw.supabase.co/rest/v1/listings',
+      apiUrl: 'https://ekbkyrgyz.site/rest/v1/listings',
       callType: ApiCallType.GET,
       headers: {
         'apikey':
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthdmFmaG5zemR6anRneGtxcHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNjQ1MDEsImV4cCI6MjA5Nzk0MDUwMX0.GpXNDp0BpEddIokVtwSyqOBjMfpt89zKeldMP9qg73A',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg0NjMzOTU2LCJleHAiOjE5NDIzMTM5NTZ9.rYqfuiB6GTNYCv1aQjPlkMQIg5XD8K-coQ3VShOsS-I',
         'Authorization':
-            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImthdmFmaG5zemR6anRneGtxcHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNjQ1MDEsImV4cCI6MjA5Nzk0MDUwMX0.GpXNDp0BpEddIokVtwSyqOBjMfpt89zKeldMP9qg73A',
+            'bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg0NjMzOTU2LCJleHAiOjE5NDIzMTM5NTZ9.rYqfuiB6GTNYCv1aQjPlkMQIg5XD8K-coQ3VShOsS-I',
       },
       params: {
         'limit': 5,

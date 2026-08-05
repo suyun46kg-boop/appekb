@@ -1,4 +1,3 @@
-import 'dart:math' show pi;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
@@ -116,13 +115,8 @@ class EkbBottomNavBar extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: _NavTab(
-                      active: false,
-                      icon: Icons.add_circle_outline_rounded,
-                      activeIcon: Icons.add_circle_rounded,
+                    child: _CreateTab(
                       label: createLabel,
-                      spinIcon: true,
-                      iconColor: _headerBlue,
                       onTap: onCreateTap,
                     ),
                   ),
@@ -169,14 +163,73 @@ class EkbBottomNavBar extends StatelessWidget {
   }
 }
 
-class _NavTab extends StatefulWidget {
+class _CreateTab extends StatelessWidget {
+  const _CreateTab({
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  static const _size = 44.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Center(
+          child: Container(
+            width: _size,
+            height: _size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF3B6EF5),
+                  EkbBottomNavBar._headerBlue,
+                  Color(0xFF1A45C7),
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: EkbBottomNavBar._headerBlue.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.add_rounded,
+              size: 28,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavTab extends StatelessWidget {
   const _NavTab({
     required this.active,
     required this.icon,
     required this.activeIcon,
     required this.label,
     required this.onTap,
-    this.spinIcon = false,
+    this.showLabel = true,
+    this.iconSize = 26,
     this.iconColor,
   });
 
@@ -185,132 +238,47 @@ class _NavTab extends StatefulWidget {
   final IconData activeIcon;
   final String label;
   final VoidCallback onTap;
-  final double iconSize = 26;
-  final bool spinIcon;
+  final bool showLabel;
+  final double iconSize;
   final Color? iconColor;
 
   @override
-  State<_NavTab> createState() => _NavTabState();
-}
-
-class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
-  AnimationController? _spin;
-  bool _pressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!widget.spinIcon) {
-      return;
-    }
-    final disableMotion = MediaQuery.disableAnimationsOf(context);
-    if (disableMotion) {
-      _spin?.stop();
-      return;
-    }
-    _spin ??= AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 10000),
-    );
-    if (!_spin!.isAnimating) {
-      _spin!.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _spin?.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    HapticFeedback.lightImpact();
-    widget.onTap();
-  }
-
-  Widget _buildIcon(Color color, double iconSize) {
-    final icon = Icon(
-      widget.active ? widget.activeIcon : widget.icon,
-      size: iconSize,
-      color: color,
-    );
-
-    if (_spin == null) {
-      return icon;
-    }
-
-    return AnimatedBuilder(
-      animation: _spin!,
-      builder: (context, child) => Transform.rotate(
-        angle: _spin!.value * 2 * pi,
-        child: child,
-      ),
-      child: icon,
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final active = widget.active;
     final labelColor =
         active ? EkbBottomNavBar._activeBlue : EkbBottomNavBar._inactive;
-    final iconColor = widget.iconColor ?? labelColor;
-    final iconSize = active ? widget.iconSize + 1 : widget.iconSize;
-    final iconChild = _buildIcon(iconColor, iconSize);
+    final resolvedIconColor = iconColor ?? labelColor;
+    final size = active ? iconSize + 1 : iconSize;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
-      onTap: _handleTap,
-      child: AnimatedScale(
-        scale: _pressed ? 0.88 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (widget.spinIcon)
-              iconChild
-            else
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) => ScaleTransition(
-                  scale: animation,
-                  child: FadeTransition(opacity: animation, child: child),
-                ),
-                child: KeyedSubtree(
-                  key: ValueKey(active),
-                  child: iconChild,
-                ),
-              ),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            active ? activeIcon : icon,
+            size: size,
+            color: resolvedIconColor,
+          ),
+          if (showLabel) ...[
             const SizedBox(height: 3),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: EkbTypography.navLabel.copyWith(
                 fontSize: 11,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w600,
                 color: labelColor,
                 letterSpacing: -0.1,
               ),
-              child: Text(
-                widget.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
