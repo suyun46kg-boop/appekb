@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -17,18 +18,19 @@ import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 import 'components/app_update_widgets.dart';
 import 'services/app_update_service.dart';
-import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
 
   await FFLocalizations.initialize();
 
   await SupaFlow.initialize();
 
-  await PushNotificationService.initialize();
+  //await PushNotificationService.initialize();
 
   await FlutterFlowTheme.initialize();
 
@@ -127,7 +129,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'ekbkyrgyzdar',
+      title: 'EKBKG',
       localizationsDelegates: [
         FFLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -345,7 +347,8 @@ class _NavBarPageState extends State<NavBarPage> {
             child: _navItem(
               active: currentIndex == 0,
               icon: Icons.home_outlined,
-              label: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+              label:
+                  FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
               onTap: () => _switchTab(0, tabKeys),
             ),
           ),
@@ -353,15 +356,16 @@ class _NavBarPageState extends State<NavBarPage> {
             child: _navItem(
               active: currentIndex == 1,
               icon: Icons.search_rounded,
-              label: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+              label:
+                  FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
               onTap: () => _switchTab(1, tabKeys),
             ),
           ),
           Flexible(
             child: _addNavItem(
               active: false,
-              label:
-                  FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+              label: FFLocalizations.of(context)
+                  .getText('c5j5d6pi' /* обявление */),
               onTap: () => _openCreateListingFlow(context),
             ),
           ),
@@ -369,7 +373,8 @@ class _NavBarPageState extends State<NavBarPage> {
             child: _navItem(
               active: currentIndex == 3,
               icon: Icons.person_outline,
-              label: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+              label:
+                  FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
               onTap: () => _switchTab(3, tabKeys),
             ),
           ),

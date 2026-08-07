@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '/backend/supabase/supabase.dart';
@@ -18,8 +19,18 @@ class EkbkyrgyzdarSupabaseUser extends BaseAuthUser {
       );
 
   @override
-  Future? delete() =>
-      throw UnsupportedError('The delete user operation is not yet supported.');
+  Future? delete() async {
+    final uid = user?.id;
+    if (uid != null && uid.isNotEmpty) {
+      try {
+        await UserTable().delete(
+          matchingRows: (q) => q.eq('id', uid),
+        );
+      } catch (e) {
+        debugPrint('Error deleting user row: $e');
+      }
+    }
+  }
 
   @override
   Future? updateEmail(String email) async {

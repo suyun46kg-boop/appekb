@@ -40,12 +40,17 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 
   Future<void> _loadUserName() async {
-    final rows = await UserTable().querySingleRow(
-      queryFn: (q) => q.eqOrNull('id', currentUserUid),
-    );
-    if (!mounted) return;
-    if (rows.isNotEmpty && (rows.first.name?.trim().isNotEmpty ?? false)) {
-      safeSetState(() => _userName = rows.first.name!.trim());
+    if (currentUserUid.isEmpty) return;
+    try {
+      final rows = await UserTable().querySingleRow(
+        queryFn: (q) => q.eqOrNull('id', currentUserUid),
+      );
+      if (!mounted) return;
+      if (rows.isNotEmpty && (rows.first.name?.trim().isNotEmpty ?? false)) {
+        safeSetState(() => _userName = rows.first.name!.trim());
+      }
+    } catch (e) {
+      debugPrint('Error loading user name: $e');
     }
   }
 
@@ -216,10 +221,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       height: 52,
       child: OutlinedButton.icon(
         onPressed: () async {
-          GoRouter.of(context).prepareAuthEvent();
-          await authManager.signOut();
+          try {
+            GoRouter.of(context).prepareAuthEvent();
+            await authManager.signOut();
+          } catch (e) {
+            debugPrint('Error during logout: $e');
+          }
           if (!context.mounted) return;
-          GoRouter.of(context).clearRedirectLocation();
+          try {
+            GoRouter.of(context).clearRedirectLocation();
+          } catch (_) {}
 
           FFAppState().hh1 = false;
           safeSetState(() {});
@@ -241,6 +252,63 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _deleteAccountButton(BuildContext context) {
+    return TextButton.icon(
+      onPressed: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Удаление аккаунта'),
+            content: const Text(
+              'Вы уверены, что хотите удалить свой аккаунт? Все ваши личные данные и объявления будут безвозвратно удалены.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Отмена'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFDC2626),
+                ),
+                child: const Text('Удалить'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirm == true && context.mounted) {
+          try {
+            await authManager.deleteUser(context);
+          } catch (e) {
+            debugPrint('Error deleting user: $e');
+          }
+          if (!context.mounted) return;
+          try {
+            GoRouter.of(context).clearRedirectLocation();
+          } catch (_) {}
+          FFAppState().hh1 = false;
+          safeSetState(() {});
+          context.goNamedAuth(DbddWidget.routeName, context.mounted);
+        }
+      },
+      icon: const Icon(
+        Icons.delete_outline_rounded,
+        size: 18,
+        color: Color(0xFF94A3B8),
+      ),
+      label: Text(
+        'Удалить аккаунт',
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xFF94A3B8),
         ),
       ),
     );
@@ -341,6 +409,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       ),
                       const SizedBox(height: 16),
                       _logoutButton(context),
+                      if (currentUserUid.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _deleteAccountButton(context),
+                      ],
                     ],
                   ),
                 ),

@@ -12,23 +12,33 @@ export '/auth/base_auth_user_provider.dart';
 
 class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   @override
-  Future signOut() {
-    return SupaFlow.client.auth.signOut();
+  Future signOut() async {
+    try {
+      await SupaFlow.client.auth.signOut();
+    } catch (e) {
+      debugPrint('Error signing out from Supabase: $e');
+    } finally {
+      currentUser = EkbkyrgyzdarSupabaseUser(null);
+    }
   }
 
   @override
   Future deleteUser(BuildContext context) async {
     try {
       if (!loggedIn) {
-        print('Error: delete user attempted with no logged in user!');
+        debugPrint('Error: delete user attempted with no logged in user!');
         return;
       }
       await currentUser?.delete();
+      await signOut();
     } on AuthException catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message!}')),
       );
+    } catch (e) {
+      debugPrint('Error during user deletion: $e');
+      await signOut();
     }
   }
 
