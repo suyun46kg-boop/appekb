@@ -18,11 +18,22 @@ class FFAppState extends ChangeNotifier {
     _instance = FFAppState._internal();
   }
 
-  Future initializePersistedState() async {}
+  Future initializePersistedState() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hasSeenWelcome = prefs.getBool('ff_hasSeenWelcome') ?? false;
+  }
 
   void update(VoidCallback callback) {
     callback();
     notifyListeners();
+  }
+
+  bool _hasSeenWelcome = false;
+  bool get hasSeenWelcome => _hasSeenWelcome;
+  set hasSeenWelcome(bool value) {
+    _hasSeenWelcome = value;
+    SharedPreferences.getInstance()
+        .then((prefs) => prefs.setBool('ff_hasSeenWelcome', value));
   }
 
   String _emailstate = '';
@@ -83,12 +94,14 @@ class FFAppState extends ChangeNotifier {
   String get valuecategoryshit => _valuecategoryshit;
   set valuecategoryshit(String value) {
     _valuecategoryshit = value;
+    notifyListeners();
   }
 
   int _idcategorysheet = 0;
   int get idcategorysheet => _idcategorysheet;
   set idcategorysheet(int value) {
     _idcategorysheet = value;
+    notifyListeners();
   }
 
   String _emtytext = 'ечего не возможного';

@@ -10,27 +10,17 @@ const kThemeModeKey = '__theme_mode__';
 SharedPreferences? _prefs;
 
 abstract class FlutterFlowTheme {
-  static Future initialize() async =>
-      _prefs = await SharedPreferences.getInstance();
-
-  static ThemeMode get themeMode {
-    final darkMode = _prefs?.getBool(kThemeModeKey);
-    return darkMode == null
-        ? ThemeMode.system
-        : darkMode
-            ? ThemeMode.dark
-            : ThemeMode.light;
+  static Future initialize() async {
+    _prefs = await SharedPreferences.getInstance();
+    await _prefs?.remove(kThemeModeKey);
   }
 
-  static void saveThemeMode(ThemeMode mode) => mode == ThemeMode.system
-      ? _prefs?.remove(kThemeModeKey)
-      : _prefs?.setBool(kThemeModeKey, mode == ThemeMode.dark);
+  static ThemeMode get themeMode => ThemeMode.light;
 
-  static FlutterFlowTheme of(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? DarkModeTheme()
-        : LightModeTheme();
-  }
+  static void saveThemeMode(ThemeMode mode) =>
+      _prefs?.remove(kThemeModeKey);
+
+  static FlutterFlowTheme of(BuildContext context) => LightModeTheme();
 
   @Deprecated('Use primary instead')
   Color get primaryColor => primary;

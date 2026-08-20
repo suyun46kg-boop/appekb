@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -13,34 +13,41 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 import 'components/app_update_widgets.dart';
+import 'components/ekb_bottom_nav.dart';
 import 'services/app_update_service.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
+
   if (kIsWeb) {
+    GoRouter.optionURLReflectsImperativeAPIs = true;
     usePathUrlStrategy();
   }
 
-  await FFLocalizations.initialize();
+  await _safeInit('localizations', FFLocalizations.initialize);
+  await _safeInit('supabase', SupaFlow.initialize);
+  await _safeInit('push', PushNotificationService.initialize);
+  await _safeInit('theme', FlutterFlowTheme.initialize);
 
-  await SupaFlow.initialize();
-
-  //await PushNotificationService.initialize();
-
-  await FlutterFlowTheme.initialize();
-
-  final appState = FFAppState(); // Initialize FFAppState
+  final appState = FFAppState();
   await appState.initializePersistedState();
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,
     child: MyApp(),
   ));
+}
+
+Future<void> _safeInit(String name, Future<void> Function() init) async {
+  try {
+    await init();
+  } catch (e, stack) {
+    debugPrint('$name init failed: $e\n$stack');
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -54,8 +61,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Locale? _locale = FFLocalizations.getStoredLocale();
-
-  ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
@@ -79,6 +84,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     _appStateNotifier = AppStateNotifier.instance;
+    currentUser = EkbkyrgyzdarSupabaseUser(SupaFlow.client.auth.currentUser);
+    _appStateNotifier.update(currentUser!);
+    _appStateNotifier.stopShowingSplashImage();
     _router = createRouter(_appStateNotifier);
     userStream = ekbkyrgyzdarSupabaseUserStream()
       ..listen((user) {
@@ -89,11 +97,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initializeApp() async {
-    final minSplash = Future.delayed(const Duration(milliseconds: 1000));
-    final updateCheck = AppUpdateService.checkUpdate();
-
-    await minSplash;
-    final result = await updateCheck;
+    final result = await AppUpdateService.checkUpdate();
 
     if (!mounted) {
       return;
@@ -103,8 +107,6 @@ class _MyAppState extends State<MyApp> {
       _appStateNotifier.setForceUpdate(result);
       return;
     }
-
-    _appStateNotifier.stopShowingSplashImage();
 
     if (result != null && result.softUpdate) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -120,10 +122,7 @@ class _MyAppState extends State<MyApp> {
     safeSetState(() => _locale = createLocale(language));
   }
 
-  void setThemeMode(ThemeMode mode) => safeSetState(() {
-        _themeMode = mode;
-        FlutterFlowTheme.saveThemeMode(mode);
-      });
+  void setThemeMode(ThemeMode mode) {}
 
   @override
   Widget build(BuildContext context) {
@@ -146,12 +145,9 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         brightness: Brightness.light,
         useMaterial3: false,
+        fontFamily: 'Inter',
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
+      themeMode: ThemeMode.light,
       routerConfig: _router,
     );
   }
@@ -176,14 +172,10 @@ class NavBarPage extends StatefulWidget {
 /// This is the private State class that goes with NavBarPage.
 class _NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'dbdd';
-  late Widget? _currentPage;
+  Widget? _currentPage;
+  final Map<int, Widget> _tabCache = {};
 
-  static const _navBlue = Color(0xFF1A56DB);
-  static const _navHeaderStart = Color(0xFF1E5FE8);
-  static const _navHeaderEnd = Color(0xFF1341B0);
-  static const _navInactive = Colors.white;
-  static const _addAccentStart = Color(0xFFFF9500);
-  static const _addAccentEnd = Color(0xFFFF5F00);
+  static const _tabKeys = ['dbdd', 'searchpage22', 'mylisting', 'Profile'];
 
   @override
   void initState() {
@@ -192,10 +184,30 @@ class _NavBarPageState extends State<NavBarPage> {
     _currentPage = widget.page;
   }
 
-  void _switchTab(int index, List<String> tabKeys) {
+  Widget _createTab(int index) {
+    switch (index) {
+      case 0:
+        return DbddWidget();
+      case 1:
+        return Searchpage22Widget();
+      case 2:
+        return MylistingWidget(mylisid: currentUserUid);
+      case 3:
+        return ProfileWidget();
+      default:
+        return DbddWidget();
+    }
+  }
+
+  Widget _tabBody(int currentIndex) {
+    return _tabCache.putIfAbsent(currentIndex, () => _createTab(currentIndex));
+  }
+
+  void _switchTab(int index) {
+    HapticFeedback.selectionClick();
     safeSetState(() {
       _currentPage = null;
-      _currentPageName = tabKeys[index];
+      _currentPageName = _tabKeys[index];
     });
   }
 
@@ -207,193 +219,37 @@ class _NavBarPageState extends State<NavBarPage> {
     }
   }
 
-  Widget _navItem({
-    required bool active,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    final fg = active ? _navBlue : _navInactive;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          color: active ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
-          boxShadow: active
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-            color: fg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: Icon(
-                  icon,
-                  key: ValueKey(active),
-                  size: 22,
-                  color: fg,
-                ),
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(label, maxLines: 1, softWrap: false),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _addNavItem({
-    required bool active,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    const size = 26.0;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            width: size,
-            height: size,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_addAccentStart, _addAccentEnd],
-              ),
-              border: Border.fromBorderSide(
-                BorderSide(color: Colors.white, width: 3),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x66FF5F00),
-                  blurRadius: 14,
-                  offset: Offset(0, 5),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.add_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _openMyListings(BuildContext context) {
+    if (currentUserUid.isEmpty) {
+      context.pushNamed(RegistrasiaWidget.routeName);
+      return;
+    }
+    _switchTab(2);
   }
 
   Widget _buildBottomNav(BuildContext context, int currentIndex) {
-    final tabKeys = ['dbdd', 'searchpage22', 'politpage', 'Profile'];
-    final bottomPad = MediaQuery.paddingOf(context).bottom;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPad),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_navHeaderStart, _navHeaderEnd],
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Flexible(
-            child: _navItem(
-              active: currentIndex == 0,
-              icon: Icons.home_outlined,
-              label:
-                  FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
-              onTap: () => _switchTab(0, tabKeys),
-            ),
-          ),
-          Flexible(
-            child: _navItem(
-              active: currentIndex == 1,
-              icon: Icons.search_rounded,
-              label:
-                  FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
-              onTap: () => _switchTab(1, tabKeys),
-            ),
-          ),
-          Flexible(
-            child: _addNavItem(
-              active: false,
-              label: FFLocalizations.of(context)
-                  .getText('c5j5d6pi' /* обявление */),
-              onTap: () => _openCreateListingFlow(context),
-            ),
-          ),
-          Flexible(
-            child: _navItem(
-              active: currentIndex == 3,
-              icon: Icons.person_outline,
-              label:
-                  FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
-              onTap: () => _switchTab(3, tabKeys),
-            ),
-          ),
-        ],
-      ),
+    return EkbBottomNavBar(
+      currentIndex: currentIndex,
+      homeLabel: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+      searchLabel: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+      createLabel: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+      listingsLabel: FFLocalizations.of(context).getText('wmxh68pv' /* мои объявления */),
+      profileLabel: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+      onHomeTap: () => _switchTab(0),
+      onSearchTap: () => _switchTab(1),
+      onCreateTap: () => _openCreateListingFlow(context),
+      onListingsTap: () => _openMyListings(context),
+      onProfileTap: () => _switchTab(3),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final tabs = {
-      'dbdd': DbddWidget(),
-      'searchpage22': Searchpage22Widget(),
-      'politpage': PolitpageWidget(),
-      'Profile': ProfileWidget(),
-    };
-    final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
+    final currentIndex = _tabKeys.indexOf(_currentPageName);
 
     final MediaQueryData queryData = MediaQuery.of(context);
+    final bodyChild = _currentPage ??
+        _tabBody(currentIndex.clamp(0, _tabKeys.length - 1));
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
@@ -401,8 +257,8 @@ class _NavBarPageState extends State<NavBarPage> {
           data: queryData
               .removeViewInsets(removeBottom: true)
               .removeViewPadding(removeBottom: true),
-          child: _currentPage ?? tabs[_currentPageName]!),
-      extendBody: true,
+          child: bodyChild),
+      extendBody: false,
       bottomNavigationBar: _buildBottomNav(context, currentIndex),
     );
   }

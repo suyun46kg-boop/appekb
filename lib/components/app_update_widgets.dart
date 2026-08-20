@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
 import '/services/app_update_service.dart';
+import '/theme/ekb_typography.dart';
 
 class AppForceUpdateScreen extends StatelessWidget {
   const AppForceUpdateScreen({
@@ -34,7 +34,7 @@ class AppForceUpdateScreen extends StatelessWidget {
                   kyText: 'Жаңыртуу талап кылынат',
                 ),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: EkbTypography.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -44,7 +44,7 @@ class AppForceUpdateScreen extends StatelessWidget {
               Text(
                 result.message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
+                style: EkbTypography.inter(
                   fontSize: 15,
                   height: 1.4,
                   color: Colors.white.withValues(alpha: 0.92),
@@ -53,7 +53,7 @@ class AppForceUpdateScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '${result.currentVersion} → ${result.latestVersion}',
-                style: GoogleFonts.inter(
+                style: EkbTypography.inter(
                   fontSize: 13,
                   color: Colors.white.withValues(alpha: 0.75),
                 ),
@@ -76,7 +76,7 @@ class AppForceUpdateScreen extends StatelessWidget {
                       ruText: 'Обновить',
                       kyText: 'Жаңыртуу',
                     ),
-                    style: GoogleFonts.inter(
+                    style: EkbTypography.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -112,11 +112,11 @@ class AppUpdateDialog {
               ruText: 'Доступно обновление',
               kyText: 'Жаңыртуу бар',
             ),
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+            style: EkbTypography.inter(fontWeight: FontWeight.w700),
           ),
           content: Text(
             result.message,
-            style: GoogleFonts.inter(fontSize: 14, height: 1.4),
+            style: EkbTypography.inter(fontSize: 14, height: 1.4),
           ),
           actions: [
             TextButton(
@@ -131,7 +131,7 @@ class AppUpdateDialog {
                   ruText: 'Позже',
                   kyText: 'Кийин',
                 ),
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                style: EkbTypography.inter(fontWeight: FontWeight.w600),
               ),
             ),
             TextButton(
@@ -146,7 +146,7 @@ class AppUpdateDialog {
                   ruText: 'Обновить',
                   kyText: 'Жаңыртуу',
                 ),
-                style: GoogleFonts.inter(
+                style: EkbTypography.inter(
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A56DB),
                 ),

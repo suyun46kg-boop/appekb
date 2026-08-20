@@ -1,4 +1,5 @@
 import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/components/ekb_listing_card.dart';
+import '/services/ekb_image_cache.dart';
+import '/services/moderation_service.dart';
+import '/theme/ekb_typography.dart';
 import 'pagpage_model.dart';
 export 'pagpage_model.dart';
 
@@ -29,6 +34,7 @@ class PagpageWidget extends StatefulWidget {
 class _PagpageWidgetState extends State<PagpageWidget> {
   late PagpageModel _model;
   late final Future<ListingsRow?> _listingFuture;
+  late final Future<List<ListingsRow>> _recommendationsFuture;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -45,6 +51,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   static const _listingPlaceholder = 'assets/images/zag.jpg';
 
   bool _isFavorite = false;
+  bool _sellerBlocked = false;
   String? _resolvedSellerName;
 
   @override
@@ -52,7 +59,85 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     super.initState();
     _model = createModel(context, () => PagpageModel());
     _listingFuture = _loadListing();
+    _recommendationsFuture = _loadRecommendations();
     _loadFavoriteState();
+  }
+
+  Future<List<ListingsRow>> _loadRecommendations() async {
+    final excludeId = widget.idproductpage;
+
+    try {
+      final recData = await SupaFlow.client
+          .from('recommendations')
+          .select('listing_id, sort_order')
+          .eq('is_active', true)
+          .order('sort_order', ascending: true)
+          .limit(5) as List;
+
+      if (recData.isNotEmpty) {
+        final orderedIds = <String>[];
+        final sortOrder = <String, int>{};
+
+        for (final row in recData) {
+          final id = row['listing_id']?.toString();
+          if (id == null || id.isEmpty || id == excludeId) {
+            continue;
+          }
+          orderedIds.add(id);
+          sortOrder[id] = row['sort_order'] as int? ?? 0;
+        }
+
+        if (orderedIds.isNotEmpty) {
+          final listings = await ListingsTable().queryRows(
+            queryFn: (q) => q.inFilter('id', orderedIds),
+          );
+
+          listings.sort((a, b) {
+            final aOrder = sortOrder[a.id] ?? 999;
+            final bOrder = sortOrder[b.id] ?? 999;
+            return aOrder.compareTo(bOrder);
+          });
+
+          final blocked = await ModerationService.getBlockedUserIds();
+          final filtered = blocked.isEmpty
+              ? listings
+              : listings
+                  .where((row) {
+                    final userId = row.userId;
+                    return userId == null ||
+                        userId.isEmpty ||
+                        !blocked.contains(userId);
+                  })
+                  .toList();
+
+          return filtered.take(4).toList();
+        }
+      }
+    } catch (_) {}
+
+    try {
+      return await ListingsTable().queryRows(
+        queryFn: (q) =>
+            q.neq('id', excludeId).order('created_at', ascending: false),
+        limit: 8,
+      ).then((rows) async {
+        final blocked = await ModerationService.getBlockedUserIds();
+        if (blocked.isEmpty) {
+          return rows.take(4).toList();
+        }
+        return rows
+            .where((row) {
+              final userId = row.userId;
+              return userId == null ||
+                  userId.isEmpty ||
+                  !blocked.contains(userId);
+            })
+            .take(4)
+            .toList();
+      });
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<ListingsRow?> _loadListing() async {
@@ -69,6 +154,9 @@ class _PagpageWidgetState extends State<PagpageWidget> {
       if (sellerRows.isNotEmpty) {
         _resolvedSellerName = sellerRows.first.name;
       }
+    }
+    if (userId != null && userId.isNotEmpty) {
+      _sellerBlocked = await ModerationService.isUserBlocked(userId);
     }
     return listing;
   }
@@ -136,6 +224,217 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
+  bool get _isLoggedIn => currentUserUid.isNotEmpty;
+
+  void _requireLoginSnack() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(FFLocalizations.of(context).getText('modlogin1')),
+      ),
+    );
+  }
+
+  Future<void> _showModerationSheet(ListingsRow listing) async {
+    if (!_isLoggedIn) {
+      _requireLoginSnack();
+      return;
+    }
+
+    final sellerId = listing.userId?.trim() ?? '';
+    final isOwnListing =
+        sellerId.isNotEmpty && sellerId == currentUserUid;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: _border,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined, color: _text),
+                  title: Text(
+                    FFLocalizations.of(context).getText('modreport'),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _text,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showReportReasons(listing);
+                  },
+                ),
+                if (!isOwnListing && sellerId.isNotEmpty)
+                  ListTile(
+                    leading: const Icon(Icons.block_rounded, color: Color(0xFFDC2626)),
+                    title: Text(
+                      FFLocalizations.of(context).getText('modblock'),
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _confirmBlockSeller(sellerId);
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showReportReasons(ListingsRow listing) async {
+    const reasons = <(String, String)>[
+      ('spam', 'modrsn01'),
+      ('fraud', 'modrsn02'),
+      ('prohibited', 'modrsn03'),
+      ('offensive', 'modrsn04'),
+      ('other', 'modrsn05'),
+    ];
+
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: _border,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  FFLocalizations.of(context).getText('modrsnttl'),
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: _text,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...reasons.map(
+                  (item) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      FFLocalizations.of(context).getText(item.$2),
+                      style: GoogleFonts.inter(fontSize: 14, color: _text),
+                    ),
+                    onTap: () => Navigator.pop(sheetContext, item.$1),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected == null || !mounted) {
+      return;
+    }
+
+    try {
+      await ModerationService.reportListing(
+        listingId: listing.id ?? widget.idproductpage,
+        reason: selected,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modrepsok')),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modreperr')),
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmBlockSeller(String sellerId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(FFLocalizations.of(context).getText('modblktit')),
+        content: Text(FFLocalizations.of(context).getText('modblkmsg')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(FFLocalizations.of(context).getText('mlcancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              FFLocalizations.of(context).getText('modblock'),
+              style: const TextStyle(color: Color(0xFFDC2626)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    try {
+      await ModerationService.blockUser(sellerId);
+      if (!mounted) return;
+      setState(() => _sellerBlocked = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modblksok')),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(FFLocalizations.of(context).getText('modblkerr')),
+        ),
+      );
+    }
+  }
+
   void _openFullscreenImage(String? imageUrl) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -178,6 +477,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     }
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: EkbImageCacheManager.instance,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
@@ -219,12 +519,18 @@ class _PagpageWidgetState extends State<PagpageWidget> {
             ),
             Row(
               children: [
-                if (listing != null)
+                if (listing != null) ...[
+                  _circleIconButton(
+                    icon: Icons.flag_outlined,
+                    onTap: () => _showModerationSheet(listing),
+                  ),
+                  const SizedBox(width: 8),
                   _circleIconButton(
                     icon: Icons.ios_share_rounded,
                     onTap: () => _shareListing(listing),
                   ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 _circleIconButton(
                   icon: _isFavorite
                       ? Icons.favorite_rounded
@@ -547,6 +853,44 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
+  Widget _recommendationsSection() {
+    return FutureBuilder<List<ListingsRow>>(
+      future: _recommendationsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const SizedBox.shrink();
+        }
+
+        final items = snapshot.data ?? [];
+        if (items.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return _sectionCard(
+          children: [
+            _sectionTitle(
+              FFLocalizations.of(context).getText('pgrec1'),
+            ),
+            const Divider(height: 20, color: _border),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: EkbListingCard.gridSpacing,
+                mainAxisSpacing: EkbListingCard.gridSpacing,
+                childAspectRatio: EkbListingCard.gridAspectRatio,
+              ),
+              itemBuilder: (context, index) =>
+                  EkbListingCard.fromListingsRow(items[index], showDescription: false),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final heroHeight =
@@ -697,9 +1041,13 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                             _infoRow(
                               FFLocalizations.of(context)
                                   .getText('jo0q04xo' /* контакты */),
-                              valueOrDefault<String>(
-                                  phone,
-                                  FFLocalizations.of(context).getText('pgno01')),
+                              _sellerBlocked
+                                  ? FFLocalizations.of(context)
+                                      .getText('modhidden')
+                                  : valueOrDefault<String>(
+                                      phone,
+                                      FFLocalizations.of(context)
+                                          .getText('pgno01')),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
@@ -733,7 +1081,28 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                         const SizedBox(height: 12),
                         _sellerCard(listing),
                         const SizedBox(height: 16),
-                        if (phone.isNotEmpty) _contactButtons(phone),
+                        if (_sellerBlocked)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: Text(
+                              FFLocalizations.of(context).getText('modblknote'),
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF991B1B),
+                              ),
+                            ),
+                          )
+                        else if (phone.isNotEmpty)
+                          _contactButtons(phone),
+                        const SizedBox(height: 20),
+                        _recommendationsSection(),
                         SizedBox(
                           height: 90 + MediaQuery.of(context).padding.bottom,
                         ),
@@ -773,6 +1142,7 @@ class _FullscreenImageViewer extends StatelessWidget {
                   ? Image.asset(placeholderAsset, fit: BoxFit.contain)
                   : CachedNetworkImage(
                       imageUrl: imageUrl!,
+                      cacheManager: EkbImageCacheManager.instance,
                       fit: BoxFit.contain,
                       errorWidget: (_, __, ___) =>
                           Image.asset(placeholderAsset, fit: BoxFit.contain),

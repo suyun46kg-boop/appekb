@@ -1,9 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+
 import '/auth/auth_manager.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
+import '/dbdd/dbdd_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/services/moderation_service.dart';
 import 'email_auth.dart';
 
 import 'supabase_user_provider.dart';
@@ -13,6 +15,7 @@ export '/auth/base_auth_user_provider.dart';
 class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   @override
   Future signOut() async {
+    ModerationService.clearCache();
     try {
       await SupaFlow.client.auth.signOut();
     } catch (e) {
@@ -31,14 +34,37 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       }
       await currentUser?.delete();
       await signOut();
-    } on AuthException catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      if (!context.mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message!}')),
+        SnackBar(
+          content: Text(
+            FFLocalizations.of(context).getText('dltacnt06'),
+          ),
+        ),
+      );
+      context.goNamed(DbddWidget.routeName);
+    } on AuthException catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
       );
     } catch (e) {
       debugPrint('Error during user deletion: $e');
       await signOut();
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            FFLocalizations.of(context).getText('dltacnt07'),
+          ),
+        ),
+      );
     }
   }
 

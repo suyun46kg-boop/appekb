@@ -88,7 +88,8 @@ class AppStateNotifier extends ChangeNotifier {
 }
 
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
-      initialLocation: '/',
+      initialLocation:
+          FFAppState().hasSeenWelcome ? '/' : WelcomeWidget.routePath,
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
@@ -98,6 +99,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: '_initialize',
           path: '/',
           builder: (context, _) => NavBarPage(),
+        ),
+        FFRoute(
+          name: WelcomeWidget.routeName,
+          path: WelcomeWidget.routePath,
+          builder: (context, _) => const WelcomeWidget(),
         ),
         FFRoute(
             name: AvtoryzasiaWidget.routeName,
@@ -188,15 +194,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
             name: MylistingWidget.routeName,
             path: MylistingWidget.routePath,
-            builder: (context, params) => NavBarPage(
-                  initialPage: '',
-                  page: MylistingWidget(
-                    mylisid: params.getParam(
-                      'mylisid',
-                      ParamType.String,
+            builder: (context, params) => params.isEmpty
+                ? NavBarPage(initialPage: 'mylisting')
+                : NavBarPage(
+                    initialPage: 'mylisting',
+                    page: MylistingWidget(
+                      mylisid: params.getParam(
+                        'mylisid',
+                        ParamType.String,
+                      ),
                     ),
-                  ),
-                ))
+                  ))
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 
@@ -382,17 +390,7 @@ class FFRoute {
                   result: appStateNotifier.forceUpdateInfo!,
                 )
               : appStateNotifier.loading
-              ? Center(
-                  child: SizedBox(
-                    width: 50.0,
-                    height: 50.0,
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        FlutterFlowTheme.of(context).primary,
-                      ),
-                    ),
-                  ),
-                )
+              ? NavBarPage()
               : page;
 
           final transitionInfo = state.transitionInfo;

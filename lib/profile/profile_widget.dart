@@ -1,7 +1,9 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
+import '/dbdd/category_block_background.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import '/services/ekb_image_cache.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,20 +73,8 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     final topPad = MediaQuery.paddingOf(context).top;
     final displayName = valueOrDefault<String>(_userName, '...');
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(_pageHPad, topPad + 14, _pageHPad, 52),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
       child: Column(
         children: [
           Text(
@@ -133,9 +123,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
         child: hasPhoto
             ? CachedNetworkImage(
                 imageUrl: photoUrl,
+                cacheManager: EkbImageCacheManager.instance,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
+                memCacheWidth: 264,
                 errorWidget: (_, __, ___) => _avatarFallback(),
               )
             : _avatarFallback(),
@@ -213,6 +205,76 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           ),
       ],
     );
+  }
+
+  Future<void> _clearImageCache(BuildContext context) async {
+    await EkbImageCacheManager.clearAll();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          FFLocalizations.of(context).getText('clrcache02'),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          FFLocalizations.of(context).getText('dltacnt02'),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              FFLocalizations.of(context).getText('dltacnt03'),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => launchURL(
+                'https://telegra.ph/Udalenie-akkaunta-07-12',
+              ),
+              child: Text(
+                FFLocalizations.of(context).getText('dltacnt08'),
+                style: const TextStyle(
+                  color: Color(0xFF1A56DB),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              FFLocalizations.of(context).getText('dltacnt05'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFDC2626),
+            ),
+            child: Text(
+              FFLocalizations.of(context).getText('dltacnt04'),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    GoRouter.of(context).prepareAuthEvent();
+    await authManager.deleteUser(context);
   }
 
   Widget _logoutButton(BuildContext context) {
@@ -388,7 +450,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               title: FFLocalizations.of(context).getText(
                                 'wrj9lx0v' /* поддержка */,
                               ),
-                              onTap: () {},
+                              onTap: () async {
+                                await launchURL('https://wa.me/79089197909');
+                              },
                             ),
                             _menuTile(
                               icon: Icons.privacy_tip_outlined,
@@ -397,12 +461,30 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               title: FFLocalizations.of(context).getText(
                                 '6ay3t2sd' /* политика конфиденциальности */,
                               ),
-                              showDivider: false,
                               onTap: () async {
                                 await launchURL(
                                   'https://telegra.ph/Ekaterinburg-Kyrgyzdar-06-20',
                                 );
                               },
+                            ),
+                            _menuTile(
+                              icon: Icons.cleaning_services_outlined,
+                              iconColor: const Color(0xFF047857),
+                              iconBg: const Color(0xFFECFDF5),
+                              title: FFLocalizations.of(context).getText(
+                                'clrcache01' /* Очистить кеш */,
+                              ),
+                              onTap: () => _clearImageCache(context),
+                            ),
+                            _menuTile(
+                              icon: Icons.person_remove_outlined,
+                              iconColor: const Color(0xFFB45309),
+                              iconBg: const Color(0xFFFFF7ED),
+                              title: FFLocalizations.of(context).getText(
+                                'dltacnt01' /* удаление аккаунта */,
+                              ),
+                              showDivider: false,
+                              onTap: () => _confirmDeleteAccount(context),
                             ),
                           ],
                         ),

@@ -4,6 +4,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
 import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import '/services/ekb_image_cache.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -21,17 +23,22 @@ class ProductSliverGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cardWidth = MediaQuery.sizeOf(context).width / 2;
+    final memCacheWidth = (cardWidth * dpr).round();
+
     return SliverGrid(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final item = products[index];
+          final imageUrl = item['image']?.toString() ?? '';
 
           return Container(
-            margin: EdgeInsets.all(6),
+            margin: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   blurRadius: 5,
                   color: Colors.black12,
@@ -42,31 +49,35 @@ class ProductSliverGrid extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
-                      image: DecorationImage(
-                        image: NetworkImage(item['image']),
-                        fit: BoxFit.cover,
-                      ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
                     ),
+                    child: imageUrl.isEmpty
+                        ? Container(color: const Color(0xFFE2E8F0))
+                        : CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            cacheManager: EkbImageCacheManager.instance,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            memCacheWidth: memCacheWidth,
+                          ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(6),
                   child: Text(
-                    item['title'],
+                    item['title']?.toString() ?? '',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text(
                     "\$${item['price']}",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -75,7 +86,7 @@ class ProductSliverGrid extends StatelessWidget {
         },
         childCount: products.length,
       ),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.65,
       ),

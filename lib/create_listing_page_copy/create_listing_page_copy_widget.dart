@@ -1,4 +1,6 @@
+import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/category_utils.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/sheet2_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -6,8 +8,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
+import '/services/ekb_image_cache.dart';
 import 'dart:ui';
 import '/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -224,19 +228,14 @@ class _CreateListingPageCopyWidgetState
                                       enableDrag: false,
                                       context: context,
                                       builder: (context) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: Container(
-                                              height: 500.0,
-                                              child: Sheet2Widget(),
-                                            ),
+                                        return Padding(
+                                          padding: MediaQuery.viewInsetsOf(
+                                              context),
+                                          child: SizedBox(
+                                            height: MediaQuery.sizeOf(context)
+                                                    .height *
+                                                0.65,
+                                            child: const Sheet2Widget(),
                                           ),
                                         );
                                       },
@@ -276,22 +275,16 @@ class _CreateListingPageCopyWidgetState
                                             enableDrag: false,
                                             context: context,
                                             builder: (context) {
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  FocusScope.of(context)
-                                                      .unfocus();
-                                                  FocusManager
-                                                      .instance.primaryFocus
-                                                      ?.unfocus();
-                                                },
-                                                child: Padding(
-                                                  padding:
-                                                      MediaQuery.viewInsetsOf(
-                                                          context),
-                                                  child: Container(
-                                                    height: 500.0,
-                                                    child: Sheet2Widget(),
-                                                  ),
+                                              return Padding(
+                                                padding:
+                                                    MediaQuery.viewInsetsOf(
+                                                        context),
+                                                child: SizedBox(
+                                                  height: MediaQuery.sizeOf(
+                                                              context)
+                                                          .height *
+                                                      0.65,
+                                                  child: const Sheet2Widget(),
                                                 ),
                                               );
                                             },
@@ -347,19 +340,14 @@ class _CreateListingPageCopyWidgetState
                                       enableDrag: false,
                                       context: context,
                                       builder: (context) {
-                                        return GestureDetector(
-                                          onTap: () {
-                                            FocusScope.of(context).unfocus();
-                                            FocusManager.instance.primaryFocus
-                                                ?.unfocus();
-                                          },
-                                          child: Padding(
-                                            padding: MediaQuery.viewInsetsOf(
-                                                context),
-                                            child: Container(
-                                              height: 500.0,
-                                              child: Sheet2Widget(),
-                                            ),
+                                        return Padding(
+                                          padding: MediaQuery.viewInsetsOf(
+                                              context),
+                                          child: SizedBox(
+                                            height: MediaQuery.sizeOf(context)
+                                                    .height *
+                                                0.65,
+                                            child: const Sheet2Widget(),
                                           ),
                                         );
                                       },
@@ -1570,12 +1558,16 @@ class _CreateListingPageCopyWidgetState
                                             child: ClipRRect(
                                               borderRadius:
                                                   BorderRadius.circular(8.0),
-                                              child: Image.network(
-                                                _model
+                                              child: CachedNetworkImage(
+                                                imageUrl: _model
                                                     .uploadedFileUrl_uploadData89k,
+                                                cacheManager:
+                                                    EkbImageCacheManager
+                                                        .instance,
                                                 width: 200.0,
                                                 height: 200.0,
                                                 fit: BoxFit.cover,
+                                                memCacheWidth: 400,
                                               ),
                                             ),
                                           ),
@@ -1642,6 +1634,10 @@ class _CreateListingPageCopyWidgetState
                                   FFAppState().valuecategoryshit.trim().isEmpty) {
                                 errorMessage = FFLocalizations.of(context)
                                     .getText('clerrcat');
+                              } else if (kCategoriesRequiringSubcategory
+                                  .contains(FFAppState().idcategorysheet)) {
+                                errorMessage = FFLocalizations.of(context)
+                                    .getText('clerrsub');
                               } else if (phone.isEmpty ||
                                   phone
                                           .replaceAll(RegExp(r'[^0-9]'), '')
@@ -1784,20 +1780,8 @@ class _CreateListingPageCopyWidgetState
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(4, topPad + 8, 20, 16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
       child: SizedBox(
         height: 48,
         child: Stack(

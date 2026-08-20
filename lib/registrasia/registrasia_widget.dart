@@ -1,3 +1,4 @@
+import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -26,6 +27,7 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   late RegistrasiaModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _submitting = false;
 
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
@@ -117,27 +119,8 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
 
-    return Container(
-      width: double.infinity,
+    return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(_pageHPad - 4, topPad + 14, _pageHPad - 4, 12),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E5FE8), Color(0xFF1341B0)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1F1341B0),
-            blurRadius: 16,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
       child: SizedBox(
         height: 46,
         child: Stack(
@@ -492,6 +475,13 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
   }
 
   Future<void> _onSignUp() async {
+    if (!_formValid || _submitting) {
+      return;
+    }
+    if (!_nameValid) {
+      _showSnack(FFLocalizations.of(context).getText('authname1'));
+      return;
+    }
     if (!_phoneValid) {
       _showSnack(FFLocalizations.of(context).getText('authphn1'));
       return;
@@ -504,6 +494,8 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
       _showSnack(FFLocalizations.of(context).getText('authpwdf'));
       return;
     }
+
+    safeSetState(() => _submitting = true);
 
     FFAppState().emailstate = '${_model.phoneTextController.text}@app.com';
     FFAppState().hh1 = true;
@@ -518,21 +510,32 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
       ),
       _model.passwordTextController.text,
     );
+
+    if (!mounted) return;
+    safeSetState(() => _submitting = false);
+
     if (user == null) {
+      _showSnack(FFLocalizations.of(context).getText('authregf'));
       return;
     }
 
-    await UserTable().insert({
-      'nomer': FFAppState().emailstate,
-      'id': currentUserUid,
-      'pass': _model.passwordTextController.text,
-      'name': _model.namefildTextController.text,
-    });
+    try {
+      await UserTable().insert({
+        'nomer': FFAppState().emailstate,
+        'id': currentUserUid,
+        'name': _model.namefildTextController.text,
+      });
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack(FFLocalizations.of(context).getText('authregp'));
+    }
 
     if (!mounted) return;
-    context.pushNamedAuth(
+    GoRouter.of(context).clearRedirectLocation();
+    context.goNamedAuth(
       CreateListingPageCopyWidget.routeName,
       mounted,
+      ignoreRedirect: true,
     );
   }
 
@@ -698,18 +701,31 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(14),
-                              onTap: _onSignUp,
+                              onTap: (_formValid && !_submitting)
+                                  ? _onSignUp
+                                  : null,
                               child: Center(
-                                child: Text(
-                                  FFLocalizations.of(context).getText(
-                                    'qy7d86gi' /* создать аккаунт */,
-                                  ),
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                child: _submitting
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.4,
+                                          valueColor: AlwaysStoppedAnimation(
+                                            Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        FFLocalizations.of(context).getText(
+                                          'qy7d86gi' /* создать аккаунт */,
+                                        ),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),

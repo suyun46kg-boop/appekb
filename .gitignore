@@ -48,6 +48,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/build/
 
 # Supabase CLI temp
 supabase/.temp/
@@ -56,5 +57,24 @@ supabase/.temp/
 /bazar_preview.html
 /zag.jpg
 
+# Dev tool dependencies
+tools/bg-remove/node_modules/
+tools/bg-remove/backup/
+
 # Distribution archives
 *.zip
+*.apk
+
+# JVM crash dumps
+hs_err_pid*.log
+
+# Admin lives outside this repo (../ekb-admin). Keep out if folder reappears.
+admin_app/
+
+# Design HTML previews (not shipped)
+design/**/*.html
+
+
+# Android signing — keep passwords local; keystore tracked by request
+android/key.properties
+

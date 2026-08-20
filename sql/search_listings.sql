@@ -50,7 +50,15 @@ as $$
     and (min_price is null or l.price >= min_price)
     and (max_price is null or l.price <= max_price)
     and (city_filter is null or l.city = city_filter)
-    and (category_filter is null or l.category_id = category_filter)
+    and (
+      category_filter is null
+      or l.category_id = category_filter
+      or l.category_id in (
+        select c.id1
+        from public.categories c
+        where c.parent_id1 = category_filter
+      )
+    )
   order by
     -- дешевле
     case when sort_option = 'price_asc'  then l.price end asc  nulls last,
