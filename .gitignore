@@ -75,7 +75,6 @@ admin_app/
 design/**/*.html
 
 
-# Android signing secrets
-*.jks
+# Android signing — keep passwords local; keystore tracked by request
 android/key.properties
 
