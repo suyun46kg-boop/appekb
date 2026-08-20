@@ -42,12 +42,17 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 
   Future<void> _loadUserName() async {
-    final rows = await UserTable().querySingleRow(
-      queryFn: (q) => q.eqOrNull('id', currentUserUid),
-    );
-    if (!mounted) return;
-    if (rows.isNotEmpty && (rows.first.name?.trim().isNotEmpty ?? false)) {
-      safeSetState(() => _userName = rows.first.name!.trim());
+    if (currentUserUid.isEmpty) return;
+    try {
+      final rows = await UserTable().querySingleRow(
+        queryFn: (q) => q.eqOrNull('id', currentUserUid),
+      );
+      if (!mounted) return;
+      if (rows.isNotEmpty && (rows.first.name?.trim().isNotEmpty ?? false)) {
+        safeSetState(() => _userName = rows.first.name!.trim());
+      }
+    } catch (e) {
+      debugPrint('Error loading user name: $e');
     }
   }
 
@@ -278,10 +283,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       height: 52,
       child: OutlinedButton.icon(
         onPressed: () async {
-          GoRouter.of(context).prepareAuthEvent();
-          await authManager.signOut();
+          try {
+            GoRouter.of(context).prepareAuthEvent();
+            await authManager.signOut();
+          } catch (e) {
+            debugPrint('Error during logout: $e');
+          }
           if (!context.mounted) return;
-          GoRouter.of(context).clearRedirectLocation();
+          try {
+            GoRouter.of(context).clearRedirectLocation();
+          } catch (_) {}
 
           FFAppState().hh1 = false;
           safeSetState(() {});

@@ -748,7 +748,10 @@ class _DbddWidgetState extends State<DbddWidget> {
                   final slide = slides[index];
                   return InkWell(
                     onTap: () async {
-                      await launchURL(slide.links!);
+                      if (slide.links != null &&
+                          slide.links!.trim().isNotEmpty) {
+                        await launchURL(slide.links!);
+                      }
                     },
                     child: Stack(
                       fit: StackFit.expand,

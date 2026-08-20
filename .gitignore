@@ -74,3 +74,8 @@ admin_app/
 # Design HTML previews (not shipped)
 design/**/*.html
 
+
+# Android signing secrets
+*.jks
+android/key.properties
+

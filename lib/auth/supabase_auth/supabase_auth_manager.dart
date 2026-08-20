@@ -16,13 +16,20 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   @override
   Future signOut() async {
     ModerationService.clearCache();
-    return SupaFlow.client.auth.signOut();
+    try {
+      await SupaFlow.client.auth.signOut();
+    } catch (e) {
+      debugPrint('Error signing out from Supabase: $e');
+    } finally {
+      currentUser = EkbkyrgyzdarSupabaseUser(null);
+    }
   }
 
   @override
   Future deleteUser(BuildContext context) async {
     try {
       if (!loggedIn) {
+        debugPrint('Error: delete user attempted with no logged in user!');
         return;
       }
       await currentUser?.delete();
@@ -46,6 +53,8 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
         SnackBar(content: Text('Error: ${e.message}')),
       );
     } catch (e) {
+      debugPrint('Error during user deletion: $e');
+      await signOut();
       if (!context.mounted) {
         return;
       }
