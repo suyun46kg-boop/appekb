@@ -234,19 +234,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             Text(
               FFLocalizations.of(context).getText('dltacnt03'),
             ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => launchURL(
-                'https://telegra.ph/Udalenie-akkaunta-07-12',
-              ),
-              child: Text(
-                FFLocalizations.of(context).getText('dltacnt08'),
-                style: const TextStyle(
-                  color: Color(0xFF1A56DB),
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
           ],
         ),
         actions: [
@@ -404,11 +391,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               title: FFLocalizations.of(context).getText(
                                 '6ay3t2sd' /* политика конфиденциальности */,
                               ),
-                              onTap: () async {
-                                await launchURL(
-                                  'https://telegra.ph/Ekaterinburg-Kyrgyzdar-06-20',
-                                );
-                              },
+                              onTap: () => context.pushNamed(
+                                PolitpageWidget.routeName,
+                              ),
                             ),
                             _menuTile(
                               icon: Icons.cleaning_services_outlined,

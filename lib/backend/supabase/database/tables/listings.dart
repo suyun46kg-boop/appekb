@@ -52,4 +52,18 @@ class ListingsRow extends SupabaseDataRow {
 
   String? get userName => getField<String>('user_name');
   set userName(String? value) => setField<String>('user_name', value);
+
+  String? get moderationStatus => getField<String>('moderation_status');
+  set moderationStatus(String? value) =>
+      setField<String>('moderation_status', value);
+
+  int? get reportCount => getField<int>('report_count');
+  set reportCount(int? value) => setField<int>('report_count', value);
+
+  DateTime? get moderatedAt => getField<DateTime>('moderated_at');
+  set moderatedAt(DateTime? value) => setField<DateTime>('moderated_at', value);
+
+  String? get moderationReason => getField<String>('moderation_reason');
+  set moderationReason(String? value) =>
+      setField<String>('moderation_reason', value);
 }
