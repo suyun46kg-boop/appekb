@@ -60,7 +60,8 @@ AS $$
     l.created_at
   FROM candidates c
   JOIN public.listings l ON l.id = c.listing_id
-  WHERE p_exclude_listing_id IS NULL OR l.id <> p_exclude_listing_id
+  WHERE l.moderation_status = 'active'
+    AND (p_exclude_listing_id IS NULL OR l.id <> p_exclude_listing_id)
   ORDER BY c.sort_order ASC, c.linked_at DESC
   LIMIT 4;
 $$;

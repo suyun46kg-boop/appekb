@@ -86,14 +86,16 @@ class _MylistingWidgetState extends State<MylistingWidget> {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               FFLocalizations.of(context).getText('mlcancel'),
-              style: GoogleFonts.inter(color: _text3, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.inter(color: _text3, fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
               FFLocalizations.of(context).getText('mldelete'),
-              style: GoogleFonts.inter(color: _red, fontWeight: FontWeight.w700),
+              style:
+                  GoogleFonts.inter(color: _red, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -164,7 +166,38 @@ class _MylistingWidgetState extends State<MylistingWidget> {
     );
   }
 
+  Widget? _moderationBadge(ListingsRow listing) {
+    final status = listing.moderationStatus;
+    if (status == null || status == 'active') {
+      return null;
+    }
+
+    final isRemoved = status == 'removed';
+    final color = isRemoved ? _red : const Color(0xFFD97706);
+    final textKey = isRemoved ? 'mlremoved' : 'mlreview';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        FFLocalizations.of(context).getText(textKey),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.inter(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
   Widget _listingCard(ListingsRow listing) {
+    final moderationBadge = _moderationBadge(listing);
+    final canEdit = listing.moderationStatus == null ||
+        listing.moderationStatus == 'active';
     return InkWell(
       onTap: () => context.pushNamed(
         PagpageWidget.routeName,
@@ -213,18 +246,28 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            valueOrDefault<String>(
-                                listing.title,
-                                FFLocalizations.of(context)
-                                    .getText('c5j5d6pi')),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _text,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  valueOrDefault<String>(
+                                      listing.title,
+                                      FFLocalizations.of(context)
+                                          .getText('c5j5d6pi')),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: _text,
+                                  ),
+                                ),
+                              ),
+                              if (moderationBadge != null) ...[
+                                const SizedBox(width: 6),
+                                Flexible(child: moderationBadge),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -239,12 +282,14 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                       ),
                       Row(
                         children: [
-                          _actionButton(
-                            icon: Icons.edit_rounded,
-                            color: _blue,
-                            onTap: () => _editListing(listing.id!),
-                          ),
-                          const SizedBox(width: 8),
+                          if (canEdit) ...[
+                            _actionButton(
+                              icon: Icons.edit_rounded,
+                              color: _blue,
+                              onTap: () => _editListing(listing.id!),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           _actionButton(
                             icon: Icons.delete_outline_rounded,
                             color: _red,
