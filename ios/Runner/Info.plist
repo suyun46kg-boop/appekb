@@ -50,6 +50,8 @@
 	<string>Camera access is required to take a photo for a listing.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Photo library access is required to select a photo for a listing.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location access is required to show relevant listings and services near you.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

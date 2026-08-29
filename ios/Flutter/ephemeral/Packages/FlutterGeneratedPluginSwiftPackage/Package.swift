@@ -25,7 +25,6 @@ let package = Package(
         .package(name: "shared_preferences_foundation", path: "../.packages/shared_preferences_foundation-2.5.4"),
         .package(name: "url_launcher_ios", path: "../.packages/url_launcher_ios-6.3.3"),
         .package(name: "video_player_avfoundation", path: "../.packages/video_player_avfoundation-2.7.1"),
-        .package(name: "webview_flutter_wkwebview", path: "../.packages/webview_flutter_wkwebview-3.22.0"),
         .package(name: "FlutterFramework", path: "../.packages/FlutterFramework")
     ],
     targets: [
@@ -42,7 +41,6 @@ let package = Package(
                 .product(name: "shared-preferences-foundation", package: "shared_preferences_foundation"),
                 .product(name: "url-launcher-ios", package: "url_launcher_ios"),
                 .product(name: "video-player-avfoundation", package: "video_player_avfoundation"),
-                .product(name: "webview-flutter-wkwebview", package: "webview_flutter_wkwebview"),
                 .product(name: "FlutterFramework", package: "FlutterFramework")
             ]
         )
