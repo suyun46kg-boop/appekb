@@ -233,23 +233,21 @@ class _NavTab extends StatelessWidget {
     required this.activeIcon,
     required this.label,
     required this.onTap,
-  }) : showLabel = true : iconSize = 26 : iconColor;
+  });
 
   final bool active;
   final IconData icon;
   final IconData activeIcon;
   final String label;
   final VoidCallback onTap;
-  final bool showLabel;
-  final double iconSize;
-  final Color? iconColor;
+
+  static const double _iconSize = 26.0;
 
   @override
   Widget build(BuildContext context) {
     final labelColor =
         active ? EkbBottomNavBar._activeBlue : EkbBottomNavBar._inactive;
-    final resolvedIconColor = iconColor ?? labelColor;
-    final size = active ? iconSize + 1 : iconSize;
+    final size = active ? _iconSize + 1 : _iconSize;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -263,23 +261,21 @@ class _NavTab extends StatelessWidget {
           Icon(
             active ? activeIcon : icon,
             size: size,
-            color: resolvedIconColor,
+            color: labelColor,
           ),
-          if (showLabel) ...[
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: EkbTypography.navLabel.copyWith(
-                fontSize: 11,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                color: labelColor,
-                letterSpacing: -0.1,
-              ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: EkbTypography.navLabel.copyWith(
+              fontSize: 11,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w600,
+              color: labelColor,
+              letterSpacing: -0.1,
             ),
-          ],
+          ),
         ],
       ),
     );

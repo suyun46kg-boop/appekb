@@ -74,19 +74,8 @@ class EkbListingCard extends StatelessWidget {
   final DateTime? publishedAt;
   final bool showDescription;
 
-  String _formatPublishedAt(BuildContext context) {
-    if (publishedAt == null) return '';
-    return dateTimeFormat(
-      'relative',
-      publishedAt,
-      locale: FFLocalizations.of(context).languageCode,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final publishedLabel = _formatPublishedAt(context);
-
     return InkWell(
       onTap: () {
         context.pushNamed(

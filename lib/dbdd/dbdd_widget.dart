@@ -14,6 +14,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'category_block_background.dart';
 import 'dbdd_model.dart';

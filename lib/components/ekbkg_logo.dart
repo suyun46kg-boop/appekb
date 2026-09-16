@@ -19,7 +19,6 @@ class EkbkgLogo extends StatelessWidget {
 
   /// Paints the logo into [canvas] using the 120×120 viewBox from logo.svg.
   static void paint(Canvas canvas, {Color color = brandYellow}) {
-    const viewSize = 120.0;
     const center = Offset(60, 60);
     const coreRadius = 18.0;
     const petalDistance = 37.0;

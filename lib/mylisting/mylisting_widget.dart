@@ -9,6 +9,7 @@ import '/services/ekb_image_cache.dart';
 import '/theme/ekb_breakpoints.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:google_fonts/google_fonts.dart';
 import 'mylisting_model.dart';
 export 'mylisting_model.dart';
