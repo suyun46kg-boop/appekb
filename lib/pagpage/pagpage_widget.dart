@@ -211,18 +211,42 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
-  void _shareListing(ListingsRow listing) {
+  void _shareListing(ListingsRow listing, [BuildContext? buttonContext]) {
     final title = valueOrDefault<String>(
         listing.title, FFLocalizations.of(context).getText('c5j5d6pi'));
     final price = valueOrDefault<String>(
       listing.price?.toStringAsFixed(0),
       '0',
     );
-    SharePlus.instance.share(
-      ShareParams(
-        text: '$title — $price р\n${listing.description ?? ''}'.trim(),
-      ),
-    );
+
+    Rect? originRect;
+    final targetContext = buttonContext ?? context;
+    try {
+      final box = targetContext.findRenderObject() as RenderBox?;
+      if (box != null && box.hasSize && !box.size.isEmpty) {
+        originRect = box.localToGlobal(Offset.zero) & box.size;
+      }
+    } catch (_) {}
+
+    if (originRect == null || originRect.isEmpty) {
+      final media = MediaQuery.sizeOf(context);
+      originRect = Rect.fromCenter(
+        center: Offset(media.width / 2, media.height / 3),
+        width: 48,
+        height: 48,
+      );
+    }
+
+    try {
+      SharePlus.instance.share(
+        ShareParams(
+          text: '$title — $price р\n${listing.description ?? ''}'.trim(),
+          sharePositionOrigin: originRect,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Share error: $e');
+    }
   }
 
   bool get _isLoggedIn => currentUserUid.isNotEmpty;
@@ -530,9 +554,11 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                     onTap: () => _showModerationSheet(listing),
                   ),
                   const SizedBox(width: 8),
-                  _circleIconButton(
-                    icon: Icons.ios_share_rounded,
-                    onTap: () => _shareListing(listing),
+                  Builder(
+                    builder: (btnCtx) => _circleIconButton(
+                      icon: Icons.ios_share_rounded,
+                      onTap: () => _shareListing(listing, btnCtx),
+                    ),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -976,11 +1002,13 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                   onTap: () => _showModerationSheet(listing),
                 ),
                 const SizedBox(width: 8),
-                _circleIconButton(
-                  icon: Icons.ios_share_rounded,
-                  background: Colors.white,
-                  foreground: _text2,
-                  onTap: () => _shareListing(listing),
+                Builder(
+                  builder: (btnCtx) => _circleIconButton(
+                    icon: Icons.ios_share_rounded,
+                    background: Colors.white,
+                    foreground: _text2,
+                    onTap: () => _shareListing(listing, btnCtx),
+                  ),
                 ),
                 const SizedBox(width: 8),
               ],
