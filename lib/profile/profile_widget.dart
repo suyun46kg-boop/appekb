@@ -608,14 +608,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                         const SizedBox(height: 12),
                         _deleteAccountButton(context),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 }

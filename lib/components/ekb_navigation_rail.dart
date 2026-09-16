@@ -71,7 +71,6 @@ class EkbNavigationRail extends StatelessWidget {
                   height: 44,
                   child: EkbkgLogo(
                     size: 38,
-                    animateOnTap: true,
                   ),
                 ),
               ),

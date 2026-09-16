@@ -167,12 +167,14 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
               final selected = _selectedSubId == item.id;
               return Center(
                 child: _chip(
-              label: item.label,
-              selected: selected,
-              onTap: () => _selectSubcategory(item.id),
-            ),
-          );
-        },
+                  label: item.label,
+                  selected: selected,
+                  onTap: () => _selectSubcategory(item.id),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
