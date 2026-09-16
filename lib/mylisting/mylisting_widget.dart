@@ -378,7 +378,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                         .future,
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return Center(
+                    return const Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(_blue),
                       ),
@@ -414,8 +414,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                       constraints: const BoxConstraints(
                           maxWidth: EkbBreakpoints.maxListWidth),
                       child: ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        cacheExtent: 600,
+                        scrollCacheExtent: ScrollCacheExtent.pixels(600), padding: const EdgeInsets.all(16),
                         itemCount: listings.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) =>

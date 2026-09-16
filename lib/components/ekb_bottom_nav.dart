@@ -233,10 +233,7 @@ class _NavTab extends StatelessWidget {
     required this.activeIcon,
     required this.label,
     required this.onTap,
-    this.showLabel = true,
-    this.iconSize = 26,
-    this.iconColor,
-  });
+  }) : showLabel = true : iconSize = 26 : iconColor;
 
   final bool active;
   final IconData icon;

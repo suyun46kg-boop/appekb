@@ -9,7 +9,7 @@ class CaruselTable extends SupabaseTable<CaruselRow> {
 }
 
 class CaruselRow extends SupabaseDataRow {
-  CaruselRow(Map<String, dynamic> data) : super(data);
+  CaruselRow(super.data);
 
   @override
   SupabaseTable get table => CaruselTable();

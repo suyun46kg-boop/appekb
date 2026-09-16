@@ -13,7 +13,6 @@ import 'package:provider/provider.dart';
 import '/components/ekb_listing_card.dart';
 import '/services/moderation_service.dart';
 import '/theme/ekb_breakpoints.dart';
-import '/theme/ekb_typography.dart';
 import 'searchpage22_model.dart';
 export 'searchpage22_model.dart';
 

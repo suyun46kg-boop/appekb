@@ -288,8 +288,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                 ],
                 Expanded(
                   child: CustomScrollView(
-                    cacheExtent: 600,
-                    slivers: [
+                    scrollCacheExtent: ScrollCacheExtent.pixels(600), slivers: [
                       SliverPadding(
                         padding: EdgeInsets.fromLTRB(
                           hPad,

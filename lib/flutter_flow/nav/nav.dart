@@ -1,20 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
-import '/backend/supabase/supabase.dart';
 
 import '/auth/base_auth_user_provider.dart';
 
 import '/main.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 import '/index.dart';
 import '/components/app_update_widgets.dart';
@@ -93,12 +86,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) => NavBarPage(),
+      errorBuilder: (context, state) => const NavBarPage(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => NavBarPage(),
+          builder: (context, _) => const NavBarPage(),
         ),
         FFRoute(
           name: WelcomeWidget.routeName,
@@ -108,14 +101,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
             name: AvtoryzasiaWidget.routeName,
             path: AvtoryzasiaWidget.routePath,
-            builder: (context, params) => NavBarPage(
+            builder: (context, params) => const NavBarPage(
                   initialPage: '',
                   page: AvtoryzasiaWidget(),
                 )),
         FFRoute(
             name: RegistrasiaWidget.routeName,
             path: RegistrasiaWidget.routePath,
-            builder: (context, params) => NavBarPage(
+            builder: (context, params) => const NavBarPage(
                   initialPage: '',
                   page: RegistrasiaWidget(),
                 )),
@@ -123,8 +116,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             name: Searchpage22Widget.routeName,
             path: Searchpage22Widget.routePath,
             builder: (context, params) => params.isEmpty
-                ? NavBarPage(initialPage: 'searchpage22')
-                : NavBarPage(
+                ? const NavBarPage(initialPage: 'searchpage22')
+                : const NavBarPage(
                     initialPage: 'searchpage22',
                     page: Searchpage22Widget(),
                   )),
@@ -168,8 +161,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             name: ProfileWidget.routeName,
             path: ProfileWidget.routePath,
             builder: (context, params) => params.isEmpty
-                ? NavBarPage(initialPage: 'Profile')
-                : NavBarPage(
+                ? const NavBarPage(initialPage: 'Profile')
+                : const NavBarPage(
                     initialPage: 'Profile',
                     page: ProfileWidget(),
                   )),
@@ -177,8 +170,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             name: DbddWidget.routeName,
             path: DbddWidget.routePath,
             builder: (context, params) => params.isEmpty
-                ? NavBarPage(initialPage: 'dbdd')
-                : NavBarPage(
+                ? const NavBarPage(initialPage: 'dbdd')
+                : const NavBarPage(
                     initialPage: 'dbdd',
                     page: DbddWidget(),
                   )),
@@ -186,8 +179,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             name: PolitpageWidget.routeName,
             path: PolitpageWidget.routePath,
             builder: (context, params) => params.isEmpty
-                ? NavBarPage(initialPage: 'politpage')
-                : NavBarPage(
+                ? const NavBarPage(initialPage: 'politpage')
+                : const NavBarPage(
                     initialPage: 'politpage',
                     page: PolitpageWidget(),
                   )),
@@ -195,7 +188,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             name: MylistingWidget.routeName,
             path: MylistingWidget.routePath,
             builder: (context, params) => params.isEmpty
-                ? NavBarPage(initialPage: 'mylisting')
+                ? const NavBarPage(initialPage: 'mylisting')
                 : NavBarPage(
                     initialPage: 'mylisting',
                     page: MylistingWidget(
@@ -390,7 +383,7 @@ class FFRoute {
                   result: appStateNotifier.forceUpdateInfo!,
                 )
               : appStateNotifier.loading
-              ? NavBarPage()
+              ? const NavBarPage()
               : page;
 
           final transitionInfo = state.transitionInfo;
@@ -435,7 +428,7 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

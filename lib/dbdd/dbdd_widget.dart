@@ -855,8 +855,7 @@ class _DbddWidgetState extends State<DbddWidget> {
               _header(context),
               Expanded(
                 child: CustomScrollView(
-                  cacheExtent: 600,
-                  slivers: [
+                  scrollCacheExtent: ScrollCacheExtent.pixels(600), slivers: [
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(

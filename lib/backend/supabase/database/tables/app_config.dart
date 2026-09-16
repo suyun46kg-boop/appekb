@@ -9,7 +9,7 @@ class AppConfigTable extends SupabaseTable<AppConfigRow> {
 }
 
 class AppConfigRow extends SupabaseDataRow {
-  AppConfigRow(Map<String, dynamic> data) : super(data);
+  AppConfigRow(super.data);
 
   @override
   SupabaseTable get table => AppConfigTable();

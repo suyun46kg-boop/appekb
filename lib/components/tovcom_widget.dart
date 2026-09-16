@@ -1,10 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'tovcom_model.dart';
 export 'tovcom_model.dart';
 
@@ -59,7 +56,7 @@ class _TovcomWidgetState extends State<TovcomWidget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Text(
-                widget!.parameter1!,
+                widget.parameter1!,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(
                         fontWeight:
@@ -75,7 +72,7 @@ class _TovcomWidgetState extends State<TovcomWidget> {
                     ),
               ),
               Text(
-                widget!.parameter2!,
+                widget.parameter2!,
                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                       font: GoogleFonts.inter(
                         fontWeight:

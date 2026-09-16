@@ -13,7 +13,6 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
-import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 import 'components/app_update_widgets.dart';
 import 'components/ekb_bottom_nav.dart';
@@ -40,7 +39,7 @@ void main() async {
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,
-    child: MyApp(),
+    child: const MyApp(),
   ));
 }
 
@@ -53,6 +52,8 @@ Future<void> _safeInit(String name, Future<void> Function() init) async {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
@@ -131,7 +132,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'EKBKG',
-      localizationsDelegates: [
+      localizationsDelegates: const [
         FFLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -156,12 +157,12 @@ class _MyAppState extends State<MyApp> {
 }
 
 class NavBarPage extends StatefulWidget {
-  NavBarPage({
-    Key? key,
+  const NavBarPage({
+    super.key,
     this.initialPage,
     this.page,
     this.disableResizeToAvoidBottomInset = false,
-  }) : super(key: key);
+  });
 
   final String? initialPage;
   final Widget? page;
@@ -189,15 +190,15 @@ class _NavBarPageState extends State<NavBarPage> {
   Widget _createTab(int index) {
     switch (index) {
       case 0:
-        return DbddWidget();
+        return const DbddWidget();
       case 1:
-        return Searchpage22Widget();
+        return const Searchpage22Widget();
       case 2:
         return MylistingWidget(mylisid: currentUserUid);
       case 3:
-        return ProfileWidget();
+        return const ProfileWidget();
       default:
-        return DbddWidget();
+        return const DbddWidget();
     }
   }
 

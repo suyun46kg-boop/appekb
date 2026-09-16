@@ -12,7 +12,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '/components/ekb_listing_card.dart';
 import '/services/ekb_image_cache.dart';
 import '/services/moderation_service.dart';
-import '/theme/ekb_typography.dart';
 import '/theme/ekb_breakpoints.dart';
 import 'pagpage_model.dart';
 export 'pagpage_model.dart';

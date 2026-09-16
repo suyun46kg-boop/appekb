@@ -9,7 +9,7 @@ class SearchIndexTable extends SupabaseTable<SearchIndexRow> {
 }
 
 class SearchIndexRow extends SupabaseDataRow {
-  SearchIndexRow(Map<String, dynamic> data) : super(data);
+  SearchIndexRow(super.data);
 
   @override
   SupabaseTable get table => SearchIndexTable();

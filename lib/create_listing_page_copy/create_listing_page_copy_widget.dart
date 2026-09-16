@@ -3,14 +3,12 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/category_utils.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/sheet2_widget.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/services/ekb_image_cache.dart';
 import '/theme/ekb_breakpoints.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -133,7 +131,7 @@ class _CreateListingPageCopyWidgetState
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Color(0xFFF1F4FB),
+        backgroundColor: const Color(0xFFF1F4FB),
         body: Column(
           children: [
             _header(context),
@@ -161,7 +159,7 @@ class _CreateListingPageCopyWidgetState
                       children: [
                         Padding(
                           padding:
-                              EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+                              const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
                           child: SingleChildScrollView(
                             child: Column(
                           mainAxisSize: MainAxisSize.max,
@@ -221,7 +219,7 @@ class _CreateListingPageCopyWidgetState
                                                     .fontStyle,
                                           ),
                                     ),
-                                  ].divide(SizedBox(width: 4.0)),
+                                  ].divide(const SizedBox(width: 4.0)),
                                 ),
                                 InkWell(
                                   splashColor: Colors.transparent,
@@ -254,7 +252,7 @@ class _CreateListingPageCopyWidgetState
                                     height: 52.0,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      boxShadow: [
+                                      boxShadow: const [
                                         BoxShadow(
                                           blurRadius: 8.0,
                                           color: Color(0x0A000000),
@@ -266,9 +264,9 @@ class _CreateListingPageCopyWidgetState
                                       ],
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
-                                    alignment: AlignmentDirectional(-1.0, 0.0),
+                                    alignment: const AlignmentDirectional(-1.0, 0.0),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           18.0, 0.0, 0.0, 0.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
@@ -316,7 +314,7 @@ class _CreateListingPageCopyWidgetState
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
-                                                color: Color(0xBF000000),
+                                                color: const Color(0xBF000000),
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.w600,
                                                 fontStyle:
@@ -329,7 +327,7 @@ class _CreateListingPageCopyWidgetState
                                     ),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 8.0)),
+                              ].divide(const SizedBox(height: 8.0)),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -389,7 +387,7 @@ class _CreateListingPageCopyWidgetState
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 8.0,
                                         color: Color(0x0A000000),
@@ -465,7 +463,7 @@ class _CreateListingPageCopyWidgetState
                                                     .fontStyle,
                                           ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Colors.transparent,
                                           width: 0.0,
                                         ),
@@ -482,7 +480,7 @@ class _CreateListingPageCopyWidgetState
                                             BorderRadius.circular(12.0),
                                       ),
                                       errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0x00000000),
                                           width: 0.0,
                                         ),
@@ -490,7 +488,7 @@ class _CreateListingPageCopyWidgetState
                                             BorderRadius.circular(12.0),
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0x00000000),
                                           width: 0.0,
                                         ),
@@ -500,7 +498,7 @@ class _CreateListingPageCopyWidgetState
                                       filled: true,
                                       fillColor: Colors.white,
                                       contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               16.0, 18.0, 16.0, 18.0),
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -545,7 +543,7 @@ class _CreateListingPageCopyWidgetState
                                     ],
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 8.0)),
+                              ].divide(const SizedBox(height: 8.0)),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -578,7 +576,7 @@ class _CreateListingPageCopyWidgetState
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 8.0,
                                         color: Color(0x0A000000),
@@ -654,7 +652,7 @@ class _CreateListingPageCopyWidgetState
                                                     .fontStyle,
                                           ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Colors.transparent,
                                           width: 0.0,
                                         ),
@@ -671,7 +669,7 @@ class _CreateListingPageCopyWidgetState
                                             BorderRadius.circular(12.0),
                                       ),
                                       errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0x00000000),
                                           width: 0.0,
                                         ),
@@ -679,7 +677,7 @@ class _CreateListingPageCopyWidgetState
                                             BorderRadius.circular(12.0),
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0x00000000),
                                           width: 0.0,
                                         ),
@@ -689,7 +687,7 @@ class _CreateListingPageCopyWidgetState
                                       filled: true,
                                       fillColor: Colors.white,
                                       contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               16.0, 16.0, 16.0, 16.0),
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -738,7 +736,7 @@ class _CreateListingPageCopyWidgetState
                                     ],
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 8.0)),
+                              ].divide(const SizedBox(height: 8.0)),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -771,7 +769,7 @@ class _CreateListingPageCopyWidgetState
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 8.0,
                                         color: Color(0x0A000000),
@@ -845,7 +843,7 @@ class _CreateListingPageCopyWidgetState
                                                     .fontStyle,
                                           ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Colors.transparent,
                                           width: 0.0,
                                         ),
@@ -862,7 +860,7 @@ class _CreateListingPageCopyWidgetState
                                             BorderRadius.circular(12.0),
                                       ),
                                       errorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0x00000000),
                                           width: 0.0,
                                         ),
@@ -870,7 +868,7 @@ class _CreateListingPageCopyWidgetState
                                             BorderRadius.circular(12.0),
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                           color: Color(0x00000000),
                                           width: 0.0,
                                         ),
@@ -880,7 +878,7 @@ class _CreateListingPageCopyWidgetState
                                       filled: true,
                                       fillColor: Colors.white,
                                       contentPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
+                                          const EdgeInsetsDirectional.fromSTEB(
                                               16.0, 18.0, 16.0, 18.0),
                                       prefixIcon: Icon(
                                         Icons.currency_ruble_rounded,
@@ -920,7 +918,7 @@ class _CreateListingPageCopyWidgetState
                                         .asValidator(context),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 8.0)),
+                              ].divide(const SizedBox(height: 8.0)),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -953,7 +951,7 @@ class _CreateListingPageCopyWidgetState
                                   width: double.infinity,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    boxShadow: [
+                                    boxShadow: const [
                                       BoxShadow(
                                         blurRadius: 8.0,
                                         color: Color(0x0A000000),
@@ -966,7 +964,7 @@ class _CreateListingPageCopyWidgetState
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Padding(
-                                    padding: EdgeInsets.all(16.0),
+                                    padding: const EdgeInsets.all(16.0),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
@@ -1053,7 +1051,7 @@ class _CreateListingPageCopyWidgetState
                                                               .fontStyle,
                                                     ),
                                             enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Colors.transparent,
                                                 width: 0.0,
                                               ),
@@ -1071,7 +1069,7 @@ class _CreateListingPageCopyWidgetState
                                                   BorderRadius.circular(12.0),
                                             ),
                                             errorBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 0.0,
                                               ),
@@ -1080,7 +1078,7 @@ class _CreateListingPageCopyWidgetState
                                             ),
                                             focusedErrorBorder:
                                                 OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 0.0,
                                               ),
@@ -1090,7 +1088,7 @@ class _CreateListingPageCopyWidgetState
                                             filled: true,
                                             fillColor: Colors.white,
                                             contentPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     16.0, 18.0, 16.0, 18.0),
                                             prefixIcon: Icon(
                                               Icons.phone_rounded,
@@ -1133,7 +1131,7 @@ class _CreateListingPageCopyWidgetState
                                               .numberfildTextControllerValidator
                                               .asValidator(context),
                                         ),
-                                        Divider(
+                                        const Divider(
                                           thickness: 1.0,
                                           indent: 16.0,
                                           endIndent: 16.0,
@@ -1219,7 +1217,7 @@ class _CreateListingPageCopyWidgetState
                                                               .fontStyle,
                                                     ),
                                             enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Colors.transparent,
                                                 width: 0.0,
                                               ),
@@ -1237,7 +1235,7 @@ class _CreateListingPageCopyWidgetState
                                                   BorderRadius.circular(12.0),
                                             ),
                                             errorBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 0.0,
                                               ),
@@ -1246,7 +1244,7 @@ class _CreateListingPageCopyWidgetState
                                             ),
                                             focusedErrorBorder:
                                                 OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 0.0,
                                               ),
@@ -1256,7 +1254,7 @@ class _CreateListingPageCopyWidgetState
                                             filled: true,
                                             fillColor: Colors.white,
                                             contentPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     16.0, 18.0, 16.0, 18.0),
                                             suffixIcon: Icon(
                                               Icons.location_on_rounded,
@@ -1315,7 +1313,7 @@ class _CreateListingPageCopyWidgetState
                                     ),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 8.0)),
+                              ].divide(const SizedBox(height: 8.0)),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -1351,12 +1349,12 @@ class _CreateListingPageCopyWidgetState
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12.0),
                                     border: Border.all(
-                                      color: Color(0xFFCCCCCC),
+                                      color: const Color(0xFFCCCCCC),
                                       width: 1.5,
                                     ),
                                   ),
                                   child: Padding(
-                                    padding: EdgeInsets.all(16.0),
+                                    padding: const EdgeInsets.all(16.0),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.max,
                                       mainAxisAlignment:
@@ -1458,7 +1456,7 @@ class _CreateListingPageCopyWidgetState
                                                         .primaryText,
                                                   ),
                                                 ),
-                                                duration: Duration(
+                                                duration: const Duration(
                                                     milliseconds: 4000),
                                                 backgroundColor:
                                                     FlutterFlowTheme.of(context)
@@ -1470,12 +1468,12 @@ class _CreateListingPageCopyWidgetState
                                             width: 52.0,
                                             height: 52.0,
                                             decoration: BoxDecoration(
-                                              color: Color(0xFFF0F4FF),
+                                              color: const Color(0xFFF0F4FF),
                                               borderRadius:
                                                   BorderRadius.circular(26.0),
                                             ),
                                             child: Align(
-                                              alignment: AlignmentDirectional(
+                                              alignment: const AlignmentDirectional(
                                                   0.0, 0.0),
                                               child: _model
                                                       .isDataUploading_uploadData89k
@@ -1508,7 +1506,7 @@ class _CreateListingPageCopyWidgetState
                                         ),
                                         Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   0.0, 8.0, 0.0, 2.0),
                                           child: Text(
                                             _model.isDataUploading_uploadData89k
@@ -1558,7 +1556,7 @@ class _CreateListingPageCopyWidgetState
                                             width: 80.0,
                                             height: 80.0,
                                             decoration: BoxDecoration(
-                                              color: Color(0xFFE8EAF0),
+                                              color: const Color(0xFFE8EAF0),
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
                                             ),
@@ -1579,29 +1577,29 @@ class _CreateListingPageCopyWidgetState
                                             ),
                                           ),
                                         ]
-                                            .divide(SizedBox(width: 10.0))
-                                            .addToStart(SizedBox(width: 0.0))
-                                            .addToEnd(SizedBox(width: 0.0)),
+                                            .divide(const SizedBox(width: 10.0))
+                                            .addToStart(const SizedBox(width: 0.0))
+                                            .addToEnd(const SizedBox(width: 0.0)),
                                       ),
                                     ),
                                   ),
-                              ].divide(SizedBox(height: 12.0)),
+                              ].divide(const SizedBox(height: 12.0)),
                             ),
                           ]
-                              .divide(SizedBox(height: 16.0))
-                              .addToStart(SizedBox(height: 20.0))
-                              .addToEnd(SizedBox(height: 100.0)),
+                              .divide(const SizedBox(height: 16.0))
+                              .addToStart(const SizedBox(height: 20.0))
+                              .addToEnd(const SizedBox(height: 100.0)),
                         ),
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(0.0, 1.0),
+                      alignment: const AlignmentDirectional(0.0, 1.0),
                       child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             20.0, 0.0, 20.0, 100.0),
                         child: Container(
                           width: double.infinity,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: LinearGradient(
                               colors: [Color(0xFFF1F4FB), Color(0xFFF1F4FB)],
                               stops: [0.0, 1.0],
@@ -1723,7 +1721,7 @@ class _CreateListingPageCopyWidgetState
                                           .primaryText,
                                     ),
                                   ),
-                                  duration: Duration(milliseconds: 4000),
+                                  duration: const Duration(milliseconds: 4000),
                                   backgroundColor:
                                       FlutterFlowTheme.of(context).secondary,
                                 ),
@@ -1743,10 +1741,10 @@ class _CreateListingPageCopyWidgetState
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 56.0,
-                              padding: EdgeInsets.all(8.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsets.all(8.0),
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
-                              color: Color(0xFF1877F2),
+                              color: const Color(0xFF1877F2),
                               textStyle: FlutterFlowTheme.of(context)
                                   .titleSmall
                                   .override(
@@ -1765,7 +1763,7 @@ class _CreateListingPageCopyWidgetState
                                         .fontStyle,
                                   ),
                               elevation: 0.0,
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Colors.transparent,
                               ),
                               borderRadius: BorderRadius.circular(16.0),
