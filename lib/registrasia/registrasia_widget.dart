@@ -3,6 +3,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/theme/ekb_breakpoints.dart';
 import '/index.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
@@ -121,45 +122,51 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
 
     return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(_pageHPad - 4, topPad + 14, _pageHPad - 4, 12),
-      child: SizedBox(
-        height: 46,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: InkWell(
-                onTap: () => context.pop(),
-                borderRadius: BorderRadius.circular(999),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
+      child: Center(
+        child: ConstrainedBox(
+          constraints:
+              const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+          child: SizedBox(
+            height: 46,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: InkWell(
+                    onTap: () => context.pop(),
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.22),
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_rounded,
-                    color: Colors.white,
-                    size: 20,
                   ),
                 ),
-              ),
+                Text(
+                  FFLocalizations.of(context).getText('j76pkpsz' /* Регистрация */),
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              FFLocalizations.of(context).getText('j76pkpsz' /* Регистрация */),
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -555,14 +562,20 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
           children: [
             _header(context),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  _pageHPad,
-                  22,
-                  _pageHPad,
-                  32,
-                ),
-                child: Form(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: EkbBreakpoints.maxAuthWidth,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(
+                      _pageHPad,
+                      22,
+                      _pageHPad,
+                      32,
+                    ),
+                    child: Form(
                   key: _model.formKey,
                   autovalidateMode: AutovalidateMode.disabled,
                   child: Column(
@@ -772,9 +785,11 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 }

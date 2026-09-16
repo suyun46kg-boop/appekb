@@ -4,6 +4,7 @@ import '/dbdd/category_block_background.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/services/ekb_image_cache.dart';
+import '/theme/ekb_breakpoints.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,32 +72,44 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
   Widget _header(BuildContext context) {
     final topPad = MediaQuery.paddingOf(context).top;
-    final displayName = valueOrDefault<String>(_userName, '...');
+    final guestGreeting = FFLocalizations.of(context).getVariableText(
+      ruText: 'Добро пожаловать',
+      kyText: 'Кош келиңиз',
+    );
+    final displayName = currentUserUid.isEmpty
+        ? guestGreeting
+        : valueOrDefault<String>(_userName, '...');
 
     return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(_pageHPad, topPad + 14, _pageHPad, 52),
-      child: Column(
-        children: [
-          Text(
-            FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: -0.2,
-            ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints:
+              const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+          child: Column(
+            children: [
+              Text(
+                FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: Colors.white.withValues(alpha: 0.82),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            displayName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.82),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -136,6 +149,17 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   }
 
   Widget _avatarFallback() {
+    if (currentUserUid.isEmpty) {
+      return Container(
+        color: const Color(0xFFEEF3FF),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.person_outline_rounded,
+          size: 40,
+          color: _blue,
+        ),
+      );
+    }
     return Container(
       color: const Color(0xFFEEF3FF),
       alignment: Alignment.center,
@@ -363,6 +387,97 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     );
   }
 
+  Widget _guestAuthBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF3FF),
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: const Icon(
+              Icons.account_circle_outlined,
+              size: 32,
+              color: _blue,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            FFLocalizations.of(context).getVariableText(
+              ruText: 'Войдите в аккаунт',
+              kyText: 'Аккаунтка кириңиз',
+            ),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: _text,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            FFLocalizations.of(context).getVariableText(
+              ruText:
+                  'Чтобы подавать объявления, сохранять избранное и общаться с продавцами',
+              kyText:
+                  'Жарыяларды жайгаштыруу жана сатуучулар менен байланышуу үчүн',
+            ),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: _text3,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () => context.pushNamed(RegistrasiaWidget.routeName),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _blue,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                FFLocalizations.of(context).getVariableText(
+                  ruText: 'Войти / Зарегистрироваться',
+                  kyText: 'Кирүү / Катталуу',
+                ),
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final photoUrl = currentUserPhoto;
@@ -385,15 +500,22 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             Expanded(
               child: Transform.translate(
                 offset: const Offset(0, -20),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    _pageHPad,
-                    0,
-                    _pageHPad,
-                    100,
-                  ),
-                  child: Column(
-                    children: [
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                        maxWidth: EkbBreakpoints.maxFormWidth),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        _pageHPad,
+                        0,
+                        _pageHPad,
+                        100,
+                      ),
+                      child: Column(
+                        children: [
+                          if (currentUserUid.isEmpty)
+                            _guestAuthBanner(context),
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -419,6 +541,10 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 'kiy9k1h8' /* маи обиявлении */,
                               ),
                               onTap: () {
+                                if (currentUserUid.isEmpty) {
+                                  context.pushNamed(RegistrasiaWidget.routeName);
+                                  return;
+                                }
                                 context.pushNamed(
                                   MylistingWidget.routeName,
                                   queryParameters: {
@@ -459,28 +585,30 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                               title: FFLocalizations.of(context).getText(
                                 'clrcache01' /* Очистить кеш */,
                               ),
+                              showDivider: currentUserUid.isNotEmpty,
                               onTap: () => _clearImageCache(context),
                             ),
-                            _menuTile(
-                              icon: Icons.person_remove_outlined,
-                              iconColor: const Color(0xFFB45309),
-                              iconBg: const Color(0xFFFFF7ED),
-                              title: FFLocalizations.of(context).getText(
-                                'dltacnt01' /* удаление аккаунта */,
+                            if (currentUserUid.isNotEmpty)
+                              _menuTile(
+                                icon: Icons.person_remove_outlined,
+                                iconColor: const Color(0xFFB45309),
+                                iconBg: const Color(0xFFFFF7ED),
+                                title: FFLocalizations.of(context).getText(
+                                  'dltacnt01' /* удаление аккаунта */,
+                                ),
+                                showDivider: false,
+                                onTap: () => _confirmDeleteAccount(context),
                               ),
-                              showDivider: false,
-                              onTap: () => _confirmDeleteAccount(context),
-                            ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      _logoutButton(context),
                       if (currentUserUid.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _logoutButton(context),
                         const SizedBox(height: 12),
                         _deleteAccountButton(context),
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),

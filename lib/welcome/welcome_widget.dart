@@ -144,6 +144,7 @@ class _WelcomeWidgetState extends State<WelcomeWidget>
           final brandTop = ui.lerpDouble(startTop, top + 16, fly)!;
 
           return Stack(
+            fit: StackFit.expand,
             children: [
               // Aurora
               Positioned(
@@ -211,111 +212,148 @@ class _WelcomeWidgetState extends State<WelcomeWidget>
               ),
 
               // Landing content
-              Padding(
-                padding: EdgeInsets.fromLTRB(24, top + 12, 24, 24 + bottom),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        const Spacer(),
-                        Opacity(
-                          opacity: langOp,
-                          child: Row(
-                            children: [
-                              _langButton(
-                                'ky',
-                                FFLocalizations.of(context)
-                                    .getText('l8qpitx7' /* KG */),
-                              ),
-                              const SizedBox(width: 8),
-                              _langButton(
-                                'ru',
-                                FFLocalizations.of(context)
-                                    .getText('qai395nv' /* RU */),
-                              ),
-                            ],
+              Positioned.fill(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                                24, top + 12, 24, 24 + bottom),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Spacer(),
+                                    Opacity(
+                                      opacity: langOp,
+                                      child: Row(
+                                        children: [
+                                          _langButton(
+                                            'ky',
+                                            FFLocalizations.of(context)
+                                                .getText('l8qpitx7' /* KG */),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          _langButton(
+                                            'ru',
+                                            FFLocalizations.of(context)
+                                                .getText('qai395nv' /* RU */),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Spacer(flex: 2),
+                                const SizedBox(height: 16),
+                                Opacity(
+                                  opacity: heroOp,
+                                  child: Transform.translate(
+                                    offset: Offset(0, 16 * (1 - heroOp)),
+                                    child: Center(
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            maxWidth: 560),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              FFLocalizations.of(context)
+                                                  .getText('wlc1hero1'),
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.w800,
+                                                height: 1.12,
+                                                letterSpacing: -1,
+                                                color: _textPrimary,
+                                              ),
+                                            ),
+                                            _GradientText(
+                                              FFLocalizations.of(context)
+                                                  .getText('wlc1hero2'),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.w800,
+                                                height: 1.12,
+                                                letterSpacing: -1,
+                                              ),
+                                              progress: _aurora.value,
+                                            ),
+                                            const SizedBox(height: 14),
+                                            Text(
+                                              FFLocalizations.of(context)
+                                                  .getText('wlc1sub'),
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.45,
+                                                color: _textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Spacer(flex: 1),
+                                const SizedBox(height: 16),
+                                Opacity(
+                                  opacity: ctaOp,
+                                  child: Transform.translate(
+                                    offset: Offset(0, 12 * (1 - ctaOp)),
+                                    child: Center(
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            maxWidth: 420),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: 56,
+                                          child: FilledButton(
+                                            onPressed:
+                                                ctaOp > 0.5 ? _openHome : null,
+                                            style: FilledButton.styleFrom(
+                                              backgroundColor: _brand,
+                                              disabledBackgroundColor:
+                                                  _brand.withValues(alpha: 0.5),
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              shadowColor: Colors.transparent,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              startLabel,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: -0.2,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Spacer(flex: 1),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    const Spacer(flex: 2),
-                    Opacity(
-                      opacity: heroOp,
-                      child: Transform.translate(
-                        offset: Offset(0, 16 * (1 - heroOp)),
-                        child: Column(
-                          children: [
-                            Text(
-                              FFLocalizations.of(context).getText('wlc1hero1'),
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w800,
-                                height: 1.12,
-                                letterSpacing: -1,
-                                color: _textPrimary,
-                              ),
-                            ),
-                            _GradientText(
-                              FFLocalizations.of(context).getText('wlc1hero2'),
-                              style: GoogleFonts.inter(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w800,
-                                height: 1.12,
-                                letterSpacing: -1,
-                              ),
-                              progress: _aurora.value,
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              FFLocalizations.of(context).getText('wlc1sub'),
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                height: 1.45,
-                                color: _textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                    const Spacer(flex: 1),
-                    Opacity(
-                      opacity: ctaOp,
-                      child: Transform.translate(
-                        offset: Offset(0, 12 * (1 - ctaOp)),
-                        child: SizedBox(
-                          height: 56,
-                          child: FilledButton(
-                            onPressed: ctaOp > 0.5 ? _openHome : null,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: _brand,
-                              disabledBackgroundColor:
-                                  _brand.withValues(alpha: 0.5),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                            child: Text(
-                              startLabel,
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const Spacer(flex: 1),
-                  ],
+                    );
+                  },
                 ),
               ),
             ],

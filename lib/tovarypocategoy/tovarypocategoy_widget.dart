@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '/theme/ekb_breakpoints.dart';
 import '/theme/ekb_typography.dart';
 import 'tovarypocategoy_model.dart';
 export 'tovarypocategoy_model.dart';
@@ -103,36 +104,41 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
 
     return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(4, topPad + 8, _pageHPad, 16),
-      child: SizedBox(
-        height: 48,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                iconSize: 24,
-                splashRadius: 22,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.2,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+          child: SizedBox(
+            height: 48,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => context.pop(),
+                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    iconSize: 24,
+                    splashRadius: 22,
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -146,18 +152,21 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
       ...subs.map((s) => (label: s.name, id: s.id1)),
     ];
 
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: _pageHPad),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          final selected = _selectedSubId == item.id;
-          return Center(
-            child: _chip(
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+        child: SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: _pageHPad),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              final selected = _selectedSubId == item.id;
+              return Center(
+                child: _chip(
               label: item.label,
               selected: selected,
               onTap: () => _selectSubcategory(item.id),
@@ -262,6 +271,11 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
               selectedSubId: _selectedSubId,
             );
 
+            final screenWidth = MediaQuery.sizeOf(context).width;
+            final hPad = screenWidth > EkbBreakpoints.maxContentWidth
+                ? (screenWidth - EkbBreakpoints.maxContentWidth) / 2 + 8
+                : 8.0;
+
             return Column(
               children: [
                 _header(context, title),
@@ -276,9 +290,9 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                     slivers: [
                       SliverPadding(
                         padding: EdgeInsets.fromLTRB(
-                          5,
+                          hPad,
                           subs.isEmpty ? 12 : 8,
-                          5,
+                          hPad,
                           0,
                         ),
                         sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
@@ -288,13 +302,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                               categoryId: categoryFilter,
                             ),
                           ),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: EkbListingCard.gridAspectRatio,
-                          ),
+                          gridDelegate: EkbBreakpoints.listingGridDelegate(),
                           builderDelegate: PagedChildBuilderDelegate<dynamic>(
                             firstPageProgressIndicatorBuilder: (_) =>
                                 const _ListingSkeletonGrid(),
@@ -359,17 +367,14 @@ class _ListingSkeletonGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cols = EkbBreakpoints.gridColumnsForWidth(screenWidth);
     return GridView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: EkbListingCard.gridAspectRatio,
-      ),
-      itemCount: 6,
+      gridDelegate: EkbBreakpoints.listingGridDelegate(),
+      itemCount: cols * 3,
       itemBuilder: (_, __) => const _ListingSkeletonCard(),
     );
   }

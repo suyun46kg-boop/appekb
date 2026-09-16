@@ -94,51 +94,56 @@ class EkbBottomNavBar extends StatelessWidget {
             padding: EdgeInsets.only(bottom: bottomPad),
             child: SizedBox(
               height: _barHeight,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _NavTab(
-                      active: currentIndex == 0,
-                      icon: Icons.home_outlined,
-                      activeIcon: Icons.home_rounded,
-                      label: homeLabel,
-                      onTap: onHomeTap,
-                    ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _NavTab(
+                          active: currentIndex == 0,
+                          icon: Icons.home_outlined,
+                          activeIcon: Icons.home_rounded,
+                          label: homeLabel,
+                          onTap: onHomeTap,
+                        ),
+                      ),
+                      Expanded(
+                        child: _NavTab(
+                          active: currentIndex == 1,
+                          icon: Icons.search_rounded,
+                          activeIcon: Icons.search_rounded,
+                          label: searchLabel,
+                          onTap: onSearchTap,
+                        ),
+                      ),
+                      Expanded(
+                        child: _CreateTab(
+                          label: createLabel,
+                          onTap: onCreateTap,
+                        ),
+                      ),
+                      Expanded(
+                        child: _NavTab(
+                          active: currentIndex == 2,
+                          icon: Icons.list_alt_outlined,
+                          activeIcon: Icons.list_alt_rounded,
+                          label: listingsLabel,
+                          onTap: onListingsTap,
+                        ),
+                      ),
+                      Expanded(
+                        child: _NavTab(
+                          active: currentIndex == 3,
+                          icon: Icons.person_outline_rounded,
+                          activeIcon: Icons.person_rounded,
+                          label: profileLabel,
+                          onTap: onProfileTap,
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: _NavTab(
-                      active: currentIndex == 1,
-                      icon: Icons.search_rounded,
-                      activeIcon: Icons.search_rounded,
-                      label: searchLabel,
-                      onTap: onSearchTap,
-                    ),
-                  ),
-                  Expanded(
-                    child: _CreateTab(
-                      label: createLabel,
-                      onTap: onCreateTap,
-                    ),
-                  ),
-                  Expanded(
-                    child: _NavTab(
-                      active: currentIndex == 2,
-                      icon: Icons.list_alt_outlined,
-                      activeIcon: Icons.list_alt_rounded,
-                      label: listingsLabel,
-                      onTap: onListingsTap,
-                    ),
-                  ),
-                  Expanded(
-                    child: _NavTab(
-                      active: currentIndex == 3,
-                      icon: Icons.person_outline_rounded,
-                      activeIcon: Icons.person_rounded,
-                      label: profileLabel,
-                      onTap: onProfileTap,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

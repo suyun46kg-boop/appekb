@@ -12,6 +12,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import '/components/ekb_listing_card.dart';
 import '/services/moderation_service.dart';
+import '/theme/ekb_breakpoints.dart';
 import '/theme/ekb_typography.dart';
 import 'searchpage22_model.dart';
 export 'searchpage22_model.dart';
@@ -288,9 +289,16 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
             Expanded(
               child: _model.activeQuery.isNotEmpty
                   ? _buildResults(theme)
-                  : _model.typedText.isNotEmpty
-                      ? _buildSuggestions(theme)
-                      : _buildRecentAndSuggestions(theme),
+                  : Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: EkbBreakpoints.maxFormWidth,
+                        ),
+                        child: _model.typedText.isNotEmpty
+                            ? _buildSuggestions(theme)
+                            : _buildRecentAndSuggestions(theme),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -308,17 +316,22 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
           bottomRight: Radius.circular(22),
         ),
         padding: EdgeInsets.fromLTRB(10.0, topPad + 10.0, 16.0, 16.0),
-        child: SizedBox(
-          height: 48.0,
-          child: Row(
-            children: [
-              _HeaderIconButton(
-                icon: Icons.arrow_back_ios_new_rounded,
-                onTap: _handleBack,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+            child: SizedBox(
+              height: 48.0,
+              child: Row(
+                children: [
+                  _HeaderIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    onTap: _handleBack,
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(child: _buildSearchField(theme)),
+                ],
               ),
-              const SizedBox(width: 8.0),
-              Expanded(child: _buildSearchField(theme)),
-            ],
+            ),
           ),
         ),
       ),
@@ -545,10 +558,19 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
   }
 
   Widget _buildResults(FlutterFlowTheme theme) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final hPad = screenWidth > EkbBreakpoints.maxContentWidth
+        ? (screenWidth - EkbBreakpoints.maxContentWidth) / 2 + 16.0
+        : 16.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildResultsBar(theme),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxContentWidth),
+            child: _buildResultsBar(theme),
+          ),
+        ),
         Expanded(
           child: RefreshIndicator(
             color: _brand,
@@ -559,13 +581,8 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
             child: PagedGridView<int, ListingsRow>(
               pagingController: _pagingController,
               cacheExtent: 600,
-              padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 40.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12.0,
-                mainAxisSpacing: 12.0,
-                childAspectRatio: EkbListingCard.gridAspectRatio,
-              ),
+              padding: EdgeInsets.fromLTRB(hPad, 8.0, hPad, 40.0),
+              gridDelegate: EkbBreakpoints.listingGridDelegate(),
               showNewPageProgressIndicatorAsGridChild: false,
               builderDelegate: PagedChildBuilderDelegate<ListingsRow>(
                 itemBuilder: (context, item, index) =>
@@ -1722,16 +1739,16 @@ class _SkeletonGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final hPad = screenWidth > EkbBreakpoints.maxContentWidth
+        ? (screenWidth - EkbBreakpoints.maxContentWidth) / 2 + 16.0
+        : 16.0;
+    final cols = EkbBreakpoints.gridColumnsForWidth(screenWidth);
     return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 40.0),
+      padding: EdgeInsets.fromLTRB(hPad, 8.0, hPad, 40.0),
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12.0,
-        mainAxisSpacing: 12.0,
-        childAspectRatio: EkbListingCard.gridAspectRatio,
-      ),
-      itemCount: 6,
+      gridDelegate: EkbBreakpoints.listingGridDelegate(),
+      itemCount: cols * 3,
       itemBuilder: (_, __) => const _SkeletonCard(),
     );
   }

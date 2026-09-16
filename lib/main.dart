@@ -17,8 +17,10 @@ import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 import 'components/app_update_widgets.dart';
 import 'components/ekb_bottom_nav.dart';
+import 'components/ekb_navigation_rail.dart';
 import 'services/app_update_service.dart';
 import 'services/push_notification_service.dart';
+import 'theme/ekb_breakpoints.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -243,6 +245,22 @@ class _NavBarPageState extends State<NavBarPage> {
     );
   }
 
+  Widget _buildNavigationRail(BuildContext context, int currentIndex) {
+    return EkbNavigationRail(
+      currentIndex: currentIndex,
+      homeLabel: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
+      searchLabel: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
+      createLabel: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
+      listingsLabel: FFLocalizations.of(context).getText('wmxh68pv' /* мои объявления */),
+      profileLabel: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
+      onHomeTap: () => _switchTab(0),
+      onSearchTap: () => _switchTab(1),
+      onCreateTap: () => _openCreateListingFlow(context),
+      onListingsTap: () => _openMyListings(context),
+      onProfileTap: () => _switchTab(3),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentIndex = _tabKeys.indexOf(_currentPageName);
@@ -251,15 +269,33 @@ class _NavBarPageState extends State<NavBarPage> {
     final bodyChild = _currentPage ??
         _tabBody(currentIndex.clamp(0, _tabKeys.length - 1));
 
-    return Scaffold(
-      resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
-      body: MediaQuery(
-          data: queryData
-              .removeViewInsets(removeBottom: true)
-              .removeViewPadding(removeBottom: true),
-          child: bodyChild),
-      extendBody: false,
-      bottomNavigationBar: _buildBottomNav(context, currentIndex),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = EkbBreakpoints.isTabletWidth(constraints.maxWidth);
+
+        if (isTablet) {
+          return Scaffold(
+            resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
+            body: Row(
+              children: [
+                _buildNavigationRail(context, currentIndex),
+                Expanded(child: bodyChild),
+              ],
+            ),
+          );
+        }
+
+        return Scaffold(
+          resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
+          body: MediaQuery(
+              data: queryData
+                  .removeViewInsets(removeBottom: true)
+                  .removeViewPadding(removeBottom: true),
+              child: bodyChild),
+          extendBody: false,
+          bottomNavigationBar: _buildBottomNav(context, currentIndex),
+        );
+      },
     );
   }
 }

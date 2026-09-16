@@ -3,6 +3,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
+import '/theme/ekb_breakpoints.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,9 +51,15 @@ class _PolitpageWidgetState extends State<PolitpageWidget> {
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: SafeArea(
           top: true,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: EkbBreakpoints.maxListWidth,
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -177,6 +184,34 @@ class _PolitpageWidgetState extends State<PolitpageWidget> {
                                           .fontStyle,
                                       lineHeight: 1.6,
                                     ),
+                              ),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12.0),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF2F2),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  border: Border.all(
+                                    color: const Color(0xFFFECACA),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Мы придерживаемся политики нулевой терпимости к неприемлемому контенту и оскорбительным действиям (There is no tolerance for objectionable content or abusive users). Любой неприемлемый контент или пользователи, нарушающие правила, будут немедленно заблокированы или удалены.',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        font: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
+                                          fontStyle: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .fontStyle,
+                                        ),
+                                        color: const Color(0xFF991B1B),
+                                        fontSize: 13.0,
+                                        letterSpacing: 0.0,
+                                        lineHeight: 1.5,
+                                      ),
+                                ),
                               ),
                               Text(
                                 FFLocalizations.of(context).getText(
@@ -393,6 +428,8 @@ class _PolitpageWidgetState extends State<PolitpageWidget> {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }

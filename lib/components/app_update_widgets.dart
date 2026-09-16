@@ -59,30 +59,31 @@ class AppForceUpdateScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => launchURL(result.storeUrl),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF1A56DB),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              if (result.storeUrl.isNotEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => launchURL(result.storeUrl),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF1A56DB),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    FFLocalizations.of(context).getVariableText(
-                      ruText: 'Обновить',
-                      kyText: 'Жаңыртуу',
-                    ),
-                    style: EkbTypography.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                    child: Text(
+                      FFLocalizations.of(context).getVariableText(
+                        ruText: 'Обновить',
+                        kyText: 'Жаңыртуу',
+                      ),
+                      style: EkbTypography.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -134,24 +135,25 @@ class AppUpdateDialog {
                 style: EkbTypography.inter(fontWeight: FontWeight.w600),
               ),
             ),
-            TextButton(
-              onPressed: () async {
-                await launchURL(result.storeUrl);
-                if (dialogContext.mounted) {
-                  Navigator.of(dialogContext).pop();
-                }
-              },
-              child: Text(
-                FFLocalizations.of(context).getVariableText(
-                  ruText: 'Обновить',
-                  kyText: 'Жаңыртуу',
-                ),
-                style: EkbTypography.inter(
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A56DB),
+            if (result.storeUrl.isNotEmpty)
+              TextButton(
+                onPressed: () async {
+                  await launchURL(result.storeUrl);
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+                child: Text(
+                  FFLocalizations.of(context).getVariableText(
+                    ruText: 'Обновить',
+                    kyText: 'Жаңыртуу',
+                  ),
+                  style: EkbTypography.inter(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A56DB),
+                  ),
                 ),
               ),
-            ),
           ],
         );
       },

@@ -5,6 +5,7 @@ import '/components/shimmer_widgets.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/services/ekb_image_cache.dart';
+import '/theme/ekb_breakpoints.dart';
 import '/theme/ekb_typography.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -177,14 +178,19 @@ class _DbddWidgetState extends State<DbddWidget> {
 
     return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(20, topPad + 14, 20, 12),
-      child: SizedBox(
-        height: 46,
-        child: Row(
-          children: [
-            _langSwitch(context, lang),
-            const SizedBox(width: 12),
-            Expanded(child: _searchBar(context)),
-          ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+          child: SizedBox(
+            height: 46,
+            child: Row(
+              children: [
+                _langSwitch(context, lang),
+                const SizedBox(width: 12),
+                Expanded(child: _searchBar(context)),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -663,29 +669,38 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _categoriesGrid(BuildContext context) {
-    // 7 категорий + плитка «ещё» = 2 ряда по 4.
+    // 7 категорий + плитка «ещё» = 2 ряда по 4 (на узких) или 1 ряд по 8 (на широких экранах).
     const visibleCount = 7;
     final homeCount = math.min(_categories.length, visibleCount);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isWide = screenWidth >= 900;
+    final catCols = isWide ? 8 : 4;
+    final maxCatWidth = isWide ? 1080.0 : 720.0;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(_pageHPad, 14, _pageHPad, 10),
-      child: GridView.builder(
-        padding: EdgeInsets.zero,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-          mainAxisExtent: 92,
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxCatWidth),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(_pageHPad, 14, _pageHPad, 10),
+          child: GridView.builder(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: catCols,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              mainAxisExtent: 92,
+            ),
+            itemCount: homeCount + 1,
+            itemBuilder: (context, index) {
+              if (index < homeCount) {
+                return _categoryTile(context, _categories[index]);
+              }
+              return _moreCategoryTile(context);
+            },
+          ),
         ),
-        itemCount: homeCount + 1,
-        itemBuilder: (context, index) {
-          if (index < homeCount) {
-            return _categoryTile(context, _categories[index]);
-          }
-          return _moreCategoryTile(context);
-        },
       ),
     );
   }
@@ -698,9 +713,9 @@ class _DbddWidgetState extends State<DbddWidget> {
     );
   }
 
-  Widget _bannerSkeleton() {
+  Widget _bannerSkeleton([double height = 136]) {
     return Container(
-      height: 136,
+      height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         boxShadow: _shadowBanner,
@@ -711,35 +726,42 @@ class _DbddWidgetState extends State<DbddWidget> {
   }
 
   Widget _bannerCarousel(BuildContext context) {
-    return FutureBuilder<List<CaruselRow>>(
-      future: _carouselFuture,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return _bannerSkeleton();
-        }
-        final slides = snapshot.data!;
-        if (slides.isEmpty) {
-          return const SizedBox(height: 136);
-        }
+    final isTablet = EkbBreakpoints.isTablet(context);
+    final bannerHeight = isTablet ? 168.0 : 136.0;
+    final maxBannerWidth = isTablet ? 960.0 : 720.0;
 
-        _model.pageViewController ??= PageController();
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxBannerWidth),
+        child: FutureBuilder<List<CaruselRow>>(
+          future: _carouselFuture,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return _bannerSkeleton(bannerHeight);
+            }
+            final slides = snapshot.data!;
+            if (slides.isEmpty) {
+              return SizedBox(height: bannerHeight);
+            }
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _ensureCarouselAutoScroll(slides.length);
-          }
-        });
+            _model.pageViewController ??= PageController();
 
-        return Container(
-          height: 136,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: _shadowBanner,
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _ensureCarouselAutoScroll(slides.length);
+              }
+            });
+
+            return Container(
+              height: bannerHeight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: _shadowBanner,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
               PageView.builder(
                 controller: _model.pageViewController,
                 onPageChanged: (_) => safeSetState(() {}),
@@ -804,11 +826,18 @@ class _DbddWidgetState extends State<DbddWidget> {
           ),
         );
       },
-    );
+    ),
+  ),
+);
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final hPad = screenWidth > EkbBreakpoints.maxContentWidth
+        ? (screenWidth - EkbBreakpoints.maxContentWidth) / 2 + 8
+        : 8.0;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -842,7 +871,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                       ),
                     ),
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
+                      padding: EdgeInsets.fromLTRB(hPad, 10, hPad, 0),
                       sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
                         pagingController: _model.setGridViewController2(
                           (nextPageMarker) => GlavniapiCall.call(
@@ -852,13 +881,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                             ),
                           ),
                         ),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: EkbListingCard.gridAspectRatio,
-                        ),
+                        gridDelegate: EkbBreakpoints.listingGridDelegate(),
                         builderDelegate: PagedChildBuilderDelegate<dynamic>(
                           firstPageProgressIndicatorBuilder: (_) =>
                               const _ListingSkeletonGrid(),
@@ -906,17 +929,14 @@ class _ListingSkeletonGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cols = EkbBreakpoints.gridColumnsForWidth(screenWidth);
     return GridView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: EkbListingCard.gridAspectRatio,
-      ),
-      itemCount: 6,
+      gridDelegate: EkbBreakpoints.listingGridDelegate(),
+      itemCount: cols * 3,
       itemBuilder: (_, __) => const _ListingSkeletonCard(),
     );
   }

@@ -2,6 +2,7 @@ import '/backend/category_utils.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/theme/ekb_breakpoints.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'sheet2_model.dart';
@@ -116,8 +117,14 @@ class _Sheet2WidgetState extends State<Sheet2Widget> {
   Widget build(BuildContext context) {
     final showingSubs = _selectedRoot != null;
 
-    return Container(
-      width: double.infinity,
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: EkbBreakpoints.maxModalWidth,
+        ),
+        child: Container(
+          width: double.infinity,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: const BorderRadius.only(
@@ -238,6 +245,8 @@ class _Sheet2WidgetState extends State<Sheet2Widget> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

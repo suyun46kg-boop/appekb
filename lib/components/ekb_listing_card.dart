@@ -178,7 +178,8 @@ class _ListingImage extends StatelessWidget {
     }
 
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cardWidth = MediaQuery.sizeOf(context).width / 2;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cardWidth = (screenWidth > 900 ? screenWidth / 4 : (screenWidth > 600 ? screenWidth / 3 : screenWidth / 2)).clamp(160.0, 320.0);
     final memCacheWidth = (cardWidth * dpr).round();
 
     return CachedNetworkImage(

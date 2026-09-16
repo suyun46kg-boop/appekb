@@ -13,6 +13,7 @@ import '/components/ekb_listing_card.dart';
 import '/services/ekb_image_cache.dart';
 import '/services/moderation_service.dart';
 import '/theme/ekb_typography.dart';
+import '/theme/ekb_breakpoints.dart';
 import 'pagpage_model.dart';
 export 'pagpage_model.dart';
 
@@ -229,17 +230,17 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   void _requireLoginSnack() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(FFLocalizations.of(context).getText('modlogin1')),
+        content: Text(
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Войдите в аккаунт, чтобы заблокировать пользователя',
+            kyText: 'Колдонуучуну бөгөттөө үчүн аккаунтка кириңиз',
+          ),
+        ),
       ),
     );
   }
 
   Future<void> _showModerationSheet(ListingsRow listing) async {
-    if (!_isLoggedIn) {
-      _requireLoginSnack();
-      return;
-    }
-
     final sellerId = listing.userId?.trim() ?? '';
     final isOwnListing =
         sellerId.isNotEmpty && sellerId == currentUserUid;
@@ -294,6 +295,10 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                     ),
                     onTap: () {
                       Navigator.pop(sheetContext);
+                      if (!_isLoggedIn) {
+                        _requireLoginSnack();
+                        return;
+                      }
                       _confirmBlockSeller(sellerId);
                     },
                   ),
@@ -702,7 +707,47 @@ class _PagpageWidgetState extends State<PagpageWidget> {
         );
   }
 
-  Widget _loadingSkeleton(BuildContext context) {
+  Widget _loadingSkeleton(BuildContext context, {bool isTablet = false}) {
+    if (isTablet) {
+      return Center(
+        child: ConstrainedBox(
+          constraints:
+              const BoxConstraints(maxWidth: EkbBreakpoints.maxDetailWidth),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: _shimmerBox(
+                    width: double.infinity,
+                    height: 380,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: 6,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _shimmerBox(width: 260, height: 26),
+                      const SizedBox(height: 16),
+                      _shimmerBox(width: 140, height: 36),
+                      const SizedBox(height: 24),
+                      _shimmerBox(width: double.infinity, height: 180),
+                      const SizedBox(height: 16),
+                      _shimmerBox(width: double.infinity, height: 100),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
@@ -876,11 +921,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: items.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: EkbListingCard.gridSpacing,
-                mainAxisSpacing: EkbListingCard.gridSpacing,
-                childAspectRatio: EkbListingCard.gridAspectRatio,
+              gridDelegate: EkbBreakpoints.listingGridDelegate(
+                maxCrossAxisExtent: 220.0,
               ),
               itemBuilder: (context, index) =>
                   EkbListingCard.fromListingsRow(items[index], showDescription: false),
@@ -891,80 +933,152 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final heroHeight =
-        (MediaQuery.of(context).size.height * 0.38).clamp(260.0, 380.0);
-
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: _bg,
-        body: FutureBuilder<ListingsRow?>(
-          future: _listingFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return Stack(
+  Widget _tabletTopBar(BuildContext context, ListingsRow? listing) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          InkWell(
+            onTap: () => context.pop(),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _border),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _loadingSkeleton(context),
-                  _topActionsBar(context, null),
+                  const Icon(Icons.arrow_back_rounded, size: 20, color: _text),
+                  const SizedBox(width: 8),
+                  Text(
+                    FFLocalizations.of(context).getText('notfound03' /* Назад */),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: _text,
+                    ),
+                  ),
                 ],
-              );
-            }
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              if (listing != null) ...[
+                _circleIconButton(
+                  icon: Icons.flag_outlined,
+                  background: Colors.white,
+                  foreground: _text2,
+                  onTap: () => _showModerationSheet(listing),
+                ),
+                const SizedBox(width: 8),
+                _circleIconButton(
+                  icon: Icons.ios_share_rounded,
+                  background: Colors.white,
+                  foreground: _text2,
+                  onTap: () => _shareListing(listing),
+                ),
+                const SizedBox(width: 8),
+              ],
+              _circleIconButton(
+                icon: _isFavorite
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                background: Colors.white,
+                foreground: _isFavorite ? const Color(0xFFFF4D67) : _text2,
+                onTap: _toggleFavorite,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-            final listing = snapshot.data;
-            if (listing == null) {
-              return Stack(
-                children: [
-                  _notFoundView(context),
-                  _topActionsBar(context, null),
-                ],
-              );
-            }
-
-            final phone = listing.phonnumber ?? '';
-            final publishedAt = listing.createdAt != null
-                ? dateTimeFormat(
-                    'yMMMd',
-                    listing.createdAt,
-                    locale: FFLocalizations.of(context).languageCode,
-                  )
-                : FFLocalizations.of(context).getText('pgno01');
-            final isNew = listing.createdAt != null &&
-                DateTime.now().difference(listing.createdAt!).inDays < 3;
-
-            return SingleChildScrollView(
-              child: Column(
+  Widget _buildTabletLayout(
+    BuildContext context,
+    ListingsRow listing,
+    String phone,
+    String publishedAt,
+    bool isNew,
+  ) {
+    return Center(
+      child: ConstrainedBox(
+        constraints:
+            const BoxConstraints(maxWidth: EkbBreakpoints.maxDetailWidth),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _tabletTopBar(context, listing),
+              const SizedBox(height: 16),
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        height: heroHeight,
-                        child: GestureDetector(
-                          onTap: () => _openFullscreenImage(listing.img),
-                          child: Hero(
-                            tag: 'listing-image-${listing.id}',
-                            child: _heroImage(listing.img),
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Stack(
+                            children: [
+                              AspectRatio(
+                                aspectRatio: 1.15,
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      _openFullscreenImage(listing.img),
+                                  child: Hero(
+                                    tag: 'listing-image-${listing.id}',
+                                    child: _heroImage(listing.img),
+                                  ),
+                                ),
+                              ),
+                              if (isNew)
+                                Positioned(
+                                  right: 16,
+                                  bottom: 16,
+                                  child: _newBadge(),
+                                ),
+                            ],
                           ),
                         ),
-                      ),
-                      if (isNew)
-                        Positioned(
-                          right: 16,
-                          bottom: 16,
-                          child: _newBadge(),
-                        ),
-                      _topActionsBar(context, listing),
-                    ],
+                        const SizedBox(height: 16),
+                        _sellerCard(listing),
+                        const SizedBox(height: 16),
+                        if (_sellerBlocked)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(14),
+                              border:
+                                  Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: Text(
+                              FFLocalizations.of(context).getText('modblknote'),
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF991B1B),
+                              ),
+                            ),
+                          )
+                        else if (phone.isNotEmpty)
+                          _contactButtons(phone),
+                      ],
+                    ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    flex: 6,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -976,13 +1090,13 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                                 FFLocalizations.of(context).getText('c5j5d6pi'),
                               ),
                               style: GoogleFonts.inter(
-                                fontSize: 19,
+                                fontSize: 24,
                                 fontWeight: FontWeight.w700,
                                 color: _text,
                                 height: 1.25,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
@@ -993,18 +1107,18 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                                     '0',
                                   ),
                                   style: GoogleFonts.inter(
-                                    fontSize: 26,
+                                    fontSize: 32,
                                     fontWeight: FontWeight.w800,
                                     color: _blue,
                                     letterSpacing: -0.3,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 6),
                                 Text(
                                   FFLocalizations.of(context)
                                       .getText('gf7pmm28' /* р */),
                                   style: GoogleFonts.inter(
-                                    fontSize: 22,
+                                    fontSize: 26,
                                     fontWeight: FontWeight.w800,
                                     color: _blue,
                                   ),
@@ -1013,7 +1127,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         _sectionCard(
                           children: [
                             _sectionTitle(
@@ -1034,8 +1148,9 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                               FFLocalizations.of(context)
                                   .getText('z3v0tnuw' /* адрес */),
                               valueOrDefault<String>(
-                                  listing.city,
-                                  FFLocalizations.of(context).getText('pgno01')),
+                                listing.city,
+                                FFLocalizations.of(context).getText('pgno01'),
+                              ),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
@@ -1047,7 +1162,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                                   : valueOrDefault<String>(
                                       phone,
                                       FFLocalizations.of(context)
-                                          .getText('pgno01')),
+                                          .getText('pgno01'),
+                                    ),
                             ),
                             const Divider(height: 1, color: _border),
                             _infoRow(
@@ -1057,60 +1173,303 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        _sectionCard(
-                          children: [
-                            _sectionTitle(
-                              FFLocalizations.of(context)
-                                  .getText('9vvhfb6t' /* описании */),
-                            ),
-                            const Divider(height: 20, color: _border),
-                            Text(
-                              valueOrDefault<String>(
-                                listing.description,
-                                FFLocalizations.of(context).getText('pgempty1'),
-                              ),
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: _text2,
-                                height: 1.55,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        _sellerCard(listing),
-                        const SizedBox(height: 16),
-                        if (_sellerBlocked)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF2F2),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFFECACA)),
-                            ),
-                            child: Text(
-                              FFLocalizations.of(context).getText('modblknote'),
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF991B1B),
-                              ),
-                            ),
-                          )
-                        else if (phone.isNotEmpty)
-                          _contactButtons(phone),
-                        const SizedBox(height: 20),
-                        _recommendationsSection(),
-                        SizedBox(
-                          height: 90 + MediaQuery.of(context).padding.bottom,
-                        ),
                       ],
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
+              _sectionCard(
+                children: [
+                  _sectionTitle(
+                    FFLocalizations.of(context)
+                        .getText('9vvhfb6t' /* описании */),
+                  ),
+                  const Divider(height: 20, color: _border),
+                  Text(
+                    valueOrDefault<String>(
+                      listing.description,
+                      FFLocalizations.of(context).getText('pgempty1'),
+                    ),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: _text2,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _recommendationsSection(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(
+    BuildContext context,
+    ListingsRow listing,
+    double heroHeight,
+    String phone,
+    String publishedAt,
+    bool isNew,
+  ) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: heroHeight,
+                child: GestureDetector(
+                  onTap: () => _openFullscreenImage(listing.img),
+                  child: Hero(
+                    tag: 'listing-image-${listing.id}',
+                    child: _heroImage(listing.img),
+                  ),
+                ),
+              ),
+              if (isNew)
+                Positioned(
+                  right: 16,
+                  bottom: 16,
+                  child: _newBadge(),
+                ),
+              _topActionsBar(context, listing),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionCard(
+                  children: [
+                    Text(
+                      valueOrDefault<String>(
+                        listing.title,
+                        FFLocalizations.of(context).getText('c5j5d6pi'),
+                      ),
+                      style: GoogleFonts.inter(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: _text,
+                        height: 1.25,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          valueOrDefault<String>(
+                            listing.price?.toStringAsFixed(0),
+                            '0',
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: _blue,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          FFLocalizations.of(context)
+                              .getText('gf7pmm28' /* р */),
+                          style: GoogleFonts.inter(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: _blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  children: [
+                    _sectionTitle(
+                      FFLocalizations.of(context)
+                          .getText('auncdw0p' /* информации */),
+                    ),
+                    const Divider(height: 20, color: _border),
+                    _infoRow(
+                      FFLocalizations.of(context)
+                          .getText('au4pejr1' /* категория */),
+                      valueOrDefault<String>(
+                        listing.categoryName,
+                        FFLocalizations.of(context).getText('pgno01'),
+                      ),
+                    ),
+                    const Divider(height: 1, color: _border),
+                    _infoRow(
+                      FFLocalizations.of(context)
+                          .getText('z3v0tnuw' /* адрес */),
+                      valueOrDefault<String>(
+                          listing.city,
+                          FFLocalizations.of(context).getText('pgno01')),
+                    ),
+                    const Divider(height: 1, color: _border),
+                    _infoRow(
+                      FFLocalizations.of(context)
+                          .getText('jo0q04xo' /* контакты */),
+                      _sellerBlocked
+                          ? FFLocalizations.of(context)
+                              .getText('modhidden')
+                          : valueOrDefault<String>(
+                              phone,
+                              FFLocalizations.of(context)
+                                  .getText('pgno01')),
+                    ),
+                    const Divider(height: 1, color: _border),
+                    _infoRow(
+                      FFLocalizations.of(context)
+                          .getText('ns1xslou' /* дата публикации */),
+                      publishedAt,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  children: [
+                    _sectionTitle(
+                      FFLocalizations.of(context)
+                          .getText('9vvhfb6t' /* описании */),
+                    ),
+                    const Divider(height: 20, color: _border),
+                    Text(
+                      valueOrDefault<String>(
+                        listing.description,
+                        FFLocalizations.of(context).getText('pgempty1'),
+                      ),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: _text2,
+                        height: 1.55,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _sellerCard(listing),
+                const SizedBox(height: 16),
+                if (_sellerBlocked)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: Text(
+                      FFLocalizations.of(context).getText('modblknote'),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF991B1B),
+                      ),
+                    ),
+                  )
+                else if (phone.isNotEmpty)
+                  _contactButtons(phone),
+                const SizedBox(height: 20),
+                _recommendationsSection(),
+                SizedBox(
+                  height: 90 + MediaQuery.of(context).padding.bottom,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final heroHeight =
+        (MediaQuery.of(context).size.height * 0.38).clamp(260.0, 380.0);
+
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: _bg,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final isTablet = EkbBreakpoints.isTabletWidth(constraints.maxWidth);
+
+            return FutureBuilder<ListingsRow?>(
+              future: _listingFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return Stack(
+                    children: [
+                      _loadingSkeleton(context, isTablet: isTablet),
+                      if (!isTablet)
+                        _topActionsBar(context, null)
+                      else
+                        SafeArea(child: _tabletTopBar(context, null)),
+                    ],
+                  );
+                }
+
+                final listing = snapshot.data;
+                if (listing == null) {
+                  return Stack(
+                    children: [
+                      _notFoundView(context),
+                      if (!isTablet)
+                        _topActionsBar(context, null)
+                      else
+                        SafeArea(child: _tabletTopBar(context, null)),
+                    ],
+                  );
+                }
+
+                final phone = listing.phonnumber ?? '';
+                final publishedAt = listing.createdAt != null
+                    ? dateTimeFormat(
+                        'yMMMd',
+                        listing.createdAt,
+                        locale: FFLocalizations.of(context).languageCode,
+                      )
+                    : FFLocalizations.of(context).getText('pgno01');
+                final isNew = listing.createdAt != null &&
+                    DateTime.now().difference(listing.createdAt!).inDays < 3;
+
+                if (isTablet) {
+                  return SafeArea(
+                    child: _buildTabletLayout(
+                      context,
+                      listing,
+                      phone,
+                      publishedAt,
+                      isNew,
+                    ),
+                  );
+                }
+
+                return _buildMobileLayout(
+                  context,
+                  listing,
+                  heroHeight,
+                  phone,
+                  publishedAt,
+                  isNew,
+                );
+              },
             );
           },
         ),

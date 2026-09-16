@@ -6,6 +6,7 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/services/ekb_image_cache.dart';
+import '/theme/ekb_breakpoints.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -312,38 +313,44 @@ class _MylistingWidgetState extends State<MylistingWidget> {
     final topPad = MediaQuery.paddingOf(context).top;
     return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(16, topPad + 14, 20, 16),
-      child: Row(
-        children: [
-          InkWell(
-            onTap: () => context.safePop(),
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
+      child: Center(
+        child: ConstrainedBox(
+          constraints:
+              const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+          child: Row(
+            children: [
+              InkWell(
+                onTap: () => context.safePop(),
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
               ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: Colors.white,
-                size: 20,
+              const SizedBox(width: 12),
+              Text(
+                FFLocalizations.of(context).getText(
+                  'wmxh68pv' /* маи обявдении */,
+                ),
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Text(
-            FFLocalizations.of(context).getText(
-              'wmxh68pv' /* маи обявдении */,
-            ),
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -401,13 +408,20 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                     );
                   }
 
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    cacheExtent: 600,
-                    itemCount: listings.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) =>
-                        _listingCard(listings[index]),
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                          maxWidth: EkbBreakpoints.maxListWidth),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        cacheExtent: 600,
+                        itemCount: listings.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) =>
+                            _listingCard(listings[index]),
+                      ),
+                    ),
                   );
                 },
               ),

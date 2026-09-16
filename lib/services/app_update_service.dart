@@ -109,8 +109,8 @@ class AppUpdateService {
   }
 
   static String _storeUrl(AppConfigRow config) {
-    if (!kIsWeb && Platform.isIOS && config.iosUrl.isNotEmpty) {
-      return config.iosUrl;
+    if (!kIsWeb && Platform.isIOS) {
+      return config.iosUrl.isNotEmpty ? config.iosUrl : '';
     }
     return config.androidUrl;
   }

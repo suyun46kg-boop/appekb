@@ -9,6 +9,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
 import '/services/ekb_image_cache.dart';
+import '/theme/ekb_breakpoints.dart';
 import 'dart:ui';
 import '/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -148,15 +149,21 @@ class _CreateListingPageCopyWidgetState
               )
             else
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
-                      child: SingleChildScrollView(
-                        child: Column(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: EkbBreakpoints.maxFormWidth,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+                          child: SingleChildScrollView(
+                            child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Column(
@@ -1771,10 +1778,12 @@ class _CreateListingPageCopyWidgetState
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 
   Widget _header(BuildContext context) {
@@ -1782,43 +1791,49 @@ class _CreateListingPageCopyWidgetState
 
     return EkbAppBarBackground(
       padding: EdgeInsets.fromLTRB(4, topPad + 8, 20, 16),
-      child: SizedBox(
-        height: 48,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => context.pop(),
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: Colors.white,
+      child: Center(
+        child: ConstrainedBox(
+          constraints:
+              const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+          child: SizedBox(
+            height: 48,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    onPressed: () => context.pop(),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
+                    iconSize: 24,
+                    splashRadius: 22,
+                  ),
                 ),
-                iconSize: 24,
-                splashRadius: 22,
-              ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: Text(
+                    FFLocalizations.of(context).getText(
+                      _isEditing
+                          ? 'editlst01' /* Редактировать объявление */
+                          : 'ucddso9j' /* заполните страницу */,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48),
-              child: Text(
-                FFLocalizations.of(context).getText(
-                  _isEditing
-                      ? 'editlst01' /* Редактировать объявление */
-                      : 'ucddso9j' /* заполните страницу */,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.2,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
