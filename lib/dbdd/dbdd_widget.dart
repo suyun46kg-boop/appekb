@@ -677,29 +677,45 @@ class _DbddWidgetState extends State<DbddWidget> {
     final isWide = screenWidth >= 900;
     final catCols = isWide ? 8 : 4;
     final maxCatWidth = isWide ? 1080.0 : 720.0;
+    final totalItems = homeCount + 1;
+    final rowCount = (totalItems / catCols).ceil();
 
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxCatWidth),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(_pageHPad, 14, _pageHPad, 10),
-          child: GridView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: catCols,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              mainAxisExtent: 92,
-            ),
-            itemCount: homeCount + 1,
-            itemBuilder: (context, index) {
-              if (index < homeCount) {
-                return _categoryTile(context, _categories[index]);
-              }
-              return _moreCategoryTile(context);
-            },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int r = 0; r < rowCount; r++) ...[
+                if (r > 0) const SizedBox(height: 8),
+                Row(
+                  children: [
+                    for (int c = 0; c < catCols; c++) ...[
+                      if (c > 0) const SizedBox(width: 8),
+                      Expanded(
+                        child: () {
+                          final idx = r * catCols + c;
+                          if (idx < homeCount) {
+                            return SizedBox(
+                              height: 92,
+                              child: _categoryTile(context, _categories[idx]),
+                            );
+                          } else if (idx == homeCount) {
+                            return SizedBox(
+                              height: 92,
+                              child: _moreCategoryTile(context),
+                            );
+                          }
+                          return const SizedBox(height: 92);
+                        }(),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ],
           ),
         ),
       ),
@@ -856,7 +872,8 @@ class _DbddWidgetState extends State<DbddWidget> {
               _header(context),
               Expanded(
                 child: CustomScrollView(
-                  scrollCacheExtent: ScrollCacheExtent.pixels(600), slivers: [
+                  scrollCacheExtent: const ScrollCacheExtent.pixels(600),
+                  slivers: [
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(
@@ -873,6 +890,7 @@ class _DbddWidgetState extends State<DbddWidget> {
                     SliverPadding(
                       padding: EdgeInsets.fromLTRB(hPad, 10, hPad, 0),
                       sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
+                        shrinkWrapFirstPageIndicators: true,
                         pagingController: _model.setGridViewController2(
                           (nextPageMarker) => GlavniapiCall.call(
                             offsetl: valueOrDefault<int>(
@@ -931,13 +949,25 @@ class _ListingSkeletonGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final cols = EkbBreakpoints.gridColumnsForWidth(screenWidth);
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: EkbBreakpoints.listingGridDelegate(),
-      itemCount: cols * 3,
-      itemBuilder: (_, __) => const _ListingSkeletonCard(),
+    const rowCount = 3;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (int r = 0; r < rowCount; r++) ...[
+          if (r > 0) const SizedBox(height: 12.0),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (int c = 0; c < cols; c++) ...[
+                if (c > 0) const SizedBox(width: 12.0),
+                const Expanded(child: _ListingSkeletonCard()),
+              ],
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

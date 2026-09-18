@@ -51,7 +51,6 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
   static const _text2 = Color(0xFF475569);
-  static const _text3 = Color(0xFF94A3B8);
   static const _border = Color(0xFFE2E8F0);
   static const _pageHPad = 20.0;
 
@@ -288,7 +287,8 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                 ],
                 Expanded(
                   child: CustomScrollView(
-                    scrollCacheExtent: ScrollCacheExtent.pixels(600), slivers: [
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(600),
+                    slivers: [
                       SliverPadding(
                         padding: EdgeInsets.fromLTRB(
                           hPad,
@@ -297,6 +297,7 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
                           0,
                         ),
                         sliver: PagedSliverGrid<ApiPagingParams, dynamic>(
+                          shrinkWrapFirstPageIndicators: true,
                           pagingController: _model.setGridViewController(
                             (nextPageMarker) => ApibirCall.call(
                               offset: nextPageMarker.numItems,
@@ -370,13 +371,25 @@ class _ListingSkeletonGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final cols = EkbBreakpoints.gridColumnsForWidth(screenWidth);
-    return GridView.builder(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: EkbBreakpoints.listingGridDelegate(),
-      itemCount: cols * 3,
-      itemBuilder: (_, __) => const _ListingSkeletonCard(),
+    const rowCount = 3;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (int r = 0; r < rowCount; r++) ...[
+          if (r > 0) const SizedBox(height: 12.0),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (int c = 0; c < cols; c++) ...[
+                if (c > 0) const SizedBox(width: 12.0),
+                const Expanded(child: _ListingSkeletonCard()),
+              ],
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

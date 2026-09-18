@@ -1714,16 +1714,23 @@ class _SuggestionsListShimmer extends StatelessWidget {
       separatorBuilder: (_, __) =>
           Divider(height: 1.0, thickness: 1.0, color: theme.alternate),
       itemBuilder: (context, index) {
-        final screenWidth = MediaQuery.sizeOf(context).width;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
           child: Row(
             children: [
               const _ShimmerBox(width: 20.0, height: 20.0),
               const SizedBox(width: 14.0),
-              _ShimmerBox(
-                width: screenWidth * _widths[index],
-                height: 14.0,
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: _widths[index],
+                    child: const _ShimmerBox(
+                      width: double.infinity,
+                      height: 14.0,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -1739,16 +1746,26 @@ class _SkeletonGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final hPad = screenWidth > EkbBreakpoints.maxContentWidth
-        ? (screenWidth - EkbBreakpoints.maxContentWidth) / 2 + 16.0
-        : 16.0;
     final cols = EkbBreakpoints.gridColumnsForWidth(screenWidth);
-    return GridView.builder(
-      padding: EdgeInsets.fromLTRB(hPad, 8.0, hPad, 40.0),
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: EkbBreakpoints.listingGridDelegate(),
-      itemCount: cols * 3,
-      itemBuilder: (_, __) => const _SkeletonCard(),
+    const rowCount = 3;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (int r = 0; r < rowCount; r++) ...[
+          if (r > 0) const SizedBox(height: 12.0),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (int c = 0; c < cols; c++) ...[
+                if (c > 0) const SizedBox(width: 12.0),
+                const Expanded(child: _SkeletonCard()),
+              ],
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
