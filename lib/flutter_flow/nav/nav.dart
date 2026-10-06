@@ -178,12 +178,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
             name: PolitpageWidget.routeName,
             path: PolitpageWidget.routePath,
-            builder: (context, params) => params.isEmpty
-                ? const NavBarPage(initialPage: 'politpage')
-                : const NavBarPage(
-                    initialPage: 'politpage',
-                    page: PolitpageWidget(),
-                  )),
+            builder: (context, params) => const PolitpageWidget(),
+        ),
         FFRoute(
             name: MylistingWidget.routeName,
             path: MylistingWidget.routePath,

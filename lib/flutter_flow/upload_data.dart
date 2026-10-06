@@ -11,7 +11,17 @@ import 'package:video_player/video_player.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow_util.dart';
 
-const allowedFormats = {'image/png', 'image/jpeg', 'video/mp4', 'image/gif'};
+const allowedFormats = {
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+  'video/mp4',
+  'video/quicktime',
+};
 
 class SelectedFile {
   const SelectedFile({
@@ -59,80 +69,107 @@ Future<List<SelectedFile>?> selectMediaWithSourceBottomSheet({
   bool includeDimensions = false,
   bool includeBlurHash = false,
 }) async {
-  ListTile createUploadMediaListTile(String label, MediaSource mediaSource) => ListTile(
-            title: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.getFont(
-                pickerFontFamily,
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
-              ),
-            ),
-            tileColor: backgroundColor,
-            dense: false,
-            onTap: () => Navigator.pop(
-              context,
-              mediaSource,
-            ),
-          );
   final mediaSource = await showModalBottomSheet<MediaSource>(
       context: context,
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return SafeArea(
           top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!kIsWeb) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                  child: ListTile(
-                    title: Text(
-                      'Choose Source',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.getFont(
-                        pickerFontFamily,
-                        color: textColor.applyAlpha(0.65),
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20,
-                      ),
-                    ),
-                    tileColor: backgroundColor,
-                    dense: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const Divider(),
+                Text(
+                  'Выберите способ загрузки',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.photo_library_outlined,
+                      color: Color(0xFF2563EB),
+                    ),
+                  ),
+                  title: Text(
+                    'Выбрать из галереи',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                  onTap: () => Navigator.pop(context, MediaSource.photoGallery),
+                ),
+                if (!kIsWeb)
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_outlined,
+                        color: Color(0xFF16A34A),
+                      ),
+                    ),
+                    title: Text(
+                      'Сделать снимок (камера)',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(context, MediaSource.camera),
+                  ),
+                if (allowVideo)
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAF5FF),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.videocam_outlined,
+                        color: Color(0xFF9333EA),
+                      ),
+                    ),
+                    title: Text(
+                      'Выбрать видео',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(context, MediaSource.videoGallery),
+                  ),
+                const SizedBox(height: 8),
               ],
-              if (allowPhoto && allowVideo) ...[
-                createUploadMediaListTile(
-                  'Gallery (Photo)',
-                  MediaSource.photoGallery,
-                ),
-                const Divider(),
-                createUploadMediaListTile(
-                  'Gallery (Video)',
-                  MediaSource.videoGallery,
-                ),
-              ] else if (allowPhoto)
-                createUploadMediaListTile(
-                  'Gallery',
-                  MediaSource.photoGallery,
-                )
-              else
-                createUploadMediaListTile(
-                  'Gallery',
-                  MediaSource.videoGallery,
-                ),
-              if (!kIsWeb) ...[
-                const Divider(),
-                createUploadMediaListTile('Camera', MediaSource.camera),
-                const Divider(),
-              ],
-              const SizedBox(height: 10),
-            ],
+            ),
           ),
         );
       });
@@ -231,13 +268,31 @@ Future<List<SelectedFile>?> selectMedia({
 }
 
 bool validateFileFormat(String filePath, BuildContext context) {
-  if (allowedFormats.contains(mime(filePath))) {
+  final mimeType = mime(filePath)?.toLowerCase();
+  final ext = filePath.split('.').last.toLowerCase();
+  const validExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+    'gif',
+    'heic',
+    'heif',
+    'bmp',
+    'mp4',
+    'mov',
+  };
+
+  if ((mimeType != null &&
+          (allowedFormats.contains(mimeType) ||
+              mimeType.startsWith('image/'))) ||
+      validExtensions.contains(ext)) {
     return true;
   }
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(
-      content: Text('Invalid file format: ${mime(filePath)}'),
+      content: Text('Неверный формат файла: $filePath'),
     ));
   return false;
 }

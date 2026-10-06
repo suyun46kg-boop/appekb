@@ -1342,205 +1342,170 @@ class _CreateListingPageCopyWidgetState
                                             .fontStyle,
                                       ),
                                 ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 120.0,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
+                                Material(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  child: InkWell(
+                                    splashColor: const Color(0x101877F2),
+                                    highlightColor: const Color(0x081877F2),
                                     borderRadius: BorderRadius.circular(12.0),
-                                    border: Border.all(
-                                      color: const Color(0xFFCCCCCC),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        InkWell(
-                                          splashColor: Colors.transparent,
-                                          focusColor: Colors.transparent,
-                                          hoverColor: Colors.transparent,
-                                          highlightColor: Colors.transparent,
-                                          onTap: () async {
-                                            if (_model
-                                                .isDataUploading_uploadData89k) {
-                                              return;
-                                            }
-                                            final selectedMedia =
-                                                await selectMediaWithSourceBottomSheet(
-                                              context: context,
-                                              storageFolderPath: 'fotofile1',
-                                              maxWidth: 1080.00,
-                                              maxHeight: 1080.00,
-                                              imageQuality: 78,
-                                              allowPhoto: true,
-                                            );
-                                            if (selectedMedia != null &&
-                                                selectedMedia.every((m) =>
-                                                    validateFileFormat(
-                                                        m.storagePath,
-                                                        context))) {
-                                              safeSetState(() => _model
-                                                      .isDataUploading_uploadData89k =
-                                                  true);
-                                              var selectedUploadedFiles =
-                                                  <FFUploadedFile>[];
+                                    onTap: () async {
+                                      if (_model.isDataUploading_uploadData89k) {
+                                        return;
+                                      }
+                                      final selectedMedia =
+                                          await selectMediaWithSourceBottomSheet(
+                                        context: context,
+                                        storageFolderPath: 'fotofile1',
+                                        maxWidth: 1080.00,
+                                        maxHeight: 1080.00,
+                                        imageQuality: 78,
+                                        allowPhoto: true,
+                                      );
+                                      if (selectedMedia == null || selectedMedia.isEmpty) {
+                                        return;
+                                      }
+                                      if (!selectedMedia.every((m) =>
+                                          validateFileFormat(m.storagePath, context))) {
+                                        return;
+                                      }
 
-                                              var downloadUrls = <String>[];
-                                              try {
-                                                selectedUploadedFiles =
-                                                    selectedMedia
-                                                        .map((m) =>
-                                                            FFUploadedFile(
-                                                              name: m
-                                                                  .storagePath
-                                                                  .split('/')
-                                                                  .last,
-                                                              bytes: m.bytes,
-                                                              height: m
-                                                                  .dimensions
-                                                                  ?.height,
-                                                              width: m
-                                                                  .dimensions
-                                                                  ?.width,
-                                                              blurHash:
-                                                                  m.blurHash,
-                                                              originalFilename:
-                                                                  m.originalFilename,
-                                                            ))
-                                                        .toList();
+                                      safeSetState(() =>
+                                          _model.isDataUploading_uploadData89k = true);
 
-                                                downloadUrls =
-                                                    await uploadSupabaseStorageFiles(
-                                                  bucketName: 'images',
-                                                  selectedFiles: selectedMedia,
-                                                );
-                                              } finally {
-                                                safeSetState(() => _model
-                                                        .isDataUploading_uploadData89k =
-                                                    false);
-                                              }
-                                              if (selectedUploadedFiles
-                                                          .length ==
-                                                      selectedMedia.length &&
-                                                  downloadUrls.length ==
-                                                      selectedMedia.length) {
-                                                safeSetState(() {
-                                                  _model.uploadedLocalFile_uploadData89k =
-                                                      selectedUploadedFiles
-                                                          .first;
-                                                  _model.uploadedFileUrl_uploadData89k =
-                                                      downloadUrls.first;
-                                                });
-                                              } else {
-                                                safeSetState(() {});
-                                                return;
-                                              }
-                                            }
+                                      try {
+                                        final selectedUploadedFiles = selectedMedia
+                                            .map((m) => FFUploadedFile(
+                                                  name: m.storagePath.split('/').last,
+                                                  bytes: m.bytes,
+                                                  height: m.dimensions?.height,
+                                                  width: m.dimensions?.width,
+                                                  blurHash: m.blurHash,
+                                                  originalFilename: m.originalFilename,
+                                                ))
+                                            .toList();
 
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
+                                        final downloadUrls =
+                                            await uploadSupabaseStorageFiles(
+                                          bucketName: 'images',
+                                          selectedFiles: selectedMedia,
+                                        );
+
+                                        if (selectedUploadedFiles.length == selectedMedia.length &&
+                                            downloadUrls.length == selectedMedia.length &&
+                                            downloadUrls.isNotEmpty) {
+                                          safeSetState(() {
+                                            _model.uploadedLocalFile_uploadData89k =
+                                                selectedUploadedFiles.first;
+                                            _model.uploadedFileUrl_uploadData89k =
+                                                downloadUrls.first;
+                                          });
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
                                                 content: Text(
                                                   FFLocalizations.of(context)
                                                       .getText('clphotok'),
                                                   style: TextStyle(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
+                                                    color: FlutterFlowTheme.of(context)
                                                         .primaryText,
                                                   ),
                                                 ),
-                                                duration: const Duration(
-                                                    milliseconds: 4000),
+                                                duration: const Duration(milliseconds: 3000),
                                                 backgroundColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondary,
+                                                    FlutterFlowTheme.of(context).secondary,
                                               ),
                                             );
-                                          },
-                                          child: Container(
+                                          }
+                                        } else {
+                                          throw Exception(
+                                              'Не удалось получить ссылку на загруженное фото');
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Ошибка загрузки фото: $e'),
+                                              backgroundColor:
+                                                  FlutterFlowTheme.of(context).error,
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        safeSetState(() =>
+                                            _model.isDataUploading_uploadData89k = false);
+                                      }
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 120.0,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        border: Border.all(
+                                          color: const Color(0xFFCCCCCC),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.max,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
                                             width: 52.0,
                                             height: 52.0,
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFF0F4FF),
-                                              borderRadius:
-                                                  BorderRadius.circular(26.0),
+                                              borderRadius: BorderRadius.circular(26.0),
                                             ),
                                             child: Align(
-                                              alignment: const AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: _model
-                                                      .isDataUploading_uploadData89k
+                                              alignment: const AlignmentDirectional(0.0, 0.0),
+                                              child: _model.isDataUploading_uploadData89k
                                                   ? SizedBox(
                                                       width: 24.0,
                                                       height: 24.0,
-                                                      child:
-                                                          CircularProgressIndicator(
+                                                      child: CircularProgressIndicator(
                                                         strokeWidth: 2.5,
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
+                                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                                          FlutterFlowTheme.of(context).primary,
                                                         ),
                                                       ),
                                                     )
                                                   : Icon(
-                                                      Icons
-                                                          .cloud_upload_rounded,
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
+                                                      Icons.cloud_upload_rounded,
+                                                      color: FlutterFlowTheme.of(context).primary,
                                                       size: 26.0,
                                                     ),
                                             ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 8.0, 0.0, 2.0),
-                                          child: Text(
-                                            _model.isDataUploading_uploadData89k
-                                                ? FFLocalizations.of(context)
-                                                    .getText('clloading')
-                                                : FFLocalizations.of(context)
-                                                    .getText(
-                                                    'tyg5vjcc' /* загрузить фото */,
-                                                  ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .labelLarge
-                                                .override(
-                                                  font: GoogleFonts.inter(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontStyle:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .labelLarge
-                                                            .fontStyle,
-                                                  ),
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
+                                          Padding(
+                                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                                0.0, 8.0, 0.0, 2.0),
+                                            child: Text(
+                                              _model.isDataUploading_uploadData89k
+                                                  ? FFLocalizations.of(context).getText('clloading')
+                                                  : (_model.uploadedFileUrl_uploadData89k.isNotEmpty
+                                                      ? 'изменить фото'
+                                                      : FFLocalizations.of(context).getText(
+                                                          'tyg5vjcc' /* загрузить фото */)),
+                                              style: FlutterFlowTheme.of(context).labelLarge.override(
+                                                    font: GoogleFonts.inter(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontStyle: FlutterFlowTheme.of(context)
                                                           .labelLarge
                                                           .fontStyle,
-                                                ),
+                                                    ),
+                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontStyle: FlutterFlowTheme.of(context)
+                                                        .labelLarge
+                                                        .fontStyle,
+                                                  ),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1552,29 +1517,58 @@ class _CreateListingPageCopyWidgetState
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          Container(
-                                            width: 80.0,
-                                            height: 80.0,
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFE8EAF0),
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: _model
-                                                    .uploadedFileUrl_uploadData89k,
-                                                cacheManager:
-                                                    EkbImageCacheManager
-                                                        .instance,
-                                                width: 200.0,
-                                                height: 200.0,
-                                                fit: BoxFit.cover,
-                                                memCacheWidth: 400,
+                                          Stack(
+                                            children: [
+                                              Container(
+                                                width: 80.0,
+                                                height: 80.0,
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFE8EAF0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10.0),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8.0),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: _model
+                                                        .uploadedFileUrl_uploadData89k,
+                                                    cacheManager:
+                                                        EkbImageCacheManager
+                                                            .instance,
+                                                    width: 80.0,
+                                                    height: 80.0,
+                                                    fit: BoxFit.cover,
+                                                    memCacheWidth: 400,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                              Positioned(
+                                                top: 2,
+                                                right: 2,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    safeSetState(() {
+                                                      _model.uploadedFileUrl_uploadData89k = '';
+                                                      _model.uploadedLocalFile_uploadData89k =
+                                                          const FFUploadedFile();
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    decoration: const BoxDecoration(
+                                                      color: Colors.black54,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    padding: const EdgeInsets.all(4.0),
+                                                    child: const Icon(
+                                                      Icons.close_rounded,
+                                                      size: 14.0,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ]
                                             .divide(const SizedBox(width: 10.0))
@@ -1707,6 +1701,8 @@ class _CreateListingPageCopyWidgetState
                                   'user_id': currentUserUid,
                                 });
                               }
+
+                              if (!context.mounted) return;
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

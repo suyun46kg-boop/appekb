@@ -18,7 +18,6 @@ import 'components/app_update_widgets.dart';
 import 'components/ekb_bottom_nav.dart';
 import 'components/ekb_navigation_rail.dart';
 import 'services/app_update_service.dart';
-import 'services/push_notification_service.dart';
 import 'theme/ekb_breakpoints.dart';
 
 void main() async {
@@ -31,7 +30,6 @@ void main() async {
 
   await _safeInit('localizations', FFLocalizations.initialize);
   await _safeInit('supabase', SupaFlow.initialize);
-  await _safeInit('push', PushNotificationService.initialize);
   await _safeInit('theme', FlutterFlowTheme.initialize);
 
   final appState = FFAppState();

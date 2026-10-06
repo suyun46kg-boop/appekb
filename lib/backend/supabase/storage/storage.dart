@@ -1,3 +1,4 @@
+import 'package:mime_type/mime_type.dart';
 import '/flutter_flow/upload_data.dart';
 import '../supabase.dart';
 
@@ -19,10 +20,18 @@ Future<String> uploadSupabaseStorageFile({
   required SelectedFile selectedFile,
 }) async {
   final storageBucket = SupaFlow.client.storage.from(bucketName);
+  final detectedMime = mime(selectedFile.storagePath);
+  final contentType = detectedMime ??
+      (selectedFile.storagePath.toLowerCase().endsWith('.png')
+          ? 'image/png'
+          : 'image/jpeg');
   await storageBucket.uploadBinary(
     selectedFile.storagePath,
     selectedFile.bytes,
-    fileOptions: const FileOptions(contentType: null),
+    fileOptions: FileOptions(
+      contentType: contentType,
+      upsert: true,
+    ),
   );
   return storageBucket.getPublicUrl(selectedFile.storagePath);
 }

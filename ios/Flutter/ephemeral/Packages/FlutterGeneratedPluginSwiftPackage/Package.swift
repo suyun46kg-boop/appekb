@@ -16,8 +16,6 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "file_picker", path: "../.packages/file_picker-10.1.9"),
-        .package(name: "firebase_core", path: "../.packages/firebase_core-3.14.0"),
-        .package(name: "firebase_messaging", path: "../.packages/firebase_messaging-15.2.7"),
         .package(name: "image_picker_ios", path: "../.packages/image_picker_ios-0.8.12+2"),
         .package(name: "package_info_plus", path: "../.packages/package_info_plus-8.3.0"),
         .package(name: "path_provider_foundation", path: "../.packages/path_provider_foundation-2.4.0"),
@@ -32,8 +30,6 @@ let package = Package(
             name: "FlutterGeneratedPluginSwiftPackage",
             dependencies: [
                 .product(name: "file-picker", package: "file_picker"),
-                .product(name: "firebase-core", package: "firebase_core"),
-                .product(name: "firebase-messaging", package: "firebase_messaging"),
                 .product(name: "image-picker-ios", package: "image_picker_ios"),
                 .product(name: "package-info-plus", package: "package_info_plus"),
                 .product(name: "path-provider-foundation", package: "path_provider_foundation"),
