@@ -51,11 +51,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: _placeholder,
-    appId: _placeholder,
-    messagingSenderId: _placeholder,
-    projectId: _placeholder,
-    storageBucket: _placeholder,
+    apiKey: 'AIzaSyBhV9KQdZjl0uL3ftjQL9Ob3NZ1Y5VGvIw',
+    appId: '1:283106418601:ios:8a91b485925abf3560eeb8',
+    messagingSenderId: '283106418601',
+    projectId: 'ekbkyrgyzdar',
+    storageBucket: 'ekbkyrgyzdar.firebasestorage.app',
     iosBundleId: 'mycompany.ekbkyrgyzdar',
   );
 }
