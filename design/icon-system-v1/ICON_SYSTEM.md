@@ -28,7 +28,7 @@ Monoline outline-система в духе Kleinanzeigen, но в **синей 
 | job | работа | Briefcase |
 | border | граница | Minivan side |
 | auto | авто | Car front |
-| ticket | билеты | Two tickets |
+| entertainment | развлечения | Popcorn + clapperboard |
 | services | услуги | Hammer |
 | sale | куплю/продам | Shopping bag |
 | parttime | подработка | Clock |

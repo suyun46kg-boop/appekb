@@ -25,7 +25,7 @@ class ApibirCall {
       params: {
         'limit': 10,
         'offset': offset,
-        'select': "id,price,title,img,description,created_at",
+        'select': "id,price,title,img,description,created_at,category_id",
         'category_id': categoryId,
         'order': "created_at.desc",
       },
@@ -56,7 +56,7 @@ class GlavniapiCall {
       params: {
         'limit': 5,
         'offset': offsetl,
-        'select': "id,price,title,img,description,created_at",
+        'select': "id,price,title,img,description,created_at,category_id",
         'order': "created_at.desc",
       },
       returnBody: true,

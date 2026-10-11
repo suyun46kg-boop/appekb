@@ -1,6 +1,7 @@
 import '/dbdd/category_block_background.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/category_utils.dart';
+import '/backend/phone_utils.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/sheet2_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -88,6 +89,11 @@ class _CreateListingPageCopyWidgetState
     } else {
       FFAppState().valuecategoryshit = '';
       FFAppState().idcategorysheet = 0;
+      // Номер из аккаунта: логин хранится как «<10 цифр>@app.com».
+      final own = phoneDigits10(currentUserEmail.split('@').first);
+      if (own.length == 10) {
+        _model.numberfildTextController!.text = formatPhoneMask(own);
+      }
     }
   }
 
@@ -102,7 +108,8 @@ class _CreateListingPageCopyWidgetState
       _model.opisanifildTextController!.text = listing.description ?? '';
       _model.pricefildTextController!.text =
           listing.price != null ? listing.price!.toStringAsFixed(0) : '';
-      _model.numberfildTextController!.text = listing.phonnumber ?? '';
+      _model.numberfildTextController!.text =
+          formatPhoneMask(phoneDigits10(listing.phonnumber ?? ''));
       _model.cityfildTextController!.text = listing.city ?? '';
       _model.uploadedFileUrl_uploadData89k = listing.img ?? '';
       FFAppState().valuecategoryshit = listing.categoryName ?? '';
@@ -1013,10 +1020,14 @@ class _CreateListingPageCopyWidgetState
                                                               .bodyMedium
                                                               .fontStyle,
                                                     ),
-                                            hintText:
-                                                FFLocalizations.of(context)
-                                                    .getText(
-                                              '8pcnmgyb' /* +79089197909 */,
+                                            hintText: '(900) 000-00-00',
+                                            prefixText: '+7 ',
+                                            prefixStyle: GoogleFonts.inter(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
                                             ),
                                             hintStyle:
                                                 FlutterFlowTheme.of(context)
@@ -1127,6 +1138,9 @@ class _CreateListingPageCopyWidgetState
                                                         .fontStyle,
                                               ),
                                           keyboardType: TextInputType.phone,
+                                          inputFormatters: [
+                                            RuPhoneInputFormatter(),
+                                          ],
                                           validator: _model
                                               .numberfildTextControllerValidator
                                               .asValidator(context),
@@ -1610,8 +1624,8 @@ class _CreateListingPageCopyWidgetState
                                   .trim();
                               final priceText =
                                   _model.pricefildTextController.text.trim();
-                              final phone =
-                                  _model.numberfildTextController.text.trim();
+                              final phone = phoneDigits10(
+                                  _model.numberfildTextController.text);
                               final city =
                                   _model.cityfildTextController.text.trim();
 
@@ -1637,11 +1651,7 @@ class _CreateListingPageCopyWidgetState
                                   .contains(FFAppState().idcategorysheet)) {
                                 errorMessage = FFLocalizations.of(context)
                                     .getText('clerrsub');
-                              } else if (phone.isEmpty ||
-                                  phone
-                                          .replaceAll(RegExp(r'[^0-9]'), '')
-                                          .length <
-                                      10) {
+                              } else if (phone.length != 10) {
                                 errorMessage = FFLocalizations.of(context)
                                     .getText('clerrphn');
                               } else if (city.isEmpty) {
@@ -1678,8 +1688,7 @@ class _CreateListingPageCopyWidgetState
                                     _model.pricefildTextController.text),
                                 'city': _model.cityfildTextController.text,
                                 'category_id': FFAppState().idcategorysheet,
-                                'phonnumber':
-                                    _model.numberfildTextController.text,
+                                'phonnumber': phoneToStorage(phone),
                                 'category_name': FFAppState().valuecategoryshit,
                                 'img': _model.uploadedFileUrl_uploadData89k,
                                 if (sellerName != null &&

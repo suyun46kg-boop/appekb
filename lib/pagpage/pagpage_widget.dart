@@ -1,3 +1,4 @@
+import '/components/ekb_no_photo.dart';
 import '/backend/supabase/supabase.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -6,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/components/ekb_listing_card.dart';
 import '/services/ekb_image_cache.dart';
+import '/services/favorites_service.dart';
 import '/services/moderation_service.dart';
 import '/theme/ekb_breakpoints.dart';
 import 'pagpage_model.dart';
@@ -37,18 +38,22 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   late final Future<List<ListingsRow>> _recommendationsFuture;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  static const _favoritesPrefsKey = 'favorite_listing_ids';
+  final _scrollController = ScrollController();
 
   static const _bg = Color(0xFFF1F4FB);
   static const _blue = Color(0xFF1A56DB);
+  static const _green = Color(0xFF16A34A);
   static const _text = Color(0xFF0F172A);
   static const _text2 = Color(0xFF475569);
   static const _text3 = Color(0xFF94A3B8);
   static const _border = Color(0xFFE2E8F0);
+  static const _warnBg = Color(0xFFFFF7E6);
+  static const _warnFg = Color(0xFF8A5A00);
   static const _shimmerBase = Color(0xFFE7ECF5);
   static const _shimmerHighlight = Color(0xFFF6F8FC);
-  static const _listingPlaceholder = 'assets/images/zag.jpg';
+
+  /// Насколько белая панель с текстом наезжает на фото (телефон).
+  static const _sheetOverlap = 24.0;
 
   bool _isFavorite = false;
   bool _sellerBlocked = false;
@@ -101,14 +106,12 @@ class _PagpageWidgetState extends State<PagpageWidget> {
           final blocked = await ModerationService.getBlockedUserIds();
           final filtered = blocked.isEmpty
               ? listings
-              : listings
-                  .where((row) {
-                    final userId = row.userId;
-                    return userId == null ||
-                        userId.isEmpty ||
-                        !blocked.contains(userId);
-                  })
-                  .toList();
+              : listings.where((row) {
+                  final userId = row.userId;
+                  return userId == null ||
+                      userId.isEmpty ||
+                      !blocked.contains(userId);
+                }).toList();
 
           return filtered.take(4).toList();
         }
@@ -116,11 +119,13 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     } catch (_) {}
 
     try {
-      return await ListingsTable().queryRows(
+      return await ListingsTable()
+          .queryRows(
         queryFn: (q) =>
             q.neq('id', excludeId).order('created_at', ascending: false),
         limit: 8,
-      ).then((rows) async {
+      )
+          .then((rows) async {
         final blocked = await ModerationService.getBlockedUserIds();
         if (blocked.isEmpty) {
           return rows.take(4).toList();
@@ -162,25 +167,14 @@ class _PagpageWidgetState extends State<PagpageWidget> {
   }
 
   Future<void> _loadFavoriteState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favorites = prefs.getStringList(_favoritesPrefsKey) ?? [];
+    final isFavorite = await FavoritesService.isFavorite(widget.idproductpage);
     if (mounted) {
-      setState(() {
-        _isFavorite = favorites.contains(widget.idproductpage);
-      });
+      setState(() => _isFavorite = isFavorite);
     }
   }
 
   Future<void> _toggleFavorite() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favorites = prefs.getStringList(_favoritesPrefsKey) ?? [];
-    final nowFavorite = !_isFavorite;
-    if (nowFavorite) {
-      favorites.add(widget.idproductpage);
-    } else {
-      favorites.remove(widget.idproductpage);
-    }
-    await prefs.setStringList(_favoritesPrefsKey, favorites.toSet().toList());
+    final nowFavorite = await FavoritesService.toggle(widget.idproductpage);
     HapticFeedback.lightImpact();
     if (mounted) {
       setState(() => _isFavorite = nowFavorite);
@@ -265,8 +259,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
 
   Future<void> _showModerationSheet(ListingsRow listing) async {
     final sellerId = listing.userId?.trim() ?? '';
-    final isOwnListing =
-        sellerId.isNotEmpty && sellerId == currentUserUid;
+    final isOwnListing = sellerId.isNotEmpty && sellerId == currentUserUid;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -307,7 +300,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                 ),
                 if (!isOwnListing && sellerId.isNotEmpty)
                   ListTile(
-                    leading: const Icon(Icons.block_rounded, color: Color(0xFFDC2626)),
+                    leading: const Icon(Icons.block_rounded,
+                        color: Color(0xFFDC2626)),
                     title: Text(
                       FFLocalizations.of(context).getText('modblock'),
                       style: GoogleFonts.inter(
@@ -463,7 +457,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     }
   }
 
-  void _openFullscreenImage(String? imageUrl) {
+  void _openFullscreenImage(String? imageUrl, int? categoryId) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
@@ -472,7 +466,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
           opacity: animation,
           child: _FullscreenImageViewer(
             imageUrl: imageUrl,
-            placeholderAsset: _listingPlaceholder,
+            categoryId: categoryId,
           ),
         ),
       ),
@@ -481,27 +475,17 @@ class _PagpageWidgetState extends State<PagpageWidget> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _model.dispose();
     super.dispose();
   }
 
-  Widget _placeholderImage() {
-    return ClipRect(
-      child: Transform.scale(
-        scale: 1.85,
-        child: Image.asset(
-          _listingPlaceholder,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      ),
-    );
-  }
+  Widget _placeholderImage(int? categoryId) =>
+      EkbNoPhoto(categoryId: categoryId);
 
-  Widget _heroImage(String? imageUrl) {
+  Widget _heroImage(String? imageUrl, int? categoryId) {
     if (imageUrl == null || imageUrl.isEmpty) {
-      return _placeholderImage();
+      return _placeholderImage(categoryId);
     }
     return CachedNetworkImage(
       imageUrl: imageUrl,
@@ -511,7 +495,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
       height: double.infinity,
       fadeInDuration: const Duration(milliseconds: 200),
       placeholder: (_, __) => Container(color: const Color(0xFFE2E8F0)),
-      errorWidget: (_, __, ___) => _placeholderImage(),
+      errorWidget: (_, __, ___) => _placeholderImage(categoryId),
     );
   }
 
@@ -565,7 +549,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                   icon: _isFavorite
                       ? Icons.favorite_rounded
                       : Icons.favorite_border_rounded,
-                  foreground: _isFavorite ? const Color(0xFFFF4D67) : Colors.white,
+                  foreground:
+                      _isFavorite ? const Color(0xFFFF4D67) : Colors.white,
                   onTap: _toggleFavorite,
                 ),
               ],
@@ -864,19 +849,110 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
-  Widget _contactButtons(String phone) {
+  /// Плашка «Подпись: значение» с иконкой.
+  Widget _infoChip(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: _bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: _text2),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: const TextStyle(color: _text3),
+                  ),
+                  TextSpan(text: value),
+                ],
+              ),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: _text2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sellerRow(ListingsRow listing) {
+    final name = valueOrDefault<String>(
+      valueOrDefault<String>(listing.userName, _resolvedSellerName ?? ''),
+      FFLocalizations.of(context).getText('pguser01'),
+    );
+    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
     return Row(
       children: [
+        Container(
+          width: 46,
+          height: 46,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: _blue,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            initial,
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
         Expanded(
-          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: _text,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                FFLocalizations.of(context)
+                    .getText('sellerlbl1' /* Продавец */),
+                style: GoogleFonts.inter(fontSize: 12, color: _text3),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Кнопки «Позвонить» и «WhatsApp» пополам.
+  Widget _contactButtons(String phone, {Key? key}) {
+    return Row(
+      key: key,
+      children: [
+        Expanded(
           child: SizedBox(
             height: 52,
             child: ElevatedButton.icon(
               onPressed: () => _call(phone),
               icon: const Icon(Icons.call_rounded, size: 20),
               label: Text(
-                FFLocalizations.of(context)
-                    .getText('7l64c59t' /* Позванить */),
+                FFLocalizations.of(context).getText('7l64c59t' /* Позвонить */),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -895,23 +971,24 @@ class _PagpageWidgetState extends State<PagpageWidget> {
         ),
         const SizedBox(width: 10),
         Expanded(
-          flex: 2,
           child: SizedBox(
             height: 52,
             child: OutlinedButton.icon(
               onPressed: () => _openWhatsApp(phone),
               icon: const Icon(Icons.chat_bubble_rounded, size: 18),
               label: Text(
-                FFLocalizations.of(context)
-                    .getText('whatsapp1' /* WhatsApp */),
+                FFLocalizations.of(context).getText('whatsapp1' /* WhatsApp */),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF16A34A),
-                side: const BorderSide(color: Color(0xFF16A34A)),
+                foregroundColor: _green,
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: _green, width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -923,7 +1000,79 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     );
   }
 
-  Widget _recommendationsSection() {
+  Widget _blockedNote() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Text(
+        FFLocalizations.of(context).getText('modblknote'),
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xFF991B1B),
+        ),
+      ),
+    );
+  }
+
+  /// Продавец и кнопки связи в одной рамке.
+  Widget _dealCard(ListingsRow listing, String phone) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        children: [
+          _sellerRow(listing),
+          if (_sellerBlocked) ...[
+            const SizedBox(height: 12),
+            _blockedNote(),
+          ] else if (phone.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _contactButtons(phone),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _safetyNotice() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: _warnBg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.shield_outlined, size: 20, color: _warnFg),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              FFLocalizations.of(context).getText('pgsafe01'),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: _warnFg,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recommendationsSection({bool framed = true}) {
     return FutureBuilder<List<ListingsRow>>(
       future: _recommendationsFuture,
       builder: (context, snapshot) {
@@ -936,22 +1085,39 @@ class _PagpageWidgetState extends State<PagpageWidget> {
           return const SizedBox.shrink();
         }
 
+        final grid = GridView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          gridDelegate: EkbBreakpoints.listingGridDelegate(
+            maxCrossAxisExtent: 220.0,
+          ),
+          itemBuilder: (context, index) =>
+              EkbListingCard.fromListingsRow(items[index]),
+        );
+        final title = _sectionTitle(
+          FFLocalizations.of(context).getText('pgrec1'),
+        );
+
+        if (!framed) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Divider(height: 1, color: _border),
+              const SizedBox(height: 16),
+              title,
+              const SizedBox(height: 12),
+              grid,
+            ],
+          );
+        }
+
         return _sectionCard(
           children: [
-            _sectionTitle(
-              FFLocalizations.of(context).getText('pgrec1'),
-            ),
+            title,
             const Divider(height: 20, color: _border),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: items.length,
-              gridDelegate: EkbBreakpoints.listingGridDelegate(
-                maxCrossAxisExtent: 220.0,
-              ),
-              itemBuilder: (context, index) =>
-                  EkbListingCard.fromListingsRow(items[index], showDescription: false),
-            ),
+            grid,
           ],
         );
       },
@@ -980,7 +1146,8 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                   const Icon(Icons.arrow_back_rounded, size: 20, color: _text),
                   const SizedBox(width: 8),
                   Text(
-                    FFLocalizations.of(context).getText('notfound03' /* Назад */),
+                    FFLocalizations.of(context)
+                        .getText('notfound03' /* Назад */),
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -1059,11 +1226,12 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                               AspectRatio(
                                 aspectRatio: 1.15,
                                 child: GestureDetector(
-                                  onTap: () =>
-                                      _openFullscreenImage(listing.img),
+                                  onTap: () => _openFullscreenImage(
+                                      listing.img, listing.categoryId),
                                   child: Hero(
                                     tag: 'listing-image-${listing.id}',
-                                    child: _heroImage(listing.img),
+                                    child: _heroImage(
+                                        listing.img, listing.categoryId),
                                   ),
                                 ),
                               ),
@@ -1243,180 +1411,144 @@ class _PagpageWidgetState extends State<PagpageWidget> {
     String publishedAt,
     bool isNew,
   ) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
+    final noValue = FFLocalizations.of(context).getText('pgno01');
+
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: double.infinity,
-                height: heroHeight,
-                child: GestureDetector(
-                  onTap: () => _openFullscreenImage(listing.img),
-                  child: Hero(
-                    tag: 'listing-image-${listing.id}',
-                    child: _heroImage(listing.img),
+              Stack(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: heroHeight,
+                    child: GestureDetector(
+                      onTap: () =>
+                          _openFullscreenImage(listing.img, listing.categoryId),
+                      child: Hero(
+                        tag: 'listing-image-${listing.id}',
+                        child: _heroImage(listing.img, listing.categoryId),
+                      ),
+                    ),
+                  ),
+                  if (isNew)
+                    Positioned(
+                      right: 14,
+                      bottom: _sheetOverlap + 12,
+                      child: _newBadge(),
+                    ),
+                  _topActionsBar(context, listing),
+                ],
+              ),
+              Transform.translate(
+                offset: const Offset(0, -_sheetOverlap),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(
+                    18,
+                    10,
+                    18,
+                    32 + MediaQuery.of(context).padding.bottom,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: _border,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        valueOrDefault<String>(
+                          listing.title,
+                          FFLocalizations.of(context).getText('c5j5d6pi'),
+                        ),
+                        style: GoogleFonts.inter(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                          color: _text,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${valueOrDefault<String>(listing.price?.toStringAsFixed(0), '0')} ${FFLocalizations.of(context).getText('gf7pmm28' /* р */)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: _blue,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _infoChip(
+                            Icons.sell_outlined,
+                            FFLocalizations.of(context).getText('pgcat02'),
+                            valueOrDefault<String>(
+                                listing.categoryName, noValue),
+                          ),
+                          _infoChip(
+                            Icons.location_on_outlined,
+                            FFLocalizations.of(context).getText('pgaddr02'),
+                            valueOrDefault<String>(listing.city, noValue),
+                          ),
+                          _infoChip(
+                            Icons.schedule_rounded,
+                            FFLocalizations.of(context).getText('pgdate02'),
+                            publishedAt,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1, color: _border),
+                      const SizedBox(height: 16),
+                      _sectionTitle(
+                        FFLocalizations.of(context).getText('pgdesc02'),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        valueOrDefault<String>(
+                          listing.description,
+                          FFLocalizations.of(context).getText('pgempty1'),
+                        ),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: _text2,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _dealCard(listing, phone),
+                      const SizedBox(height: 16),
+                      _safetyNotice(),
+                      const SizedBox(height: 16),
+                      _recommendationsSection(framed: false),
+                    ],
                   ),
                 ),
               ),
-              if (isNew)
-                Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: _newBadge(),
-                ),
-              _topActionsBar(context, listing),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _sectionCard(
-                  children: [
-                    Text(
-                      valueOrDefault<String>(
-                        listing.title,
-                        FFLocalizations.of(context).getText('c5j5d6pi'),
-                      ),
-                      style: GoogleFonts.inter(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        color: _text,
-                        height: 1.25,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          valueOrDefault<String>(
-                            listing.price?.toStringAsFixed(0),
-                            '0',
-                          ),
-                          style: GoogleFonts.inter(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: _blue,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          FFLocalizations.of(context)
-                              .getText('gf7pmm28' /* р */),
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: _blue,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _sectionCard(
-                  children: [
-                    _sectionTitle(
-                      FFLocalizations.of(context)
-                          .getText('auncdw0p' /* информации */),
-                    ),
-                    const Divider(height: 20, color: _border),
-                    _infoRow(
-                      FFLocalizations.of(context)
-                          .getText('au4pejr1' /* категория */),
-                      valueOrDefault<String>(
-                        listing.categoryName,
-                        FFLocalizations.of(context).getText('pgno01'),
-                      ),
-                    ),
-                    const Divider(height: 1, color: _border),
-                    _infoRow(
-                      FFLocalizations.of(context)
-                          .getText('z3v0tnuw' /* адрес */),
-                      valueOrDefault<String>(
-                          listing.city,
-                          FFLocalizations.of(context).getText('pgno01')),
-                    ),
-                    const Divider(height: 1, color: _border),
-                    _infoRow(
-                      FFLocalizations.of(context)
-                          .getText('jo0q04xo' /* контакты */),
-                      _sellerBlocked
-                          ? FFLocalizations.of(context)
-                              .getText('modhidden')
-                          : valueOrDefault<String>(
-                              phone,
-                              FFLocalizations.of(context)
-                                  .getText('pgno01')),
-                    ),
-                    const Divider(height: 1, color: _border),
-                    _infoRow(
-                      FFLocalizations.of(context)
-                          .getText('ns1xslou' /* дата публикации */),
-                      publishedAt,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _sectionCard(
-                  children: [
-                    _sectionTitle(
-                      FFLocalizations.of(context)
-                          .getText('9vvhfb6t' /* описании */),
-                    ),
-                    const Divider(height: 20, color: _border),
-                    Text(
-                      valueOrDefault<String>(
-                        listing.description,
-                        FFLocalizations.of(context).getText('pgempty1'),
-                      ),
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: _text2,
-                        height: 1.55,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _sellerCard(listing),
-                const SizedBox(height: 16),
-                if (_sellerBlocked)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFFECACA)),
-                    ),
-                    child: Text(
-                      FFLocalizations.of(context).getText('modblknote'),
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF991B1B),
-                      ),
-                    ),
-                  )
-                else if (phone.isNotEmpty)
-                  _contactButtons(phone),
-                const SizedBox(height: 20),
-                _recommendationsSection(),
-                SizedBox(
-                  height: 90 + MediaQuery.of(context).padding.bottom,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1468,7 +1600,7 @@ class _PagpageWidgetState extends State<PagpageWidget> {
                 final phone = listing.phonnumber ?? '';
                 final publishedAt = listing.createdAt != null
                     ? dateTimeFormat(
-                        'yMMMd',
+                        'd MMM, HH:mm',
                         listing.createdAt,
                         locale: FFLocalizations.of(context).languageCode,
                       )
@@ -1508,11 +1640,11 @@ class _PagpageWidgetState extends State<PagpageWidget> {
 class _FullscreenImageViewer extends StatelessWidget {
   const _FullscreenImageViewer({
     required this.imageUrl,
-    required this.placeholderAsset,
+    this.categoryId,
   });
 
   final String? imageUrl;
-  final String placeholderAsset;
+  final int? categoryId;
 
   @override
   Widget build(BuildContext context) {
@@ -1525,13 +1657,20 @@ class _FullscreenImageViewer extends StatelessWidget {
               minScale: 1,
               maxScale: 4,
               child: (imageUrl == null || imageUrl!.isEmpty)
-                  ? Image.asset(placeholderAsset, fit: BoxFit.contain)
+                  ? SizedBox(
+                      width: 320,
+                      height: 240,
+                      child: EkbNoPhoto(categoryId: categoryId),
+                    )
                   : CachedNetworkImage(
                       imageUrl: imageUrl!,
                       cacheManager: EkbImageCacheManager.instance,
                       fit: BoxFit.contain,
-                      errorWidget: (_, __, ___) =>
-                          Image.asset(placeholderAsset, fit: BoxFit.contain),
+                      errorWidget: (_, __, ___) => SizedBox(
+                        width: 320,
+                        height: 240,
+                        child: EkbNoPhoto(categoryId: categoryId),
+                      ),
                     ),
             ),
           ),

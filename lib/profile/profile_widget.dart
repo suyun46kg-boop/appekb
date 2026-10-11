@@ -330,63 +330,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     );
   }
 
-  Widget _deleteAccountButton(BuildContext context) {
-    return TextButton.icon(
-      onPressed: () async {
-        final confirm = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Удаление аккаунта'),
-            content: const Text(
-              'Вы уверены, что хотите удалить свой аккаунт? Все ваши личные данные и объявления будут безвозвратно удалены.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Отмена'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFDC2626),
-                ),
-                child: const Text('Удалить'),
-              ),
-            ],
-          ),
-        );
-
-        if (confirm == true && context.mounted) {
-          try {
-            await authManager.deleteUser(context);
-          } catch (e) {
-            debugPrint('Error deleting user: $e');
-          }
-          if (!context.mounted) return;
-          try {
-            GoRouter.of(context).clearRedirectLocation();
-          } catch (_) {}
-          FFAppState().hh1 = false;
-          safeSetState(() {});
-          context.goNamedAuth(DbddWidget.routeName, context.mounted);
-        }
-      },
-      icon: const Icon(
-        Icons.delete_outline_rounded,
-        size: 18,
-        color: Color(0xFF94A3B8),
-      ),
-      label: Text(
-        'Удалить аккаунт',
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF94A3B8),
-        ),
-      ),
-    );
-  }
-
   Widget _guestAuthBanner(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -490,134 +433,164 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: _bg,
-        body: Column(
-          children: [
-            _header(context),
-            Transform.translate(
-              offset: const Offset(0, -36),
-              child: _avatar(photoUrl),
-            ),
-            Expanded(
-              child: Transform.translate(
-                offset: const Offset(0, -20),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                        maxWidth: EkbBreakpoints.maxFormWidth),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(
-                        _pageHPad,
-                        0,
-                        _pageHPad,
-                        100,
-                      ),
-                      child: Column(
-                        children: [
-                          if (currentUserUid.isEmpty)
-                            _guestAuthBanner(context),
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: _border),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x12000000),
-                              blurRadius: 3,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Column(
-                          children: [
-                            _menuTile(
-                              icon: Icons.list_alt_rounded,
-                              iconColor: _blue,
-                              iconBg: const Color(0xFFEEF3FF),
-                              title: FFLocalizations.of(context).getText(
-                                'kiy9k1h8' /* маи обиявлении */,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _header(context),
+              // Аватар наезжает на шапку на 36 px, но занимает в потоке
+              // только оставшуюся часть, поэтому всё прокручивается вместе.
+              Align(
+                alignment: Alignment.bottomCenter,
+                heightFactor: 52 / 88,
+                child: _avatar(photoUrl),
+              ),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                      maxWidth: EkbBreakpoints.maxFormWidth),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      _pageHPad,
+                      0,
+                      _pageHPad,
+                      100,
+                    ),
+                    child: Column(
+                      children: [
+                        if (currentUserUid.isEmpty) _guestAuthBanner(context),
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: _border),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x12000000),
+                                blurRadius: 3,
+                                offset: Offset(0, 1),
                               ),
-                              onTap: () {
-                                if (currentUserUid.isEmpty) {
-                                  context.pushNamed(RegistrasiaWidget.routeName);
-                                  return;
-                                }
-                                context.pushNamed(
-                                  MylistingWidget.routeName,
-                                  queryParameters: {
-                                    'mylisid': serializeParam(
-                                      currentUserUid,
-                                      ParamType.String,
-                                    ),
-                                  }.withoutNulls,
-                                );
-                              },
-                            ),
-                            _menuTile(
-                              icon: Icons.support_agent_rounded,
-                              iconColor: const Color(0xFF0E7490),
-                              iconBg: const Color(0xFFEAFDFF),
-                              title: FFLocalizations.of(context).getText(
-                                'wrj9lx0v' /* поддержка */,
-                              ),
-                              onTap: () async {
-                                await launchURL('https://wa.me/79089197909');
-                              },
-                            ),
-                            _menuTile(
-                              icon: Icons.privacy_tip_outlined,
-                              iconColor: const Color(0xFF6D28D9),
-                              iconBg: const Color(0xFFF2ECFF),
-                              title: FFLocalizations.of(context).getText(
-                                '6ay3t2sd' /* политика конфиденциальности */,
-                              ),
-                              onTap: () => context.pushNamed(
-                                PolitpageWidget.routeName,
-                              ),
-                            ),
-                            _menuTile(
-                              icon: Icons.cleaning_services_outlined,
-                              iconColor: const Color(0xFF047857),
-                              iconBg: const Color(0xFFECFDF5),
-                              title: FFLocalizations.of(context).getText(
-                                'clrcache01' /* Очистить кеш */,
-                              ),
-                              showDivider: currentUserUid.isNotEmpty,
-                              onTap: () => _clearImageCache(context),
-                            ),
-                            if (currentUserUid.isNotEmpty)
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Column(
+                            children: [
                               _menuTile(
-                                icon: Icons.person_remove_outlined,
-                                iconColor: const Color(0xFFB45309),
-                                iconBg: const Color(0xFFFFF7ED),
+                                icon: Icons.list_alt_rounded,
+                                iconColor: _blue,
+                                iconBg: const Color(0xFFEEF3FF),
                                 title: FFLocalizations.of(context).getText(
-                                  'dltacnt01' /* удаление аккаунта */,
+                                  'kiy9k1h8' /* маи обиявлении */,
+                                ),
+                                onTap: () {
+                                  if (currentUserUid.isEmpty) {
+                                    context
+                                        .pushNamed(RegistrasiaWidget.routeName);
+                                    return;
+                                  }
+                                  context.pushNamed(
+                                    MylistingWidget.routeName,
+                                    queryParameters: {
+                                      'mylisid': serializeParam(
+                                        currentUserUid,
+                                        ParamType.String,
+                                      ),
+                                    }.withoutNulls,
+                                  );
+                                },
+                              ),
+                              _menuTile(
+                                icon: Icons.favorite_border_rounded,
+                                iconColor: const Color(0xFFE11D48),
+                                iconBg: const Color(0xFFFFF1F2),
+                                title: FFLocalizations.of(context)
+                                    .getText('favnavlbl'),
+                                onTap: () =>
+                                    context.goNamed(FavoritesWidget.routeName),
+                              ),
+                              _menuTile(
+                                icon: Icons.notifications_none_rounded,
+                                iconColor: const Color(0xFF1A56DB),
+                                iconBg: const Color(0xFFEEF3FF),
+                                title:
+                                    FFLocalizations.of(context).getVariableText(
+                                  ruText: 'Уведомления',
+                                  kyText: 'Билдирмелер',
+                                ),
+                                onTap: () => context.pushNamed(
+                                  NotificationSettingsWidget.routeName,
+                                ),
+                              ),
+                              _menuTile(
+                                icon: Icons.support_agent_rounded,
+                                iconColor: const Color(0xFF0E7490),
+                                iconBg: const Color(0xFFEAFDFF),
+                                title: FFLocalizations.of(context).getText(
+                                  'wrj9lx0v' /* поддержка */,
+                                ),
+                                onTap: () async {
+                                  await launchURL('https://wa.me/79089197909');
+                                },
+                              ),
+                              _menuTile(
+                                icon: Icons.privacy_tip_outlined,
+                                iconColor: const Color(0xFF6D28D9),
+                                iconBg: const Color(0xFFF2ECFF),
+                                title: FFLocalizations.of(context).getText(
+                                  '6ay3t2sd' /* политика конфиденциальности */,
+                                ),
+                                onTap: () => context.pushNamed(
+                                  PolitpageWidget.routeName,
+                                ),
+                              ),
+                              _menuTile(
+                                icon: Icons.cleaning_services_outlined,
+                                iconColor: const Color(0xFF047857),
+                                iconBg: const Color(0xFFECFDF5),
+                                title: FFLocalizations.of(context).getText(
+                                  'clrcache01' /* Очистить кеш */,
                                 ),
                                 showDivider: false,
-                                onTap: () => _confirmDeleteAccount(context),
+                                onTap: () => _clearImageCache(context),
                               ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      if (currentUserUid.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        _logoutButton(context),
-                        const SizedBox(height: 12),
-                        _deleteAccountButton(context),
+                        if (currentUserUid.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          _logoutButton(context),
+                          const SizedBox(height: 24),
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: _border),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: _menuTile(
+                              icon: Icons.person_remove_outlined,
+                              iconColor: const Color(0xFFB45309),
+                              iconBg: const Color(0xFFFFF7ED),
+                              title: FFLocalizations.of(context).getText(
+                                'dltacnt01' /* удаление аккаунта */,
+                              ),
+                              showDivider: false,
+                              onTap: () => _confirmDeleteAccount(context),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
-      ],
-    ),
-  ),
-);
+      ),
+    );
   }
 }

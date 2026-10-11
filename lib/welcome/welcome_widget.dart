@@ -2,10 +2,11 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '/components/ekbkg_logo.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/services/category_subscriptions.dart';
 import 'welcome_model.dart';
 
 export 'welcome_model.dart';
@@ -31,13 +32,29 @@ class _WelcomeWidgetState extends State<WelcomeWidget>
   static const _textSecondary = Color(0xFF6B7280);
   static const _brand = Color(0xFF3D66F0);
 
+  /// (id категории, картинка, ключ перевода названия).
+  static const _interests = [
+    (3, 'assets/images/categories/category_apartment.png', 'cukp48gd'),
+    (2, 'assets/images/categories/category_job.png', 'me5sh2dc'),
+    (14, 'assets/images/categories/category_border.png', '4lwpgqmm'),
+    (1, 'assets/images/categories/category_auto.png', 'r4qsbrdp'),
+    (13, 'assets/images/categories/category_entertainment.png', 'vp95t6yz'),
+    (4, 'assets/images/categories/category_services.png', 'ccc9cors'),
+    (9, 'assets/images/categories/category_sale_v2.png', 'pnpqtuk7'),
+    (5, 'assets/images/categories/category_parttime.png', 'noun7do1'),
+  ];
+
+  /// 0 — приветствие, 1 — выбор интересов.
+  int _step = 0;
+  final Set<int> _picked = {};
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => WelcomeModel());
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: 1800),
     );
     _aurora = AnimationController(
       vsync: this,
@@ -46,6 +63,15 @@ class _WelcomeWidgetState extends State<WelcomeWidget>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _intro.forward();
     });
+  }
+
+  void _goToInterests() => setState(() => _step = 1);
+
+  Future<void> _finish({required bool save}) async {
+    if (save && _picked.isNotEmpty) {
+      await CategorySubscriptions.save(_picked);
+    }
+    await _openHome();
   }
 
   Future<void> _openHome() async {
@@ -104,261 +130,547 @@ class _WelcomeWidgetState extends State<WelcomeWidget>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: AnimatedBuilder(
-        animation: Listenable.merge([_intro, _aurora]),
-        builder: (context, _) {
-          final t = _intro.value;
-          final ms = t * 3200;
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 450),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, anim) => FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.04),
+              end: Offset.zero,
+            ).animate(anim),
+            child: child,
+          ),
+        ),
+        child: _step == 1
+            ? KeyedSubtree(
+                key: const ValueKey('interests'),
+                child: _interestsStep(context),
+              )
+            : KeyedSubtree(
+                key: const ValueKey('intro'),
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([_intro, _aurora]),
+                  builder: (context, _) {
+                    final t = _intro.value;
+                    final ms = t * 1800;
 
-          final logoWrap = _ms(ms, 0, 380, Curves.easeOut);
-          // Softer name + hold, then long smooth fly
-          final nameIn = _ms(ms, 720, 1450, Curves.easeInOutCubic);
-          final fly = _ms(ms, 1650, 2700, Curves.easeInOutCubic);
-          final auroraOp = _ms(ms, 2300, 2800, Curves.easeOut);
-          final heroOp = _ms(ms, 2450, 2950, Curves.easeOutCubic);
-          final ctaOp = _ms(ms, 2650, 3100, Curves.easeOutCubic);
-          final langOp = _ms(ms, 2400, 2850, Curves.easeOut);
+                    final logoWrap = _ms(ms, 0, 280, Curves.easeOut);
+                    final bloomMs = ms;
+                    final nameIn = _ms(ms, 200, 700, Curves.easeInOutCubic);
+                    final fly = _ms(ms, 750, 1400, Curves.easeInOutCubic);
+                    final auroraOp = _ms(ms, 1100, 1450, Curves.easeOut);
+                    final heroOp = _ms(ms, 1200, 1550, Curves.easeOutCubic);
+                    final ctaOp = _ms(ms, 1350, 1700, Curves.easeOutCubic);
+                    final langOp = _ms(ms, 1150, 1500, Curves.easeOut);
 
-          const logoBig = 72.0;
-          const logoSmall = 28.0;
-          const nameBig = 28.0;
-          const nameSmall = 17.0;
-          const gapBig = 12.0;
-          const gapSmall = 8.0;
+                    const logoBig = 72.0;
+                    const logoSmall = 28.0;
+                    const nameBig = 28.0;
+                    const nameSmall = 17.0;
+                    const gapBig = 12.0;
+                    const gapSmall = 8.0;
 
-          final logoSize = ui.lerpDouble(logoBig, logoSmall, fly)!;
-          final nameSize = ui.lerpDouble(nameBig, nameSmall, fly)!;
-          final nameGap = ui.lerpDouble(gapBig, gapSmall, fly)!;
+                    final logoSize = ui.lerpDouble(logoBig, logoSmall, fly)!;
+                    final nameSize = ui.lerpDouble(nameBig, nameSmall, fly)!;
+                    final nameGap = ui.lerpDouble(gapBig, gapSmall, fly)!;
 
-          // Stable widths (no * nameIn) — avoids position jitter
-          final nameW = title.length * nameBig * 0.58;
-          final fullClusterW = logoBig + gapBig + nameW;
+                    // Stable widths (no * nameIn) — avoids position jitter
+                    final nameW = title.length * nameBig * 0.58;
+                    final fullClusterW = logoBig + gapBig + nameW;
 
-          final logoOnlyLeft = (size.width - logoBig) / 2;
-          final clusterLeft = (size.width - fullClusterW) / 2;
-          final startTop = (size.height - logoBig) / 2;
+                    final logoOnlyLeft = (size.width - logoBig) / 2;
+                    final clusterLeft = (size.width - fullClusterW) / 2;
+                    final startTop = (size.height - logoBig) / 2;
 
-          // Logo stays centered, then gently shifts as name appears
-          final settledLeft = ui.lerpDouble(logoOnlyLeft, clusterLeft, nameIn)!;
-          final brandLeft = ui.lerpDouble(settledLeft, 24, fly)!;
-          final brandTop = ui.lerpDouble(startTop, top + 16, fly)!;
+                    // Logo stays centered, then gently shifts as name appears
+                    final settledLeft =
+                        ui.lerpDouble(logoOnlyLeft, clusterLeft, nameIn)!;
+                    final brandLeft = ui.lerpDouble(settledLeft, 24, fly)!;
+                    final brandTop = ui.lerpDouble(startTop, top + 16, fly)!;
 
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              // Aurora
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: size.height * 0.45,
-                child: Opacity(
-                  opacity: auroraOp,
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: _AuroraPainter(time: _aurora.value),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Brand cluster
-              Positioned(
-                left: brandLeft,
-                top: brandTop,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Opacity(
-                      opacity: logoWrap.clamp(0.0, 1.0),
-                      child: Transform.scale(
-                        scale: 0.82 + 0.18 * logoWrap,
-                        child: SizedBox(
-                          width: logoSize,
-                          height: logoSize,
-                          child: CustomPaint(
-                            painter: _BloomLogoPainter(ms: ms),
-                          ),
-                        ),
-                      ),
-                    ),
-                    ClipRect(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: nameIn.clamp(0.0, 1.0),
-                        child: Padding(
-                          padding: EdgeInsets.only(left: nameGap),
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Aurora
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: size.height * 0.45,
                           child: Opacity(
-                            opacity: nameIn.clamp(0.0, 1.0),
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              softWrap: false,
-                              style: GoogleFonts.inter(
-                                fontSize: nameSize,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.5,
-                                color: _textPrimary,
-                                height: 1,
+                            opacity: auroraOp,
+                            child: IgnorePointer(
+                              child: CustomPaint(
+                                painter: _AuroraPainter(time: _aurora.value),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // Landing content
-              Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
+                        // Brand cluster
+                        Positioned(
+                          left: brandLeft,
+                          top: brandTop,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Opacity(
+                                opacity: logoWrap.clamp(0.0, 1.0),
+                                child: Transform.scale(
+                                  scale: 0.82 + 0.18 * logoWrap,
+                                  child: SizedBox(
+                                    width: logoSize,
+                                    height: logoSize,
+                                    child: CustomPaint(
+                                      painter: _BloomLogoPainter(ms: bloomMs),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              ClipRect(
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: nameIn.clamp(0.0, 1.0),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(left: nameGap),
+                                    child: Opacity(
+                                      opacity: nameIn.clamp(0.0, 1.0),
+                                      child: Text(
+                                        title,
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        style: GoogleFonts.inter(
+                                          fontSize: nameSize,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.5,
+                                          color: _textPrimary,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: IntrinsicHeight(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(
-                                24, top + 12, 24, 24 + bottom),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Spacer(),
-                                    Opacity(
-                                      opacity: langOp,
-                                      child: Row(
+
+                        // Landing content
+                        Positioned.fill(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                physics: const ClampingScrollPhysics(),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: IntrinsicHeight(
+                                    child: Padding(
+                                      padding: EdgeInsets.fromLTRB(
+                                          24, top + 12, 24, 24 + bottom),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
                                         children: [
-                                          _langButton(
-                                            'ky',
-                                            FFLocalizations.of(context)
-                                                .getText('l8qpitx7' /* KG */),
+                                          Row(
+                                            children: [
+                                              const Spacer(),
+                                              Opacity(
+                                                opacity: langOp,
+                                                child: Row(
+                                                  children: [
+                                                    _langButton(
+                                                      'ky',
+                                                      FFLocalizations.of(
+                                                              context)
+                                                          .getText(
+                                                              'l8qpitx7' /* KG */),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    _langButton(
+                                                      'ru',
+                                                      FFLocalizations.of(
+                                                              context)
+                                                          .getText(
+                                                              'qai395nv' /* RU */),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(width: 8),
-                                          _langButton(
-                                            'ru',
-                                            FFLocalizations.of(context)
-                                                .getText('qai395nv' /* RU */),
+                                          const Spacer(flex: 2),
+                                          const SizedBox(height: 16),
+                                          Opacity(
+                                            opacity: heroOp,
+                                            child: Transform.translate(
+                                              offset:
+                                                  Offset(0, 16 * (1 - heroOp)),
+                                              child: Center(
+                                                child: ConstrainedBox(
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxWidth: 560),
+                                                  child: Column(
+                                                    children: [
+                                                      Text(
+                                                        FFLocalizations.of(
+                                                                context)
+                                                            .getText(
+                                                                'wlc1hero1'),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 32,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          height: 1.12,
+                                                          letterSpacing: -1,
+                                                          color: _textPrimary,
+                                                        ),
+                                                      ),
+                                                      _GradientText(
+                                                        FFLocalizations.of(
+                                                                context)
+                                                            .getText(
+                                                                'wlc1hero2'),
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 32,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          height: 1.12,
+                                                          letterSpacing: -1,
+                                                        ),
+                                                        progress: _aurora.value,
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 14),
+                                                      Text(
+                                                        FFLocalizations.of(
+                                                                context)
+                                                            .getText('wlc1sub'),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          height: 1.45,
+                                                          color: _textSecondary,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ),
+                                          const Spacer(flex: 1),
+                                          const SizedBox(height: 16),
+                                          Opacity(
+                                            opacity: ctaOp,
+                                            child: Transform.translate(
+                                              offset:
+                                                  Offset(0, 12 * (1 - ctaOp)),
+                                              child: Center(
+                                                child: ConstrainedBox(
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxWidth: 420),
+                                                  child: SizedBox(
+                                                    width: double.infinity,
+                                                    height: 56,
+                                                    child: FilledButton(
+                                                      onPressed: ctaOp > 0.5
+                                                          ? _goToInterests
+                                                          : null,
+                                                      style: FilledButton
+                                                          .styleFrom(
+                                                        backgroundColor: _brand,
+                                                        disabledBackgroundColor:
+                                                            _brand.withValues(
+                                                                alpha: 0.5),
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        elevation: 0,
+                                                        shadowColor:
+                                                            Colors.transparent,
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      999),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        startLabel,
+                                                        style:
+                                                            GoogleFonts.inter(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          letterSpacing: -0.2,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const Spacer(flex: 1),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const Spacer(flex: 2),
-                                const SizedBox(height: 16),
-                                Opacity(
-                                  opacity: heroOp,
-                                  child: Transform.translate(
-                                    offset: Offset(0, 16 * (1 - heroOp)),
-                                    child: Center(
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                            maxWidth: 560),
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              FFLocalizations.of(context)
-                                                  .getText('wlc1hero1'),
-                                              textAlign: TextAlign.center,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.w800,
-                                                height: 1.12,
-                                                letterSpacing: -1,
-                                                color: _textPrimary,
-                                              ),
-                                            ),
-                                            _GradientText(
-                                              FFLocalizations.of(context)
-                                                  .getText('wlc1hero2'),
-                                              style: GoogleFonts.inter(
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.w800,
-                                                height: 1.12,
-                                                letterSpacing: -1,
-                                              ),
-                                              progress: _aurora.value,
-                                            ),
-                                            const SizedBox(height: 14),
-                                            Text(
-                                              FFLocalizations.of(context)
-                                                  .getText('wlc1sub'),
-                                              textAlign: TextAlign.center,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w500,
-                                                height: 1.45,
-                                                color: _textSecondary,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
                                   ),
                                 ),
-                                const Spacer(flex: 1),
-                                const SizedBox(height: 16),
-                                Opacity(
-                                  opacity: ctaOp,
-                                  child: Transform.translate(
-                                    offset: Offset(0, 12 * (1 - ctaOp)),
-                                    child: Center(
-                                      child: ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                            maxWidth: 420),
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          height: 56,
-                                          child: FilledButton(
-                                            onPressed:
-                                                ctaOp > 0.5 ? _openHome : null,
-                                            style: FilledButton.styleFrom(
-                                              backgroundColor: _brand,
-                                              disabledBackgroundColor:
-                                                  _brand.withValues(alpha: 0.5),
-                                              foregroundColor: Colors.white,
-                                              elevation: 0,
-                                              shadowColor: Colors.transparent,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(999),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              startLabel,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: -0.2,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const Spacer(flex: 1),
-                              ],
-                            ),
+                              );
+                            },
                           ),
                         ),
-                      ),
+                      ],
                     );
                   },
                 ),
               ),
-            ],
-          );
-        },
+      ),
+    );
+  }
+
+  Widget _interestChip(int index) {
+    final (id, asset, nameKey) = _interests[index];
+    final selected = _picked.contains(id);
+    var name = FFLocalizations.of(context).getText(nameKey);
+    if (name.isNotEmpty) name = name[0].toUpperCase() + name.substring(1);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          if (!_picked.remove(id)) _picked.add(id);
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.fromLTRB(6, 6, 16, 6),
+        decoration: BoxDecoration(
+          color: selected ? _textPrimary : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? _textPrimary : const Color(0xFFE5E7EB),
+          ),
+          boxShadow: selected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x331F2937),
+                    blurRadius: 12,
+                    offset: Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F7),
+                shape: BoxShape.circle,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Image.asset(asset, fit: BoxFit.cover),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              name,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: selected ? Colors.white : _textPrimary,
+              ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              child: selected
+                  ? const Padding(
+                      padding: EdgeInsets.only(left: 6),
+                      child: Icon(Icons.check_rounded,
+                          size: 18, color: Colors.white),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _interestsStep(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top;
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    final size = MediaQuery.sizeOf(context);
+    final l10n = FFLocalizations.of(context);
+    final count = _picked.length;
+    final continueLabel =
+        l10n.getVariableText(ruText: 'Продолжить', kyText: 'Улантуу');
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: size.height * 0.45,
+          child: IgnorePointer(
+            child: AnimatedBuilder(
+              animation: _aurora,
+              builder: (context, _) => CustomPaint(
+                painter: _AuroraPainter(time: _aurora.value),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(24, top + 16, 24, 24 + bottom),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      _stepDot(false),
+                      const SizedBox(width: 6),
+                      _stepDot(true),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () => _finish(save: false),
+                        style: TextButton.styleFrom(
+                          foregroundColor: _textSecondary,
+                        ),
+                        child: Text(
+                          l10n.getVariableText(
+                            ruText: 'Пропустить',
+                            kyText: 'Өткөрүп жиберүү',
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    l10n.getVariableText(
+                      ruText: 'Что вам интересно?',
+                      kyText: 'Сизди эмне кызыктырат?',
+                    ),
+                    style: GoogleFonts.inter(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                      height: 1.12,
+                      letterSpacing: -1,
+                      color: _textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    l10n.getVariableText(
+                      ruText:
+                          'Пришлём уведомление, когда появятся новые объявления',
+                      kyText: 'Жаңы жарыялар чыкканда билдирме жөнөтөбүз',
+                    ),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      height: 1.45,
+                      color: _textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (var i = 0; i < _interests.length; i++)
+                            _interestChip(i),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: FilledButton(
+                          onPressed:
+                              count > 0 ? () => _finish(save: true) : null,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _brand,
+                            disabledBackgroundColor:
+                                _brand.withValues(alpha: 0.35),
+                            foregroundColor: Colors.white,
+                            disabledForegroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          child: Text(
+                            count > 0
+                                ? '$continueLabel · $count'
+                                : l10n.getVariableText(
+                                    ruText: 'Выберите категории',
+                                    kyText: 'Категорияларды тандаңыз',
+                                  ),
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepDot(bool active) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      width: active ? 22 : 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: active ? _brand : const Color(0xFFE5E7EB),
+        borderRadius: BorderRadius.circular(999),
       ),
     );
   }
@@ -427,7 +739,8 @@ class _BloomLogoPainter extends CustomPainter {
       canvas.save();
       canvas.translate(60, 60);
       canvas.scale(0.35 + 0.65 * coreT);
-      paint.color = EkbkgLogo.brandYellow.withValues(alpha: coreT.clamp(0.0, 1.0));
+      paint.color =
+          EkbkgLogo.brandYellow.withValues(alpha: coreT.clamp(0.0, 1.0));
       canvas.drawCircle(Offset.zero, 18, paint);
       canvas.restore();
     }

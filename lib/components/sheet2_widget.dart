@@ -125,128 +125,132 @@ class _Sheet2WidgetState extends State<Sheet2Widget> {
         ),
         child: Container(
           width: double.infinity,
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(15.0),
-          topRight: Radius.circular(15.0),
-        ),
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 52,
-            child: Row(
-              children: [
-                if (showingSubs)
-                  IconButton(
-                    onPressed: () => setState(() => _selectedRoot = null),
-                    icon: Icon(
-                      Icons.arrow_back_rounded,
-                      color: FlutterFlowTheme.of(context).primaryText,
-                    ),
-                  )
-                else
-                  const SizedBox(width: 48),
-                Expanded(
-                  child: Text(
-                    showingSubs
-                        ? _selectedRoot!.name
-                        : FFLocalizations.of(context).getText('clselcat'),
-                    textAlign: TextAlign.center,
-                    style: FlutterFlowTheme.of(context).titleMedium.override(
-                          font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close_sharp,
-                    color: FlutterFlowTheme.of(context).primaryText,
-                  ),
-                ),
-              ],
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(15.0),
+              topRight: Radius.circular(15.0),
             ),
           ),
-          Expanded(
-            child: FutureBuilder<List<CategoriesRow>>(
-              future: _categoriesFuture,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: SizedBox(
-                      width: 50.0,
-                      height: 50.0,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          FlutterFlowTheme.of(context).primary,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 52,
+                child: Row(
+                  children: [
+                    if (showingSubs)
+                      IconButton(
+                        onPressed: () => setState(() => _selectedRoot = null),
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
+                          color: FlutterFlowTheme.of(context).primaryText,
                         ),
-                      ),
-                    ),
-                  );
-                }
-
-                final all = snapshot.data!;
-                final items = showingSubs
-                    ? _childrenOf(all, _selectedRoot!.id1)
-                    : _roots(all);
-
-                if (items.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      )
+                    else
+                      const SizedBox(width: 48),
+                    Expanded(
                       child: Text(
-                        FFLocalizations.of(context).getText('catemp1'),
+                        showingSubs
+                            ? _selectedRoot!.name
+                            : FFLocalizations.of(context).getText('clselcat'),
                         textAlign: TextAlign.center,
+                        style:
+                            FlutterFlowTheme.of(context).titleMedium.override(
+                                  font: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600),
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                     ),
-                  );
-                }
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(
+                        Icons.close_sharp,
+                        color: FlutterFlowTheme.of(context).primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: FutureBuilder<List<CategoriesRow>>(
+                  future: _categoriesFuture,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(
+                        child: SizedBox(
+                          width: 50.0,
+                          height: 50.0,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              FlutterFlowTheme.of(context).primary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
 
-                return ListView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final cat = items[index];
-                    return _row(
-                      title: cat.name,
-                      onTap: () {
-                        if (showingSubs) {
-                          _selectCategory(cat, parent: _selectedRoot);
-                          return;
-                        }
-                        final children = _childrenOf(all, cat.id1);
-                        if (children.isNotEmpty ||
-                            kCategoriesRequiringSubcategory.contains(cat.id1)) {
-                          if (children.isEmpty) {
-                            // Подкатегории ещё не в БД — не даём выбрать корень.
-                            ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  FFLocalizations.of(context)
-                                      .getText('clerrsub'),
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-                          setState(() => _selectedRoot = cat);
-                          return;
-                        }
-                        _selectCategory(cat);
+                    final all = snapshot.data!;
+                    final items = showingSubs
+                        ? _childrenOf(all, _selectedRoot!.id1)
+                        : _roots(all);
+
+                    if (items.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Text(
+                            FFLocalizations.of(context).getText('catemp1'),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final cat = items[index];
+                        return _row(
+                          title: cat.name,
+                          onTap: () {
+                            if (showingSubs) {
+                              _selectCategory(cat, parent: _selectedRoot);
+                              return;
+                            }
+                            final children = _childrenOf(all, cat.id1);
+                            if (children.isNotEmpty ||
+                                kCategoriesRequiringSubcategory
+                                    .contains(cat.id1)) {
+                              if (children.isEmpty) {
+                                // Подкатегории ещё не в БД — не даём выбрать корень.
+                                ScaffoldMessenger.maybeOf(context)
+                                    ?.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      FFLocalizations.of(context)
+                                          .getText('clerrsub'),
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              setState(() => _selectedRoot = cat);
+                              return;
+                            }
+                            _selectCategory(cat);
+                          },
+                        );
                       },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-  ),
-);
+    );
   }
 }

@@ -1,3 +1,4 @@
+import '/components/ekb_no_photo.dart';
 import 'dart:async';
 
 import '/dbdd/category_block_background.dart';
@@ -40,7 +41,6 @@ class _MylistingWidgetState extends State<MylistingWidget> {
   static const _text3 = Color(0xFF94A3B8);
   static const _border = Color(0xFFE2E8F0);
   static const _red = Color(0xFFEF4444);
-  static const _listingPlaceholder = 'assets/images/zag.jpg';
 
   @override
   void initState() {
@@ -111,23 +111,16 @@ class _MylistingWidgetState extends State<MylistingWidget> {
     _reload();
   }
 
-  Widget _placeholderImage() {
-    return ClipRect(
-      child: Transform.scale(
-        scale: 1.5,
-        child: Image.asset(
-          _listingPlaceholder,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      ),
-    );
-  }
+  Widget _placeholderImage(int? categoryId) =>
+      EkbNoPhoto(categoryId: categoryId);
 
-  Widget _listingImage(BuildContext context, String? imageUrl) {
+  Widget _listingImage(
+    BuildContext context,
+    String? imageUrl,
+    int? categoryId,
+  ) {
     if (imageUrl == null || imageUrl.isEmpty) {
-      return _placeholderImage();
+      return _placeholderImage(categoryId);
     }
 
     final dpr = MediaQuery.devicePixelRatioOf(context);
@@ -143,7 +136,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
       fadeInDuration: Duration.zero,
       placeholderFadeInDuration: Duration.zero,
       placeholder: (_, __) => Container(color: _border),
-      errorWidget: (_, __, ___) => _placeholderImage(),
+      errorWidget: (_, __, ___) => _placeholderImage(categoryId),
     );
   }
 
@@ -236,7 +229,7 @@ class _MylistingWidgetState extends State<MylistingWidget> {
               SizedBox(
                 width: 100,
                 height: 104,
-                child: _listingImage(context, listing.img),
+                child: _listingImage(context, listing.img, listing.categoryId),
               ),
               Expanded(
                 child: Padding(
@@ -415,7 +408,8 @@ class _MylistingWidgetState extends State<MylistingWidget> {
                       constraints: const BoxConstraints(
                           maxWidth: EkbBreakpoints.maxListWidth),
                       child: ListView.separated(
-                        scrollCacheExtent: ScrollCacheExtent.pixels(600), padding: const EdgeInsets.all(16),
+                        scrollCacheExtent: ScrollCacheExtent.pixels(600),
+                        padding: const EdgeInsets.all(16),
                         itemCount: listings.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) =>

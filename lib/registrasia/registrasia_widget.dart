@@ -521,8 +521,8 @@ class _RegistrasiaWidgetState extends State<RegistrasiaWidget> {
     if (!mounted) return;
     safeSetState(() => _submitting = false);
 
+    // Причину ошибки уже показал authManager.
     if (user == null) {
-      _showSnack(FFLocalizations.of(context).getText('authregf'));
       return;
     }
 

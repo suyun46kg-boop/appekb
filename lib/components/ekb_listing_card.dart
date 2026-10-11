@@ -1,14 +1,17 @@
+import '/components/ekb_no_photo.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/services/ekb_image_cache.dart';
+import '/services/favorites_service.dart';
 import '/theme/ekb_typography.dart';
 import '/components/shimmer_widgets.dart';
 import '/backend/supabase/database/tables/listings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Product card matching the home screen (`dbdd`) design.
-class EkbListingCard extends StatelessWidget {
+class EkbListingCard extends StatefulWidget {
   const EkbListingCard({
     super.key,
     required this.id,
@@ -17,10 +20,12 @@ class EkbListingCard extends StatelessWidget {
     required this.priceText,
     this.imageUrl,
     this.publishedAt,
+    this.categoryId,
     this.showDescription = true,
   });
 
-  factory EkbListingCard.fromListingsRow(ListingsRow row, {bool showDescription = true}) {
+  factory EkbListingCard.fromListingsRow(ListingsRow row,
+      {bool showDescription = true}) {
     return EkbListingCard(
       id: row.id ?? '0',
       title: row.title,
@@ -28,6 +33,7 @@ class EkbListingCard extends StatelessWidget {
       priceText: row.price?.toStringAsFixed(0),
       imageUrl: row.img,
       publishedAt: row.createdAt,
+      categoryId: row.categoryId,
       showDescription: showDescription,
     );
   }
@@ -43,6 +49,8 @@ class EkbListingCard extends StatelessWidget {
       publishedAt: rawDate == null || rawDate.isEmpty
           ? null
           : DateTime.tryParse(rawDate),
+      categoryId: int.tryParse(
+          getJsonField(item, r'''$.category_id''')?.toString() ?? ''),
     );
   }
 
@@ -64,15 +72,42 @@ class EkbListingCard extends StatelessWidget {
     ),
   ];
 
-  static const placeholderAsset = 'assets/images/zag.jpg';
-
   final String id;
   final String? title;
   final String? description;
   final String? priceText;
   final String? imageUrl;
   final DateTime? publishedAt;
+  final int? categoryId;
   final bool showDescription;
+
+  @override
+  State<EkbListingCard> createState() => _EkbListingCardState();
+}
+
+class _EkbListingCardState extends State<EkbListingCard> {
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoriteState();
+  }
+
+  Future<void> _loadFavoriteState() async {
+    final isFavorite = await FavoritesService.isFavorite(widget.id);
+    if (mounted) {
+      setState(() => _isFavorite = isFavorite);
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    final nowFavorite = await FavoritesService.toggle(widget.id);
+    HapticFeedback.lightImpact();
+    if (mounted) {
+      setState(() => _isFavorite = nowFavorite);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +116,7 @@ class EkbListingCard extends StatelessWidget {
         context.pushNamed(
           PagpageWidget.routeName,
           queryParameters: {
-            'idproductpage': serializeParam(id, ParamType.String),
+            'idproductpage': serializeParam(widget.id, ParamType.String),
           }.withoutNulls,
         );
       },
@@ -90,16 +125,32 @@ class EkbListingCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(5),
-          boxShadow: cardShadows,
+          boxShadow: EkbListingCard.cardShadows,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: imageHeight,
+              height: EkbListingCard.imageHeight,
               width: double.infinity,
-              child: _ListingImage(imageUrl: imageUrl),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _ListingImage(
+                    imageUrl: widget.imageUrl,
+                    categoryId: widget.categoryId,
+                  ),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: _FavoriteButton(
+                      isFavorite: _isFavorite,
+                      onTap: _toggleFavorite,
+                    ),
+                  ),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -109,18 +160,18 @@ class EkbListingCard extends StatelessWidget {
                 children: [
                   Text(
                     valueOrDefault<String>(
-                      title,
+                      widget.title,
                       FFLocalizations.of(context).getText('srchttl1'),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: EkbTypography.listingTitle,
                   ),
-                  if (showDescription) ...[
+                  if (widget.showDescription) ...[
                     const SizedBox(height: 4),
                     Text(
                       valueOrDefault<String>(
-                        description,
+                        widget.description,
                         FFLocalizations.of(context).getText('srchdes1'),
                       ),
                       maxLines: 2,
@@ -133,7 +184,7 @@ class EkbListingCard extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          valueOrDefault<String>(priceText, '0'),
+                          valueOrDefault<String>(widget.priceText, '0'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: EkbTypography.price,
@@ -155,20 +206,54 @@ class EkbListingCard extends StatelessWidget {
   }
 }
 
+class _FavoriteButton extends StatelessWidget {
+  const _FavoriteButton({
+    required this.isFavorite,
+    required this.onTap,
+  });
+
+  final bool isFavorite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
+        child: Icon(
+          isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          size: 21,
+          color: isFavorite
+              ? const Color(0xFFFF4D67).withValues(alpha: 0.55)
+              : Colors.white.withValues(alpha: 0.55),
+        ),
+      ),
+    );
+  }
+}
+
 class _ListingImage extends StatelessWidget {
-  const _ListingImage({this.imageUrl});
+  const _ListingImage({this.imageUrl, this.categoryId});
 
   final String? imageUrl;
+  final int? categoryId;
 
   @override
   Widget build(BuildContext context) {
     if (imageUrl == null || imageUrl!.isEmpty) {
-      return const _PlaceholderImage();
+      return EkbNoPhoto(categoryId: categoryId);
     }
 
     final dpr = MediaQuery.devicePixelRatioOf(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final cardWidth = (screenWidth > 900 ? screenWidth / 4 : (screenWidth > 600 ? screenWidth / 3 : screenWidth / 2)).clamp(160.0, 320.0);
+    final cardWidth = (screenWidth > 900
+            ? screenWidth / 4
+            : (screenWidth > 600 ? screenWidth / 3 : screenWidth / 2))
+        .clamp(160.0, 320.0);
     final memCacheWidth = (cardWidth * dpr).round();
 
     return CachedNetworkImage(
@@ -184,26 +269,7 @@ class _ListingImage extends StatelessWidget {
         height: double.infinity,
         borderRadius: BorderRadius.zero,
       ),
-      errorWidget: (_, __, ___) => const _PlaceholderImage(),
-    );
-  }
-}
-
-class _PlaceholderImage extends StatelessWidget {
-  const _PlaceholderImage();
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRect(
-      child: Transform.scale(
-        scale: 1.85,
-        child: Image.asset(
-          EkbListingCard.placeholderAsset,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-      ),
+      errorWidget: (_, __, ___) => EkbNoPhoto(categoryId: categoryId),
     );
   }
 }

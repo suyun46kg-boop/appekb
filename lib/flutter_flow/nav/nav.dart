@@ -176,6 +176,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                     page: DbddWidget(),
                   )),
         FFRoute(
+            name: NotificationSettingsWidget.routeName,
+            path: NotificationSettingsWidget.routePath,
+            builder: (context, params) => const NotificationSettingsWidget(),
+        ),
+        FFRoute(
             name: PolitpageWidget.routeName,
             path: PolitpageWidget.routePath,
             builder: (context, params) => const PolitpageWidget(),
@@ -193,6 +198,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                         ParamType.String,
                       ),
                     ),
+                  )),
+        FFRoute(
+            name: FavoritesWidget.routeName,
+            path: FavoritesWidget.routePath,
+            builder: (context, params) => params.isEmpty
+                ? const NavBarPage(initialPage: 'favorites')
+                : const NavBarPage(
+                    initialPage: 'favorites',
+                    page: FavoritesWidget(),
                   ))
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
@@ -379,7 +393,7 @@ class FFRoute {
                   result: appStateNotifier.forceUpdateInfo!,
                 )
               : appStateNotifier.loading
-              ? const NavBarPage()
+              ? const _LaunchSplash()
               : page;
 
           final transitionInfo = state.transitionInfo;
@@ -409,6 +423,16 @@ class FFRoute {
         },
         routes: routes,
       );
+}
+
+/// Plain white placeholder while auth/router settle — matches native splash.
+class _LaunchSplash extends StatelessWidget {
+  const _LaunchSplash();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(color: Colors.white);
+  }
 }
 
 class TransitionInfo {

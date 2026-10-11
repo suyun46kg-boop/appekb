@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/splash_blue" />
-
-    <item
-        android:width="96dp"
-        android:height="96dp"
-        android:drawable="@drawable/splash_logo_ekbkg"
-        android:gravity="center" />
+    <item android:drawable="@color/splash_white" />
 </layer-list>

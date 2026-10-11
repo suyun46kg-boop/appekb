@@ -11,7 +11,7 @@ const files = [
   "category_job.png",
   "category_border.png",
   "category_auto.png",
-  "category_ticket.png",
+  "category_entertainment.png",
   "category_services.png",
   "category_sale_v2.png",
   "category_parttime.png",

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,7 @@ import 'components/app_update_widgets.dart';
 import 'components/ekb_bottom_nav.dart';
 import 'components/ekb_navigation_rail.dart';
 import 'services/app_update_service.dart';
+import 'services/push_notification_service.dart';
 import 'theme/ekb_breakpoints.dart';
 
 void main() async {
@@ -28,9 +31,13 @@ void main() async {
     usePathUrlStrategy();
   }
 
-  await _safeInit('localizations', FFLocalizations.initialize);
-  await _safeInit('supabase', SupaFlow.initialize);
-  await _safeInit('theme', FlutterFlowTheme.initialize);
+  // Parallel critical boot — don't hold the native splash on push/token sync.
+  await Future.wait([
+    _safeInit('localizations', FFLocalizations.initialize),
+    _safeInit('supabase', SupaFlow.initialize),
+    _safeInit('theme', FlutterFlowTheme.initialize),
+    _safeInit('push-bootstrap', PushNotificationService.bootstrap),
+  ]);
 
   final appState = FFAppState();
   await appState.initializePersistedState();
@@ -60,11 +67,12 @@ class MyApp extends StatefulWidget {
       context.findAncestorStateOfType<_MyAppState>()!;
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Locale? _locale = FFLocalizations.getStoredLocale();
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  Timer? _permissionTimer;
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -83,6 +91,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _appStateNotifier = AppStateNotifier.instance;
     currentUser = EkbkyrgyzdarSupabaseUser(SupaFlow.client.auth.currentUser);
@@ -94,7 +103,55 @@ class _MyAppState extends State<MyApp> {
         _appStateNotifier.update(user);
       });
     jwtTokenStream.listen((_) {});
+    // Channels + FCM token after first frame — keeps splash short.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _safeInit('push', PushNotificationService.initialize);
+    });
     _initializeApp();
+    _schedulePermissionPrompt();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _permissionTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _schedulePermissionPrompt();
+    } else if (state == AppLifecycleState.paused) {
+      _permissionTimer?.cancel();
+    }
+  }
+
+  /// Every visit: after 10s ask for notifications until the user grants them.
+  void _schedulePermissionPrompt() {
+    _permissionTimer?.cancel();
+    _permissionTimer = Timer(const Duration(seconds: 10), _tryAskPermission);
+  }
+
+  Future<void> _tryAskPermission() async {
+    if (!mounted) {
+      return;
+    }
+
+    final context = appNavigatorKey.currentContext;
+    if (context == null || !context.mounted) {
+      return;
+    }
+
+    // Don't interrupt first-run welcome — retry shortly after they finish.
+    if (PushNotificationService.isOnWelcome(context)) {
+      _permissionTimer?.cancel();
+      _permissionTimer =
+          Timer(const Duration(seconds: 3), _tryAskPermission);
+      return;
+    }
+
+    await PushNotificationService.maybeAskPermission(context);
   }
 
   Future<void> _initializeApp() async {
@@ -176,7 +233,7 @@ class _NavBarPageState extends State<NavBarPage> {
   Widget? _currentPage;
   final Map<int, Widget> _tabCache = {};
 
-  static const _tabKeys = ['dbdd', 'searchpage22', 'mylisting', 'Profile'];
+  static const _tabKeys = ['dbdd', 'searchpage22', 'favorites', 'Profile'];
 
   @override
   void initState() {
@@ -192,7 +249,7 @@ class _NavBarPageState extends State<NavBarPage> {
       case 1:
         return const Searchpage22Widget();
       case 2:
-        return MylistingWidget(mylisid: currentUserUid);
+        return const FavoritesWidget();
       case 3:
         return const ProfileWidget();
       default:
@@ -206,6 +263,11 @@ class _NavBarPageState extends State<NavBarPage> {
 
   void _switchTab(int index) {
     HapticFeedback.selectionClick();
+    // Избранное может измениться на других страницах; пересобираем его
+    // заново при каждом открытии, а не берём устаревший кэш.
+    if (index == 2) {
+      _tabCache.remove(2);
+    }
     safeSetState(() {
       _currentPage = null;
       _currentPageName = _tabKeys[index];
@@ -220,26 +282,18 @@ class _NavBarPageState extends State<NavBarPage> {
     }
   }
 
-  void _openMyListings(BuildContext context) {
-    if (currentUserUid.isEmpty) {
-      context.pushNamed(RegistrasiaWidget.routeName);
-      return;
-    }
-    _switchTab(2);
-  }
-
   Widget _buildBottomNav(BuildContext context, int currentIndex) {
     return EkbBottomNavBar(
       currentIndex: currentIndex,
       homeLabel: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
       searchLabel: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
       createLabel: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
-      listingsLabel: FFLocalizations.of(context).getText('wmxh68pv' /* мои объявления */),
+      listingsLabel: FFLocalizations.of(context).getText('favnavlbl' /* Нравится */),
       profileLabel: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
       onHomeTap: () => _switchTab(0),
       onSearchTap: () => _switchTab(1),
       onCreateTap: () => _openCreateListingFlow(context),
-      onListingsTap: () => _openMyListings(context),
+      onListingsTap: () => _switchTab(2),
       onProfileTap: () => _switchTab(3),
     );
   }
@@ -250,12 +304,12 @@ class _NavBarPageState extends State<NavBarPage> {
       homeLabel: FFLocalizations.of(context).getText('528yx56i' /* Гланая */),
       searchLabel: FFLocalizations.of(context).getText('6pwnu7xf' /* Найти */),
       createLabel: FFLocalizations.of(context).getText('c5j5d6pi' /* обявление */),
-      listingsLabel: FFLocalizations.of(context).getText('wmxh68pv' /* мои объявления */),
+      listingsLabel: FFLocalizations.of(context).getText('favnavlbl' /* Нравится */),
       profileLabel: FFLocalizations.of(context).getText('wg3pzmio' /* профиль */),
       onHomeTap: () => _switchTab(0),
       onSearchTap: () => _switchTab(1),
       onCreateTap: () => _openCreateListingFlow(context),
-      onListingsTap: () => _openMyListings(context),
+      onListingsTap: () => _switchTab(2),
       onProfileTap: () => _switchTab(3),
     );
   }

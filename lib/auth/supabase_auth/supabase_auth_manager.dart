@@ -163,26 +163,67 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   ) async {
     try {
       final user = await signInFunc();
-      final authUser = user == null ? null : EkbkyrgyzdarSupabaseUser(user);
+      if (user == null) {
+        _showAuthError(context, 'autherrgen');
+        return null;
+      }
+      final authUser = EkbkyrgyzdarSupabaseUser(user);
 
       // Update currentUser here in case user info needs to be used immediately
       // after a user is signed in. This should be handled by the user stream,
       // but adding here too in case of a race condition where the user stream
       // doesn't assign the currentUser in time.
-      if (authUser != null) {
-        currentUser = authUser;
-        AppStateNotifier.instance.update(authUser);
-      }
+      currentUser = authUser;
+      AppStateNotifier.instance.update(authUser);
       return authUser;
     } on AuthException catch (e) {
-      final errorMsg = e.message.contains('User already registered')
-          ? 'Error: The email is already in use by a different account'
-          : 'Error: ${e.message}';
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
+      _showAuthError(context, _authErrorKey(e));
+      return null;
+    } catch (e) {
+      debugPrint('Auth request failed: $e');
+      _showAuthError(context, 'autherrnet');
       return null;
     }
+  }
+
+  /// Ключ перевода для ошибки Supabase Auth, чтобы пользователь не видел
+  /// английский текст сервера.
+  String _authErrorKey(AuthException e) {
+    final msg = e.message.toLowerCase();
+    if (msg.contains('invalid login credentials') ||
+        msg.contains('invalid credentials')) {
+      return 'autherrcred';
+    }
+    if (msg.contains('already registered') ||
+        msg.contains('already been registered') ||
+        msg.contains('already exists')) {
+      return 'autherrtaken';
+    }
+    if (msg.contains('rate limit') ||
+        msg.contains('too many') ||
+        e.statusCode == '429') {
+      return 'autherrrate';
+    }
+    if (msg.contains('password') && msg.contains('characters')) {
+      return 'authpwd8';
+    }
+    if (msg.contains('network') ||
+        msg.contains('socket') ||
+        msg.contains('failed host lookup') ||
+        msg.contains('connection')) {
+      return 'autherrnet';
+    }
+    return 'autherrgen';
+  }
+
+  void _showAuthError(BuildContext context, String key) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(FFLocalizations.of(context).getText(key)),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

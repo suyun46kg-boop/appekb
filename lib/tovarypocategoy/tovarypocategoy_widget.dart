@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '/services/category_subscriptions.dart';
 import '/theme/ekb_breakpoints.dart';
 import '/theme/ekb_typography.dart';
 import 'tovarypocategoy_model.dart';
@@ -54,13 +55,48 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
   static const _border = Color(0xFFE2E8F0);
   static const _pageHPad = 20.0;
 
+  bool _subscribed = false;
+
   int get _rootId => valueOrDefault<int>(widget.paramcatid, 1);
+
+  Future<void> _loadSubscription() async {
+    final ids = await CategorySubscriptions.load();
+    if (mounted) setState(() => _subscribed = ids.contains(_rootId));
+  }
+
+  Future<void> _toggleSubscription() async {
+    final next = !_subscribed;
+    setState(() => _subscribed = next);
+    await CategorySubscriptions.toggle(_rootId, subscribed: next);
+    if (!mounted) return;
+    final l10n = FFLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          content: Text(
+            next
+                ? l10n.getVariableText(
+                    ruText: 'Вы подписались на категорию',
+                    kyText: 'Сиз категорияга жазылдыңыз',
+                  )
+                : l10n.getVariableText(
+                    ruText: 'Вы отписались от категории',
+                    kyText: 'Сиз категориядан чыктыңыз',
+                  ),
+          ),
+        ),
+      );
+  }
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => TovarypocategoyModel());
     _pageDataFuture = _loadPageData();
+    _loadSubscription();
   }
 
   Future<_CategoryPageData> _loadPageData() async {
@@ -113,11 +149,68 @@ class _TovarypocategoyWidgetState extends State<TovarypocategoyWidget> {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: () => context.pop(),
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                    iconSize: 24,
-                    splashRadius: 22,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: InkWell(
+                      onTap: () => context.pop(),
+                      borderRadius: BorderRadius.circular(999),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Tooltip(
+                    message: _subscribed
+                        ? FFLocalizations.of(context).getVariableText(
+                            ruText: 'Отписаться',
+                            kyText: 'Жазылууну токтотуу',
+                          )
+                        : FFLocalizations.of(context).getVariableText(
+                            ruText: 'Подписаться',
+                            kyText: 'Жазылуу',
+                          ),
+                    child: InkWell(
+                      onTap: _toggleSubscription,
+                      borderRadius: BorderRadius.circular(999),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white
+                              .withValues(alpha: _subscribed ? 0.28 : 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (child, anim) =>
+                              ScaleTransition(scale: anim, child: child),
+                          child: Icon(
+                            _subscribed
+                                ? Icons.notifications_active_rounded
+                                : Icons.notifications_none_rounded,
+                            key: ValueKey(_subscribed),
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 Padding(

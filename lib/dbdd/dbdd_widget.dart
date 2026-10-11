@@ -102,7 +102,7 @@ class _DbddWidgetState extends State<DbddWidget> {
       iconSize: 66,
     ),
     _DbddCategory(
-      'assets/images/categories/category_ticket.png',
+      'assets/images/categories/category_entertainment.png',
       'vp95t6yz',
       13,
       iconRotationDeg: -6,
@@ -306,7 +306,7 @@ class _DbddWidgetState extends State<DbddWidget> {
     9: 'assets/images/categories/category_sale_v2.png',
     11: 'assets/images/categories/category_from_kg.png',
     12: 'assets/images/categories/category_hotel.png',
-    13: 'assets/images/categories/category_ticket.png',
+    13: 'assets/images/categories/category_entertainment.png',
     14: 'assets/images/categories/category_border.png',
   };
 

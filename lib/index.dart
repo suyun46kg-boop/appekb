@@ -11,4 +11,7 @@ export '/profile/profile_widget.dart' show ProfileWidget;
 export '/dbdd/dbdd_widget.dart' show DbddWidget;
 export '/politpage/politpage_widget.dart' show PolitpageWidget;
 export '/mylisting/mylisting_widget.dart' show MylistingWidget;
+export '/favorites/favorites_widget.dart' show FavoritesWidget;
+export '/notification_settings/notification_settings_widget.dart'
+    show NotificationSettingsWidget;
 export '/welcome/welcome_widget.dart' show WelcomeWidget;

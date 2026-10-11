@@ -101,8 +101,8 @@ class EkbNavigationRail extends StatelessWidget {
             const SizedBox(height: 16),
             _RailItem(
               active: currentIndex == 2,
-              icon: Icons.list_alt_outlined,
-              activeIcon: Icons.list_alt_rounded,
+              icon: Icons.favorite_border_rounded,
+              activeIcon: Icons.favorite_rounded,
               label: listingsLabel,
               onTap: onListingsTap,
             ),
@@ -140,7 +140,8 @@ class _RailItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? EkbNavigationRail._activeBlue : EkbNavigationRail._inactive;
+    final color =
+        active ? EkbNavigationRail._activeBlue : EkbNavigationRail._inactive;
 
     return Semantics(
       button: true,
@@ -159,7 +160,9 @@ class _RailItem extends StatelessWidget {
             width: 76,
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             decoration: BoxDecoration(
-              color: active ? EkbNavigationRail._activeBlue.withValues(alpha: 0.08) : Colors.transparent,
+              color: active
+                  ? EkbNavigationRail._activeBlue.withValues(alpha: 0.08)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -232,7 +235,8 @@ class _RailCreateButton extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: EkbNavigationRail._headerBlue.withValues(alpha: 0.35),
+                      color:
+                          EkbNavigationRail._headerBlue.withValues(alpha: 0.35),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),

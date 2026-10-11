@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -50,8 +51,7 @@ class EkbBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPad = MediaQuery.paddingOf(context).bottom;
-    final useHeavyBlur = !kIsWeb &&
-        defaultTargetPlatform != TargetPlatform.iOS;
+    final useHeavyBlur = !kIsWeb && defaultTargetPlatform != TargetPlatform.iOS;
     final blurSigma = useHeavyBlur ? _glassBlur : _glassBlurIOS;
 
     final barContent = DecoratedBox(
@@ -126,8 +126,8 @@ class EkbBottomNavBar extends StatelessWidget {
                       Expanded(
                         child: _NavTab(
                           active: currentIndex == 2,
-                          icon: Icons.list_alt_outlined,
-                          activeIcon: Icons.list_alt_rounded,
+                          icon: Icons.favorite_border_rounded,
+                          activeIcon: Icons.favorite_rounded,
                           label: listingsLabel,
                           onTap: onListingsTap,
                         ),
