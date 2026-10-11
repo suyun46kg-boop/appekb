@@ -61,13 +61,13 @@ class MyApp extends StatefulWidget {
 
   // This widget is the root of your application.
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyApp> createState() => MyAppState();
 
-  static _MyAppState of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>()!;
+  static MyAppState of(BuildContext context) =>
+      context.findAncestorStateOfType<MyAppState>()!;
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Locale? _locale = FFLocalizations.getStoredLocale();
 
   late AppStateNotifier _appStateNotifier;
@@ -127,10 +127,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Every visit: after 10s ask for notifications until the user grants them.
+  /// Every visit: after 15s ask for notifications until the user grants them.
   void _schedulePermissionPrompt() {
     _permissionTimer?.cancel();
-    _permissionTimer = Timer(const Duration(seconds: 10), _tryAskPermission);
+    _permissionTimer = Timer(const Duration(seconds: 15), _tryAskPermission);
   }
 
   Future<void> _tryAskPermission() async {
@@ -224,11 +224,11 @@ class NavBarPage extends StatefulWidget {
   final bool disableResizeToAvoidBottomInset;
 
   @override
-  _NavBarPageState createState() => _NavBarPageState();
+  NavBarPageState createState() => NavBarPageState();
 }
 
-/// This is the private State class that goes with NavBarPage.
-class _NavBarPageState extends State<NavBarPage> {
+/// The State class that goes with NavBarPage.
+class NavBarPageState extends State<NavBarPage> {
   String _currentPageName = 'dbdd';
   Widget? _currentPage;
   final Map<int, Widget> _tabCache = {};

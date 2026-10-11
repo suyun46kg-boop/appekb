@@ -34,8 +34,26 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
   static const Color _brand = Color(0xFF0679EE);
   static const Color _brandSoft = Color(0x140679EE);
   static const int _pageSize = 20;
+  static const List<({String label, String synonym})> _popularSearches = [
+    (label: 'Жумуш', synonym: 'работа'),
+    (label: 'Батир', synonym: 'квартира'),
+    (label: 'Бөлмө', synonym: 'комната'),
+    (label: 'Үй ижарага', synonym: 'аренда жилья'),
+    (label: 'Документсиз жумуш', synonym: 'работа без документов'),
+    (label: 'Кампада жумуш', synonym: 'работа склад'),
+    (label: 'Курьерлик жумуш', synonym: 'работа доставка'),
+    (label: 'Унаа', synonym: 'машина'),
+    (label: 'Велосипед', synonym: 'велосипед'),
+    (label: 'Телефон', synonym: 'телефон'),
+    (label: 'Айфон', synonym: 'айфон'),
+    (label: 'Ноутбук', synonym: 'ноутбук'),
+    (label: 'Котормочу', synonym: 'переводчик'),
+    (label: 'Такси', synonym: 'такси'),
+    (label: 'Кыргыз устасы', synonym: 'кыргызский мастер'),
+  ];
 
   late PagingController<int, ListingsRow> _pagingController;
+  List<String> _activeSearchTerms = const [];
 
   @override
   void initState() {
@@ -166,6 +184,24 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       _model.typedText = term;
       _model.activeQuery = term;
       _model.loadingSuggestions = false;
+      _activeSearchTerms = [term];
+    });
+    _reloadResults();
+    FocusScope.of(context).unfocus();
+  }
+
+  void _runPopularSearch(({String label, String synonym}) item) {
+    final label = _model.sanitizeQuery(item.label);
+    final synonym = _model.sanitizeQuery(item.synonym);
+    _model.textController?.text = label;
+    EasyDebounce.cancel('searchpage22_query');
+    _model.suggestionRequestId++;
+    _model.addRecentSearch(label);
+    setState(() {
+      _model.typedText = label;
+      _model.activeQuery = label;
+      _model.loadingSuggestions = false;
+      _activeSearchTerms = [synonym, label];
     });
     _reloadResults();
     FocusScope.of(context).unfocus();
@@ -180,6 +216,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       _model.activeQuery = '';
       _model.suggestions = [];
       _model.loadingSuggestions = false;
+      _activeSearchTerms = const [];
     });
   }
 
@@ -211,33 +248,69 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
 
   Future<List<ListingsRow>> _fetchListingsPage(int offset) async {
     final city = _model.filterCity;
-    final data = await SupaFlow.client.rpc(
-      'search_listings',
-      params: {
-        'search_text': _model.activeQuery,
-        'min_price': _model.priceMin,
-        'max_price': _model.priceMax,
-        'city_filter': (city != null && city.isNotEmpty) ? city : null,
-        'category_filter': _model.filterCategoryId,
-        'sort_option': _model.sort.rpcValue,
-        'limit_count': _pageSize,
-        'offset_count': offset,
-      },
-    ) as List;
+    final terms =
+        _activeSearchTerms.isEmpty ? [_model.activeQuery] : _activeSearchTerms;
+    final fetchCount = offset + _pageSize;
+    final uniqueRows = <String, ListingsRow>{};
 
-    final rows = data
-        .map((e) => ListingsTable().createRow(e as Map<String, dynamic>))
-        .toList();
+    for (final term in terms) {
+      final data = await SupaFlow.client.rpc(
+        'search_listings',
+        params: {
+          'search_text': term,
+          'min_price': _model.priceMin,
+          'max_price': _model.priceMax,
+          'city_filter': (city != null && city.isNotEmpty) ? city : null,
+          'category_filter': _model.filterCategoryId,
+          'sort_option': _model.sort.rpcValue,
+          'limit_count': fetchCount,
+          'offset_count': 0,
+        },
+      ) as List;
+      for (final item in data) {
+        final row = ListingsTable().createRow(item as Map<String, dynamic>);
+        uniqueRows.putIfAbsent(row.id ?? '${row.hashCode}', () => row);
+      }
+    }
+
+    final mergedRows = uniqueRows.values.toList();
+    switch (_model.sort) {
+      case SearchSort.newest:
+        mergedRows.sort(
+          (a, b) => (b.createdAt ?? DateTime(0))
+              .compareTo(a.createdAt ?? DateTime(0)),
+        );
+        break;
+      case SearchSort.priceAsc:
+        mergedRows.sort(
+          (a, b) => (a.price ?? double.infinity)
+              .compareTo(b.price ?? double.infinity),
+        );
+        break;
+      case SearchSort.priceDesc:
+        mergedRows.sort(
+          (a, b) => (b.price ?? double.negativeInfinity)
+              .compareTo(a.price ?? double.negativeInfinity),
+        );
+        break;
+      case SearchSort.relevance:
+        break;
+    }
+
+    final end = offset + _pageSize < mergedRows.length
+        ? offset + _pageSize
+        : mergedRows.length;
+    final rows = offset >= mergedRows.length
+        ? <ListingsRow>[]
+        : mergedRows.sublist(offset, end);
     final blocked = await ModerationService.getBlockedUserIds();
     if (blocked.isEmpty) {
       return rows;
     }
-    return rows
-        .where((row) {
-          final userId = row.userId;
-          return userId == null || userId.isEmpty || !blocked.contains(userId);
-        })
-        .toList();
+    return rows.where((row) {
+      final userId = row.userId;
+      return userId == null || userId.isEmpty || !blocked.contains(userId);
+    }).toList();
   }
 
   // ---- Filter options loading -----------------------------------------------
@@ -317,7 +390,8 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
         padding: EdgeInsets.fromLTRB(10.0, topPad + 10.0, 16.0, 16.0),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
+            constraints:
+                const BoxConstraints(maxWidth: EkbBreakpoints.maxHeaderWidth),
             child: SizedBox(
               height: 48.0,
               child: Row(
@@ -338,9 +412,8 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
   }
 
   Widget _buildSearchField(FlutterFlowTheme theme) {
-    final bool alignLeft =
-        (_model.textFieldFocusNode?.hasFocus ?? false) ||
-            _model.textController.text.isNotEmpty;
+    final bool alignLeft = (_model.textFieldFocusNode?.hasFocus ?? false) ||
+        _model.textController.text.isNotEmpty;
     return Container(
       height: 48.0,
       decoration: BoxDecoration(
@@ -360,47 +433,47 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
         ],
       ),
       child: TextFormField(
-          controller: _model.textController,
-          focusNode: _model.textFieldFocusNode,
-          autofocus: true,
-          textInputAction: TextInputAction.search,
-          textAlign: alignLeft ? TextAlign.start : TextAlign.center,
-          textAlignVertical: TextAlignVertical.center,
-          onChanged: (value) => EasyDebounce.debounce(
-            'searchpage22_query',
-            const Duration(milliseconds: 300),
-            () => _onTextChanged(value),
-          ),
-          onFieldSubmitted: _runSearch,
-          style: theme.bodyMedium.override(
+        controller: _model.textController,
+        focusNode: _model.textFieldFocusNode,
+        autofocus: true,
+        textInputAction: TextInputAction.search,
+        textAlign: alignLeft ? TextAlign.start : TextAlign.center,
+        textAlignVertical: TextAlignVertical.center,
+        onChanged: (value) => EasyDebounce.debounce(
+          'searchpage22_query',
+          const Duration(milliseconds: 300),
+          () => _onTextChanged(value),
+        ),
+        onFieldSubmitted: _runSearch,
+        style: theme.bodyMedium.override(
+          font: GoogleFonts.inter(),
+          color: theme.primaryText,
+          fontSize: 15.0,
+        ),
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: FFLocalizations.of(context).getText('srchhint1'),
+          hintStyle: theme.bodyMedium.override(
             font: GoogleFonts.inter(),
-            color: theme.primaryText,
+            color: theme.secondaryText,
             fontSize: 15.0,
           ),
-          decoration: InputDecoration(
-            isDense: true,
-            hintText: FFLocalizations.of(context).getText('srchhint1'),
-            hintStyle: theme.bodyMedium.override(
-              font: GoogleFonts.inter(),
-              color: theme.secondaryText,
-              fontSize: 15.0,
-            ),
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            contentPadding:
-                const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
-            prefixIcon: const Icon(Icons.search_rounded,
-                color: _brand, size: 22.0),
-            suffixIcon: _model.textController.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(Icons.cancel_rounded,
-                        color: theme.secondaryText, size: 20.0),
-                    onPressed: _clearSearch,
-                  )
-                : null,
-          ),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding:
+              const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+          prefixIcon:
+              const Icon(Icons.search_rounded, color: _brand, size: 22.0),
+          suffixIcon: _model.textController.text.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.cancel_rounded,
+                      color: theme.secondaryText, size: 20.0),
+                  onPressed: _clearSearch,
+                )
+              : null,
         ),
+      ),
     );
   }
 
@@ -462,45 +535,17 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
             ],
           ),
           const SizedBox(height: 14.0),
-          FutureBuilder<List<SearchIndexRow>>(
-            future: SearchIndexTable().queryRows(
-              queryFn: (q) => q,
-              limit: 12,
-            ),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const _PopularTagsShimmer();
-              }
-              final tags = snapshot.data!
-                  .map((e) => e.title)
-                  .where((e) => e != null && e.isNotEmpty)
-                  .cast<String>()
-                  .toList();
-              if (tags.isEmpty) {
-                return Text(
-                  FFLocalizations.of(context).getText('srchtyp1'),
-                  style: theme.bodyMedium.override(
-                    font: GoogleFonts.inter(),
-                    color: theme.secondaryText,
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: _popularSearches
+                .map(
+                  (item) => _SuggestionChip(
+                    label: item.label,
+                    onTap: () => _runPopularSearch(item),
                   ),
-                );
-              }
-              return Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: tags
-                    .map(
-                      (tag) => _SuggestionChip(
-                        label: tag,
-                        onTap: () {
-                          _model.textController?.text = tag;
-                          _runSearch(tag);
-                        },
-                      ),
-                    )
-                    .toList(),
-              );
-            },
+                )
+                .toList(),
           ),
         ],
       ),
@@ -515,9 +560,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       children: [
         SizedBox(
           height: 3.0,
-          child: _model.loadingSuggestions
-              ? const _RunningLoaderBar()
-              : null,
+          child: _model.loadingSuggestions ? const _RunningLoaderBar() : null,
         ),
         _SuggestionRow(
           icon: Icons.search_rounded,
@@ -535,22 +578,22 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
               : (items.isEmpty && !_model.loadingSuggestions)
                   ? _NoSuggestions(term: typed)
                   : ListView.separated(
-                  padding: EdgeInsets.zero,
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) => Divider(
-                      height: 1.0, thickness: 1.0, color: theme.alternate),
-                  itemBuilder: (context, index) => _SuggestionRow(
-                    icon: Icons.north_west_rounded,
-                    label: items[index],
-                    highlight: typed,
-                    onTap: () {
-                      _model.textController?.text = items[index];
-                      _runSearch(items[index]);
-                    },
-                  ),
-                ),
+                      padding: EdgeInsets.zero,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      itemCount: items.length,
+                      separatorBuilder: (_, __) => Divider(
+                          height: 1.0, thickness: 1.0, color: theme.alternate),
+                      itemBuilder: (context, index) => _SuggestionRow(
+                        icon: Icons.north_west_rounded,
+                        label: items[index],
+                        highlight: typed,
+                        onTap: () {
+                          _model.textController?.text = items[index];
+                          _runSearch(items[index]);
+                        },
+                      ),
+                    ),
         ),
       ],
     );
@@ -566,7 +609,8 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       children: [
         Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: EkbBreakpoints.maxContentWidth),
+            constraints:
+                const BoxConstraints(maxWidth: EkbBreakpoints.maxContentWidth),
             child: _buildResultsBar(theme),
           ),
         ),
@@ -586,10 +630,10 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
               builderDelegate: PagedChildBuilderDelegate<ListingsRow>(
                 itemBuilder: (context, item, index) =>
                     EkbListingCard.fromListingsRow(item),
-                firstPageProgressIndicatorBuilder: (_) =>
-                    const _SkeletonGrid(),
+                firstPageProgressIndicatorBuilder: (_) => const _SkeletonGrid(),
                 newPageProgressIndicatorBuilder: (_) => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                  padding:
+                      EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
                   child: _RunningLoaderBar(height: 4.0),
                 ),
                 noItemsFoundIndicatorBuilder: (_) => _EmptyState(
@@ -658,11 +702,9 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
       if (min != null && max != null) {
         label = '${min.toStringAsFixed(0)}–${max.toStringAsFixed(0)} $cur';
       } else if (min != null) {
-        label =
-            '${l.getText('srchfrm1')} ${min.toStringAsFixed(0)} $cur';
+        label = '${l.getText('srchfrm1')} ${min.toStringAsFixed(0)} $cur';
       } else {
-        label =
-            '${l.getText('srchto01')} ${max!.toStringAsFixed(0)} $cur';
+        label = '${l.getText('srchto01')} ${max!.toStringAsFixed(0)} $cur';
       }
       chips.add(_ActiveFilterChip(
         label: label,
@@ -758,8 +800,7 @@ class _Searchpage22WidgetState extends State<Searchpage22Widget> {
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.normal),
-                              color:
-                                  isSelected ? _brand : theme.primaryText,
+                              color: isSelected ? _brand : theme.primaryText,
                             ),
                           ),
                         ),
@@ -906,7 +947,8 @@ class _FilterSheetState extends State<_FilterSheet> {
     final maxHeight = MediaQuery.of(context).size.height * 0.85;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxHeight),
         child: Column(
@@ -957,18 +999,24 @@ class _FilterSheetState extends State<_FilterSheet> {
                     Row(
                       children: [
                         Expanded(
-                            child: _priceField(theme, _minCtrl,
-                                FFLocalizations.of(context).getText('srchfrm1'))),
+                            child: _priceField(
+                                theme,
+                                _minCtrl,
+                                FFLocalizations.of(context)
+                                    .getText('srchfrm1'))),
                         const SizedBox(width: 12.0),
                         Expanded(
-                            child: _priceField(theme, _maxCtrl,
-                                FFLocalizations.of(context).getText('srchto01'))),
+                            child: _priceField(
+                                theme,
+                                _maxCtrl,
+                                FFLocalizations.of(context)
+                                    .getText('srchto01'))),
                       ],
                     ),
                     if (widget.cities.isNotEmpty) ...[
                       const SizedBox(height: 22.0),
-                      _sectionTitle(
-                          theme, FFLocalizations.of(context).getText('srchcty1')),
+                      _sectionTitle(theme,
+                          FFLocalizations.of(context).getText('srchcty1')),
                       const SizedBox(height: 10.0),
                       Wrap(
                         spacing: 8.0,
@@ -992,8 +1040,8 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ],
                     if (widget.categories.isNotEmpty) ...[
                       const SizedBox(height: 22.0),
-                      _sectionTitle(
-                          theme, FFLocalizations.of(context).getText('srchcat1')),
+                      _sectionTitle(theme,
+                          FFLocalizations.of(context).getText('srchcat1')),
                       const SizedBox(height: 10.0),
                       Wrap(
                         spacing: 8.0,
@@ -1166,9 +1214,7 @@ class _PillButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14.0),
             border: Border.all(
-              color: active
-                  ? const Color(0x660679EE)
-                  : theme.alternate,
+              color: active ? const Color(0x660679EE) : theme.alternate,
             ),
           ),
           child: Row(
@@ -1190,8 +1236,8 @@ class _PillButton extends StatelessWidget {
               if (badgeCount > 0) ...[
                 const SizedBox(width: 8.0),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7.0, vertical: 2.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 7.0, vertical: 2.0),
                   decoration: const BoxDecoration(
                     color: _Searchpage22WidgetState._brand,
                     shape: BoxShape.circle,
@@ -1278,9 +1324,7 @@ class _ChoicePill extends StatelessWidget {
               : theme.primaryBackground,
           borderRadius: BorderRadius.circular(20.0),
           border: Border.all(
-            color: selected
-                ? _Searchpage22WidgetState._brand
-                : theme.alternate,
+            color: selected ? _Searchpage22WidgetState._brand : theme.alternate,
           ),
         ),
         child: Text(
@@ -1555,7 +1599,8 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 16.0),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: _Searchpage22WidgetState._brand),
+                  side:
+                      const BorderSide(color: _Searchpage22WidgetState._brand),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.0),
                   ),
@@ -1591,7 +1636,8 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_rounded, color: theme.secondaryText, size: 56.0),
+            Icon(Icons.wifi_off_rounded,
+                color: theme.secondaryText, size: 56.0),
             const SizedBox(height: 16.0),
             Text(
               FFLocalizations.of(context).getText('srcherr1'),
@@ -1673,29 +1719,6 @@ class _ShimmerBox extends StatelessWidget {
           duration: 1200.ms,
           color: _highlight,
         );
-  }
-}
-
-class _PopularTagsShimmer extends StatelessWidget {
-  const _PopularTagsShimmer();
-
-  static const List<double> _widths = [72, 96, 84, 110, 78, 92];
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8.0,
-      runSpacing: 8.0,
-      children: _widths
-          .map(
-            (w) => _ShimmerBox(
-              width: w,
-              height: 38.0,
-              borderRadius: BorderRadius.circular(22.0),
-            ),
-          )
-          .toList(),
-    );
   }
 }
 

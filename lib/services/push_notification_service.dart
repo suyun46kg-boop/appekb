@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/firebase_options.dart';
-import '/flutter_flow/internationalization.dart';
+import '/components/notification_permission_sheet.dart';
 import '/flutter_flow/nav/nav.dart';
 import 'category_subscriptions.dart';
 
@@ -178,38 +178,12 @@ class PushNotificationService {
       }
 
       _dialogShowing = true;
-      final l10n = FFLocalizations.of(context);
-      final allow = await showDialog<bool>(
+      final allow = await showModalBottomSheet<bool>(
         context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.getVariableText(
-            ruText: 'Включить уведомления?',
-            kyText: 'Билдирмелерди күйгүзөсүзбү?',
-          )),
-          content: Text(l10n.getVariableText(
-            ruText:
-                'Сообщим о новостях приложения и важных изменениях по вашим объявлениям. Отключить можно в любой момент в настройках.',
-            kyText:
-                'Колдонмонун жаңылыктары жана жарнамаларыңыздагы маанилүү өзгөрүүлөр тууралуу кабарлайбыз. Каалаган убакта жөндөөлөрдөн өчүрсөңүз болот.',
-          )),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l10n.getVariableText(
-                ruText: 'Не сейчас',
-                kyText: 'Азыр эмес',
-              )),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(l10n.getVariableText(
-                ruText: 'Разрешить',
-                kyText: 'Уруксат берүү',
-              )),
-            ),
-          ],
-        ),
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        barrierColor: Colors.black.withValues(alpha: 0.45),
+        builder: (_) => const NotificationPermissionSheet(),
       );
 
       if (allow != true || !context.mounted) {
